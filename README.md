@@ -1,8 +1,8 @@
 # GEORB
-## GEodetic ORBit analysis and Precise Orbit Determination
+## GEodetic ORBit analysis and precise orbit determination
   
-GEORB is a software for precise orbit determination of Low Earth Orbiters (LEOs), data analysis of satellite gravity missions and design of future space missions. 	
-It has been mostly applied in orbit determination of Gravity Recovery And Climate Experiment (GRACE), GRACE Follow-On and Gravity Field and Steady-State Ocean Circulation (GOCE) missions.  
+GEORB is a software for Precise Orbit Determination (POD) of Low Earth Orbiters (LEOs), data analysis of satellite gravity missions and design of future space missions. 	
+It has been mostly used in orbit determination of the Gravity Recovery And Climate Experiment (GRACE), GRACE Follow-On (GRACE-FO) and Gravity Field and Steady-State Ocean Circulation (GOCE) missions.  
 
 
 ---
