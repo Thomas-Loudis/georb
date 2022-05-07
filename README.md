@@ -1,4 +1,5 @@
-![GEORB_symbol](https://user-images.githubusercontent.com/102968112/167231108-3c1bc9a1-769d-4d8e-a736-8ec021215eb8.jpeg)
+![image](https://user-images.githubusercontent.com/102968112/167231561-50d2b6d3-9a37-47b1-9791-11646e0a10c9.png)
+
 
 
 # GEORB
