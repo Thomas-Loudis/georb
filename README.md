@@ -11,6 +11,6 @@ It has been mostly used in orbit determination of the Gravity Recovery And Clima
 ---
 References:
 
-Papanikolaou T.D. (2012). Dynamic modelling of satellite orbits in the frame of contemporary satellite geodesy missions, Ph.D. Dissertation, Aristotle University of Thessaloniki (AUTH), Greece.
+Papanikolaou T. (2012). Dynamic modelling of satellite orbits in the frame of contemporary satellite geodesy missions, Ph.D. Dissertation, Aristotle University of Thessaloniki (AUTH), Greece.
  
-Papanikolaou T.D., Tsoulis D. (2018). Assessment of Earth gravity field models in the medium to high frequency spectrum based on GRACE and GOCE dynamic orbit analysis, Geosciences, 8(12):441, doi: 10.3390/geosciences8120441.
+Papanikolaou T., Tsoulis D. (2018). Assessment of Earth gravity field models in the medium to high frequency spectrum based on GRACE and GOCE dynamic orbit analysis, Geosciences, 8(12):441, doi: 10.3390/geosciences8120441.
