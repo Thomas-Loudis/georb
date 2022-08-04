@@ -1,4 +1,4 @@
-![georb_logo_v5](https://user-images.githubusercontent.com/102968112/182942313-1599c640-e648-4710-8d9a-0b0ccedd1eb5.png)
+![georb_logo_v7](https://user-images.githubusercontent.com/102968112/182955140-320d8bae-7220-4e0c-8c9d-60481c1ce031.png)
 
 
 # 
