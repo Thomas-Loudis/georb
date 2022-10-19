@@ -13,5 +13,5 @@ It has been mostly used in orbit determination of the Gravity Recovery And Clima
 References:
 
 Papanikolaou T. (2012). Dynamic modelling of satellite orbits in the frame of contemporary satellite geodesy missions, Ph.D. Dissertation, Aristotle University of Thessaloniki (AUTH), Greece.
- 
-Papanikolaou T., Tsoulis D. (2018). Assessment of Earth gravity field models in the medium to high frequency spectrum based on GRACE and GOCE dynamic orbit analysis, Geosciences, 8(12):441, doi: 10.3390/geosciences8120441.
+
+Papanikolaou T. (2022). Precise Orbit Determination and accelerometry calibration modelling of the GRACE Follow-On mission, Nordic Geodetic Commission (NKG) General Assembly, 5-8 September 2022, Copenhagen, Denmark.
