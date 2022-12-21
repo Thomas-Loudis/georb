@@ -22,9 +22,16 @@ fclose('all');
 % Folders path for input data (models)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 pwd_path = pwd;
+georb_path = fullfile(pwd_path,'/../');
 data_path_fname = '../data/';
 data_path = fullfile(pwd_path,data_path_fname);
-cd(data_path);
+cd(georb_path);
+data_foldername = 'data';
+test_data = isfolder(data_foldername);
+if test_data == 0
+mkdir('data');
+end
+cd(data_path)
 data_path = pwd;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
