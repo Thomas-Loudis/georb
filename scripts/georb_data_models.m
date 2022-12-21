@@ -40,14 +40,14 @@ fprintf('%s', 'Gravity Field model :: GOCO06s :: ');
 url_read   = 'http://icgem.gfz-potsdam.de/getmodel/gfc/32ec2884630a02670476f752d2a2bf1c395d8c8d6d768090ed95b4f04b0d5863/GOCO06s.gfc';
 save_fname = 'GOCO06s.gfc';
 outpath = websave(save_fname , url_read);
-fprintf('%s \n', 'downloaded');
+fprintf('%s \n\n', 'downloaded');
 
 % EIGEN-6S4
 fprintf('%s', 'Gravity Field model :: EIGEN-6S4 :: ');
 url_read   = 'http://icgem.gfz-potsdam.de/getmodel/gfc/4cc119d62d3f83adce857914bcabdfa7ca2f91677ed2905934cf52698584b4c9/EIGEN-6S4%20(v2).gfc';
 save_fname = 'EIGEN-6S4.gfc';
 outpath = websave(save_fname , url_read);
-fprintf('%s \n', 'downloaded');
+fprintf('%s \n\n', 'downloaded');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -62,7 +62,7 @@ url_read   = 'https://ssd.jpl.nasa.gov/ftp/eph/planets/ascii/de423/header.423';
 save_fname = 'header.423';
 outpath = websave(save_fname , url_read);
 
-fprintf('%s \n', 'downloaded');
+fprintf('%s \n\n', 'downloaded');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -72,13 +72,13 @@ fprintf('%s ', 'Earth Orientation Parameters :: EOP-C04 :: ');
 url_read = 'https://hpiers.obspm.fr/iers/eop/eopc04/eopc04_IAU2000.62-now';
 save_fname = 'eopc04_IAU2000.62-now';
 outpath = websave(save_fname , url_read);
-fprintf('%s \n', 'downloaded');
+fprintf('%s \n\n', 'downloaded');
 
 fprintf('%s ', 'IERS Bulletin C Leap Seconds table:: IERS Leap_Second.dat :: ');
 url_read = 'https://hpiers.obspm.fr/iers/bul/bulc/Leap_Second.dat';
 save_fname = 'Leap_Second.dat';
 outpath = websave(save_fname , url_read);
-fprintf('%s \n', 'downloaded');
+fprintf('%s \n\n', 'downloaded');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -88,11 +88,11 @@ fprintf('%s', 'Ocean Tides model :: FES2004 :: ');
 url_read   = 'https://iers-conventions.obspm.fr/content/chapter6/additional_info/tidemodels/fes2004_Cnm-Snm.dat';
 save_fname = 'fes2004_Cnm-Snm.dat';
 outpath = websave(save_fname , url_read);
-fprintf('%s \n', 'downloaded');
+fprintf('%s \n\n', 'downloaded');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 fprintf('%s%s \n\n', 'Data have been downloaded and saved in :: ', data_path);
 
 % Direct to the central path of the package
-gsynth_path = fullfile(pwd_path,'/../');
-cd(gsynth_path);
+georb_path = fullfile(pwd_path,'/../');
+cd(georb_path);
