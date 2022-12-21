@@ -1,0 +1,9 @@
+GEORB Orbit Statistics         
+
+-------------------------       
+RMS                            
+-------------------------       
+Satellite/Object              : GRACE-C          
+Pseudo-Observations residuals : ICRF XYZ (m)          : 0.0060      0.0039      0.0048     
+External orbit comparison     : Orbital Frame RTN (m) : 0.0055      0.0105      0.0146     
+
