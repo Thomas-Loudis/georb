@@ -86,8 +86,8 @@ elseif Vel_vector == 0
     % Set Zeros for other Frames
     dkepl = 0;
     rms_orbk = 0;
-    dstn = 0;
-    rms_orbital = 0;
+    dstn = zeros(1,4);
+    rms_orbital = zeros(1,3);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

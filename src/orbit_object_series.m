@@ -60,10 +60,7 @@ for ic_i = 1 : ic_n
     
     % Orbit configuration structure
     [config_struct] = write_config2struct(main_config_fname, orbit_model_filename, ic_data_object_i, src_version);
-    
-    config_outfile = 'config_struct2file_test.in';
-    [orbit_config_file] = write_config_struct2file(config_struct,config_outfile);    
-    
+        
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Orbit Determination of satellite/object i
     write_data = 1;

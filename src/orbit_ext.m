@@ -72,14 +72,14 @@ if extorb_test == 'y'
     [formatarray] = writedat(outfilename3,wno,pr_orbc,orbte2');
     end
 elseif extorb_test == 'n'
-    rms_orbital = [0; 0; 0; 0];    
-    rms_orbc = [0; 0; 0; 0; 0; 0];
+    rms_orbital = zeros(1,3);    
+    rms_orbc = zeros(1,6);
     rms_orbk = rms_orbc;
     rms_orbt = rms_orbc;
-    dstn  = rms_orbital;
-    dorbc = rms_orbc;
-    dkepl = rms_orbc;
-    dorbt = rms_orbc;
+    dstn  = zeros(1,4);
+    dorbc = zeros(1,7);
+    dkepl = zeros(1,7);
+    dorbt = zeros(1,7);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

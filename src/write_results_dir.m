@@ -29,7 +29,7 @@ param_keyword = 'orbiting_object_name';
 [orbit_arc_length, IC_MJDo, IC_Zo_vec, EOP_data, EOP_interp_no] = prm_ic(orbit_config_fname);
 
 % Directory name according to the satellite/object name and MJDo
-OUT_fname = sprintf('%s%s%.5f', orbiting_object_name,'_',(IC_MJDo));
+OUT_fname = sprintf('%s%s%d', orbiting_object_name,'_',fix(IC_MJDo));
 
 % Make directory
 [status, message, messageid] = rmdir(OUT_fname,'s');

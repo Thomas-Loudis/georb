@@ -266,7 +266,7 @@ if test == 1
     MODEid = sprintf('%s%d','ESM',0);
     VEQ_sol = 0;
     [orbc,orbk,orbt,veqZarray_0,veqParray_0] = orbit_integr(orbit_config_fname, VEQ_sol);
-    fprintf('%s %.3f \n', 'Time (min):  EQM integration:',toc(to_EQM)/60);
+    %fprintf('%s %.3f \n', 'Time (min):  EQM integration:',toc(to_EQM)/60);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     veqZarray = veqZarray_0;
     veqParray = veqParray_0;

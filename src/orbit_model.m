@@ -218,7 +218,9 @@ if test_acc_cal_paramestim == 1
 end
 
 % Empirical Accelerations (Piecewise accelerations or Pulses)
-if N_param_pulses_stoch > 0
+PULSES_estim_yn = pulses_stoch_accel_glob.effect_01;
+test_empaccel_paramestim = strcmp(PULSES_estim_yn,'y');
+if test_empaccel_paramestim == 1    
     Nmodel_PARAM_ESTIM_glob(3) = 1;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

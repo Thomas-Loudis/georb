@@ -120,7 +120,7 @@ while (~feof(fid))
 % Time interval of the acceleration (duration) 
     test = strcmp(str1,'stoch_time_interval');
     if test == 1
-      stoch_time_interval = sscanf(line_ith,'%*s %d %*') ;
+      stoch_time_interval = sscanf(line_ith,'%*s %d %*') 
     end
     
 % Time offset of first and last pulses epochs (seconds)
@@ -191,6 +191,8 @@ if test == 1
     pulses_matrix_init = 0;
     N_pulses_axes = 0;
 end
+
+[pulses_matrix_init, N_pulses_axes, N_pulses_param] = pulses_init(N_pulses_epochs, pulses_axes_vec_01, mjd_epoch0, sec_epoch0, pulse_step, pulse_offset);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
