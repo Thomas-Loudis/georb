@@ -51,16 +51,6 @@ fprintf('%s \n', 'downloaded');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Ocean Tides model by CNES/GRGS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-fprintf('%s', 'Ocean Tides model :: FES2014b-v1 :: ');
-url_read   = 'http://gravitegrace.get.obs-mip.fr/geofluid/fes2014b.v1.Cnm-Snm_Om1+Om2C20_with_S1_wave.POT_format.txt';
-save_fname = 'fes2014b_v1.txt';
-outpath = websave(save_fname , url_read);
-fprintf('%s \n', 'downloaded');
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Planetary and Lunar ephemeris by JPL/NASA
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 fprintf('%s', 'Planetary/Lunar ephemeris :: DE423 :: ');
@@ -89,7 +79,16 @@ url_read = 'https://hpiers.obspm.fr/iers/bul/bulc/Leap_Second.dat';
 save_fname = 'Leap_Second.dat';
 outpath = websave(save_fname , url_read);
 fprintf('%s \n', 'downloaded');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Ocean Tides model by CNES/GRGS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+fprintf('%s', 'Ocean Tides model :: FES2004 :: ');
+url_read   = 'https://iers-conventions.obspm.fr/content/chapter6/additional_info/tidemodels/fes2004_Cnm-Snm.dat';
+save_fname = 'fes2004_Cnm-Snm.dat';
+outpath = websave(save_fname , url_read);
+fprintf('%s \n', 'downloaded');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 fprintf('%s%s \n\n', 'Data have been downloaded and saved in :: ', data_path);
