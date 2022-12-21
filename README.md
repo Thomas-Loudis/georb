@@ -10,12 +10,74 @@ It has been mostly applied in precise orbit determination of the Gravity Recover
 
 
 ---
-### Cite GEORB: 
+## Cite GEORB: 
 
 Papanikolaou, T. (2022). Precise orbit determination and accelerometer data modelling of the GRACE Follow-On mission, GRACE/GRACE-FO Science Team Meeting 2022, Potsdam, Germany, 18–20 Oct 2022, GSTM2022-90, https://doi.org/10.5194/gstm2022-90, 2022.
 
 ---
-### References:
+## Guide: Instructions for configuration and data requirements
+
+GEORB can be executed through applying the following steps:
+
+1. Set the configuration files located in the folder `'../config/'`. Description of the configurable parameters is provided within the config files.  
+
+`main_config.in` :: Master Configuration file for setting the basic modes 
+
+`orbit_model.in` :: Configuration file for the orbit modelling and methods
+
+`ic_config.in`   :: Initial Consditions file for setting the list of the Satellites/Objects along with the Initial Epoch per object 
+
+```
+cd config/
+edit main_config.in
+cd ..
+```
+
+```
+cd config/
+edit orbit_model.in
+cd ..
+```
+
+```
+cd config/
+edit ic_config.in
+cd ..
+```
+
+2. Download the models' data required by executing the script file `georb_data_models.m` stored in the folder `'../scripts/'`
+
+```
+cd scripts/
+georb_data_models
+```
+
+3. Satellite Missions data are required when operating in the `'orbit missions mode'` and other modes related to missions. 
+
+The current release supports the GRACE missions.
+
+Download the data of the GRACE Follow-On and GRACE missions from the official data centers servers: 
+
+JPL/NASA: https://podaac.jpl.nasa.gov/GRACE-FO
+
+GFZ: https://isdc.gfz-potsdam.de/grace-fo-isdc/
+
+
+4. Execute the main script `georb_main.m` in the folder `'../main/'` 
+
+```
+cd main/
+georb_main
+```
+
+5. The computed restuls are written to output data (ascii) files saved in the folder `'../data_output/'`
+
+
+# 
+
+
+---
+## References:
 
 Papanikolaou T. (2012). Dynamic modelling of satellite orbits in the frame of contemporary satellite geodesy missions, Ph.D. Dissertation, Aristotle University of Thessaloniki (AUTH), Greece.
 
