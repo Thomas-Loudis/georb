@@ -1,0 +1,433 @@
+---------------------------------------------------------------------------
+Orbit modelling configutation file *.in                                      
+---------------------------------------------------------------------------
+
+---------------------------------------------------------------------------
+% Orbit mode options:
+- 'orbit_determination'   : Dynamic Orbit Determination (orbit integration and parameter estimation)
+- 'orbit_propagation_eqm' : Orbit propagation (Integration solution of Equation of Motion)
+- 'orbit_propagation_veq' : Orbit propagation (Integration solution of Equation of Motion and Variational Equations)
+
+orbit_mode                orbit_propagation_eqm
+---------------------------------------------------------------------------
+
+% Comment: 
+% If 'orbit_propagation_eqm' is selected, then ignore the following parameters refer to VEQ (Variational Equations)
+
+---------------------------------------------------------------------------
+% Orbit arc length in hours
+Orbit_arc_length           5400
+---------------------------------------------------------------------------
+
+---------------------------------------------------------------------------
+Earth Orientation modelling 
+---------------------------------------------------------------------------
+% Earth Orientation Parameters (EOP) file name
+EOP_filename               eopc04_IAU2000.62-now
+
+% EOP number of data points (epochs) for Lagrange interpolation
+EOP_interpolation_points   4
+
+% Precession-Nutation model by IAU
+- 'IAU2000A' :: IAU2000A model
+- 'IAU2006'  :: IAU2006/2000A model
+precession_nutation_model    IAU2000A
+---------------------------------------------------------------------------
+
+---------------------------------------------------------------------------
+Numerical Integration Methods
+---------------------------------------------------------------------------
+% Numerical integration methods
+% Runge-Kutta-Nystrom methods:
+- 'RKN-768' :: Runge-Kutta-Nystrom RKN7(6)-8 method by Dormand & Prince(1987)
+- 'RKN-654' :: Runge-Kutta-Nystrom RKN6(4)-6FD method by Dormand & Prince(1978)
+% Multistep methods:
+- 'Adams-Bashforth'         :: predictor mode 
+- 'Adams-Bashforth-Moulton' :: predictor-corrector mode
+- 'Gauss-Jackson'           :: Gauss Jackson method (predictor mode)
+- 'Gauss-Jackson-pece'      :: Gauss Jackson method inclduing the predictor-corrector step    
+
+Integration_method        Gauss-Jackson
+
+% Integration step size in seconds
+Stepsize                  10
+---------------------------------------------------------------------------
+Multistep methods parameters (in case of Gauss-Jackson and Adams-Bashforth methods) 
+
+% Order of Multistep methods
+integrator_order_multistep    12
+
+% Start integrator for the initial epochs required by the multistep integrator
+Start_integrator          RKN-768
+---------------------------------------------------------------------------
+RKN6(4)-6FD Runge-Kutta-Nystrom method parameters (optional) :: 
+RKN_lamda_coefficient     0.01
+RKN_interpolation_sigma   0.5
+---------------------------------------------------------------------------
+
+
+Explanatory comment: 
+'y' : included, 'n' : excluded
+
+---------------------------------------------------------------------------
+Orbital Dynamics
+---------------------------------------------------------------------------
+
+---------------------------------------------------------------------------
+Gravitational effects
+---------------------------------------------------------------------------
+Earth_Gravity_Field       y   
+3rd_body_peturbations     y   
+Tides_effects             y
+Relativity_effects        y  
+
+---------------------------------------------------------------------------
+% Earth Gravity Field
+---------------------------------------------------------------------------
+% Gravity field terms to be considered:
+- 'central'        : Central term only (GM)
+- 'static'         : Higher terms of geopotential included up to truncated degree/order of the input gravity model
+- 'time-variable'  : Time-variable geopotential coeffcients are considered based on the input gravity model
+
+%Gravity_field_terms       static
+Gravity_field_terms       time-variable
+
+
+% Gravity Field model 
+% Model file name in .gfc format (Spherical harmonic coefficients)
+gravity_model_fname       GOCO06s.gfc 
+
+% Gravity model's degree and order (truncation value of harmonics series expansion)
+gravity_model_degree      200          
+gravity_model_order       200
+
+% Variational Equations: Gravity model's degree and order
+veq_gravity_model_degree        30          
+veq_gravity_model_order         30
+---------------------------------------------------------------------------
+
+---------------------------------------------------------------------------
+Sun, Moon and Planets orbtial perturbations
+---------------------------------------------------------------------------
+% Planetary/lunar ephemeris DE series main file name
+planetary_ephemeris_DE_filename    ascp2000.423
+
+% DE ephemeris header file name
+planetary_ephemeris_DE_headername  header.423
+---------------------------------------------------------------------------
+
+---------------------------------------------------------------------------
+Tides modelling   
+---------------------------------------------------------------------------
+% Solid Earth Tides
+
+% Frequency indepedent terms
+solid_earth_tides_1_non_freq    y    
+
+% Frequency dependent terms
+solid_earth_tides_2_freq        y   
+---------------------------------------------------------------------------
+% Ocean Tides
+ocean_tides                     y    
+---------------------------------------------------------------------------
+% Atmospheric Tides (Based on AOD1B data)
+atm_tides                       n    
+---------------------------------------------------------------------------
+% Solid Earth Pole Tide
+solid_earth_pole_tide           y    
+
+% Ocean Pole Tide
+ocean_pole_tide                 y    
+---------------------------------------------------------------------------
+
+% Ocean Tides model file name (format of spherical harmonic coefficients)
+ocean_tides_model_fname         fes2004_Cnm-Snm.dat
+
+% Ocean Tides model degree and order (truncation value)
+% Set to 'model_max' to select the model's maximum degree/order 
+ocean_tides_degree              100 
+ocean_tides_order               100 
+
+% Variational Equations: Ocean Tides model's degree and order
+veq_ocean_tides_degree          30          
+veq_ocean_tides_order           30                                       
+---------------------------------------------------------------------------
+
+% Atmospheric Tides data level name
+atm_tides_data_level            AOD1B
+
+% Atmospheric Tides data release
+atm_tides_data_release          06
+
+% Atmospheric Tides model degree and order (truncation value)
+% Set to 'model_max' to select the model's maximum degree/order 
+atm_tides_degree                180 
+---------------------------------------------------------------------------
+
+---------------------------------------------------------------------------
+Atmosphere and Ocean De-Aliasing (AOD) effects   
+---------------------------------------------------------------------------
+% AOD effects included/excluded: y/n
+aod_effects               n
+
+% AOD data level name
+aod_data_level                  AOD1B
+
+% AOD data release
+aod_data_release                06
+
+% AOD data type effect ID : Select one effect ID
+- ATM
+- OCN
+- GLO
+- OBA
+aod_effect_data_type      GLO
+
+% AOD degree and order (truncation value)
+AOD_degree_max            180
+---------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------
+Relativity Effects
+---------------------------------------------------------------------------
+Schwarzschild_effect      y
+Lense_Thirring_effect     y 
+% de Sitter 
+geodesic_effect           y                                            
+
+% Parametirised Post-Newtonian values
+PPN_beta_parameter        1
+PPN_gama_parameter        1            
+
+% Speed of Light in m/sec                                  
+C_speed_of_light          299792458                                                  
+---------------------------------------------------------------------------
+
+% End of Gravitational effects
+
+
+---------------------------------------------------------------------------
+% Non-Gravitational effects
+---------------------------------------------------------------------------
+non_gravitational_forces        y                                                
+
+
+---------------------------------------------------------------------------
+Accelerometer data and calibration modelling 
+---------------------------------------------------------------------------
+% Accelerometer data use
+acc_data                  n 
+
+% Accelerometer Calibration parameters estimation
+acc_cal_paramestim        n 
+
+---------------------------------------------------------------------------
+Accelerometer data
+---------------------------------------------------------------------------
+% Accelerometer data level name
+acc_data_level                  ACT1B
+
+% Accelerometer data release
+acc_data_release                04
+
+% Accelerometer data: Interpolator number of points 
+accelerometer_interp_no         4
+
+---------------------------------------------------------------------------
+Star Camera data 
+---------------------------------------------------------------------------
+% Star Camera data level name
+sca_data_level                  SCA1B
+
+% Star Camera data release
+sca_data_release                04
+
+% Star Camera data: Interpolator number of points 
+star_camera_interp_no     4
+
+---------------------------------------------------------------------------
+Accelerometers Calibration modelling
+---------------------------------------------------------------------------
+% Accelerometry Bias parameters
+acc_cal_bias              y 
+
+% Bias drift 1st order
+acc_cal_bias_drift_1      n 
+
+% Bias drift 2nd order
+acc_cal_bias_drift_2      n 
+
+% Scale Matrix
+- 'diagonal'  : 3 parameters
+- 'semi-full' : 6 parameters
+- 'full'      : 9 parameters
+
+acc_cal_scale             full
+---------------------------------------------------------------------------
+
+
+% End of Non-Gravitational effects
+
+
+---------------------------------------------------------------------------
+Empirical Forces (Cycle per revolution terms)
+---------------------------------------------------------------------------
+empirical_forces         n   
+
+% Reference Frame of empirical acceleration
+- 'orbital_frame' :: Orbital reference frame (radial,along-track,cross-track)
+- 'inertial'      :: Inertial reference frame (X,Y,Z)
+- 'srf_frame'     :: Spacecraft reference frame 
+
+empirical_frame           orbital_frame
+
+% Bias empirical accelerations per axis
+empirical_bias_axis1      n
+empirical_bias_axis2      n
+empirical_bias_axis3      n
+
+% Cycle per revolution (CPR) terms: Cosine (C) and Sine (S) coefficients 
+% CPR per axis
+cpr_C_axis1       n
+cpr_S_axis1       n
+
+cpr_C_axis2       y
+cpr_S_axis2       y
+
+cpr_C_axis3       y
+cpr_S_axis3       y
+
+% Number of cycles per revolution (once, twice, n per revolution)
+cpr_freq_number           1
+---------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------
+% Empirical Accelerations :: Piecewise Accelerations and Pulses
+---------------------------------------------------------------------------
+% Empirical accelerations estimation (on/off: y/n)
+PULSES_estim_yn           n
+
+% Empirical/Stochastic parameters type: 
+- 'stoch_pulses'          : Pulses as instanteous velocity vector changes at predefined epochs
+- 'stoch_accel_constant'  : Piecewise constant accelerations at predefined epochs 
+stoch_param_type          stoch_accel_constant      
+
+
+% Step interval (seconds)
+PULSES_interval           5400
+
+% Acceleration duration (seconds)
+stoch_time_interval       900
+
+
+% Time offset (seconds)
+PULSES_offset             5400
+
+% Reference Frame of pulses 
+- 'orbital_frame' :: Orbital reference frame (radial,along-track,cross-track)
+- 'inertial'      :: Inertial reference frame (X,Y,Z)
+- 'srf_frame'     :: Spacecraft reference frame 
+
+PULSES_frame              srf_frame
+
+% Axes components included (e.g. radial/tangential/normal, X/Y/Z)
+% Axis 1 (radial, X)
+PULSES_axis_1             1
+
+% Pulses direction 2 (tangential, Y)
+PULSES_axis_2             1
+
+% Pulses direction 3 (normal, Z)
+PULSES_axis_3             1
+---------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------
+Observations model 
+---------------------------------------------------------------------------
+Pseudo-Observations based on kinematic orbit data
+% Options:
+- 'gnv1b'         : GRACE mission GNV1b orbit data format 
+- 'itsg_kin'      : Kinematic Orbit data products format by ITSG at TU Graz  
+- 'georb'         : Internal orbit data format of GEORB software
+- 'kepler'        : Kepler orbit :: "Status: Not supported by current version"
+
+pseudo_obs_type           itsg_kin  
+
+% Pseudo-observations outliers filter y/n: 
+obs_outliers_yn           y 
+
+% Pseudo-observations outliers threshold (in cm) 
+pseudo_obs_sigma          2
+
+% Covariance matrix of pseudo-observations orbit data :: "Status: Not supported by current version"
+% 'identity', 'diagonal', 'full' 
+cov_pseudo_obs_data       identity 
+---------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------
+Parameter Estimator                                                               
+---------------------------------------------------------------------------
+% Number of iterations of parameter estimation algorithm
+estimator_iterations      1                                              
+---------------------------------------------------------------------------
+
+---------------------------------------------------------------------------
+External Orbit Comparison
+---------------------------------------------------------------------------
+% External orbit data file name (Data file names via satellite data list file)
+
+% Condition of applying or not the external orbit comparison ('y' or 'n')
+external_orbit_comp            n
+
+% External Orbit data format:
+% Options:
+- 'gnv1b'         : GRACE mission GNV1b orbit data format 
+- 'georb'         : Internal orbit data format of GEORB software
+- 'kepler'        : Kepler orbit :: "Status: Not supported by current version"
+
+external_orbit_type            gnv1b 
+---------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------
+Inter-satellite ranging observations :: "Status: in-progress; Not supported by current version"
+---------------------------------------------------------------------------
+% GRACE & GRACE-FO missions
+
+% K-Band Ranging instrument data
+% KBR use as observations within orbit parameter estimation 
+KBR_obs_estim             n
+KBR_obs_range             n
+KBR_obs_rangerate         y
+
+% Laser Ranging Instrument data
+% LRI use as observations within orbit parameter estimation
+LRI_obs_estim             n
+LRI_obs_range             n
+LRI_obs_rangerate         y
+---------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------
+Orbit Design of mission based on intersatellite baseline formation (GRACE-like missions)
+---------------------------------------------------------------------------
+"Status: in-progress; Not supported by current version"
+
+Set the variables below only in the case of the orbit design mode (if 'georb_mode' is set to 'orbit_design' within the master configuration file)
+
+% Baseline Lenght in Km
+baseline_length           200
+
+% Constraints in orbit simulation of 
+range_constraint          n
+range_rate_constraint     n
+along_constraint          n
+cross_constraint          n
+---------------------------------------------------------------------------
