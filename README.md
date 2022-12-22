@@ -45,25 +45,28 @@ edit ic_config.in
 cd ..
 ```
 
-2. Download the models' data required by executing the script file `georb_data_models.m` stored in the folder `'../scripts/'`
+2. Download the models' data required by executing the script file `georb_data_models.m` stored in the folder `'../scripts/'`. The data will be save in the folder `'../data/'`.
 
 ```
 cd scripts/
 georb_data_models
 ```
 
-3. Satellite Missions data are required when operating in the `'orbit missions mode'` and other modes related to missions. 
+3. Satellite Missions data are required when operating in the `'orbit missions mode'` and other modes requiring satellite data.
+
 
 The current release supports the GRACE missions.
 
-Download the data of the GRACE Follow-On and GRACE missions from the official data centers servers: 
+Data of the GRACE Follow-On and GRACE missions can be accessed from the official data centers servers as follows: 
 
 JPL/NASA: https://podaac.jpl.nasa.gov/GRACE-FO
 
 GFZ: https://isdc.gfz-potsdam.de/grace-fo-isdc/
 
+The GRACE/GRACE-FO data need to be stored in the folder `'../data/'` 
+ 
 
-4. Execute the main script `georb_main.m` in the folder `'../main/'` 
+4. Execute the GEORB main script `georb_main.m` in the folder `'../main/'` 
 
 ```
 cd main/
