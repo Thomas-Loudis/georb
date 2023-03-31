@@ -15,7 +15,7 @@ GEORB has been used in orbit determination of the Gravity Recovery And Climate E
 ---
 ## Cite GEORB: 
 
-Thomas Loudis Papanikolaou (2023). GEORB: Release for precise orbit determination of low Earth orbiters and satellite gravity missions, *Software Impacts*, doi: https://doi.org/10.1016/j.simpa.2023.100502. 
+Thomas Loudis Papanikolaou (2023). GEORB: Release for precise orbit determination of low Earth orbiters and satellite gravity missions, *Software Impacts*, doi: [https://doi.org/10.1016/j.simpa.2023.100502](https://www.sciencedirect.com/science/article/pii/S2665963823000398). 
 
 
 ---
