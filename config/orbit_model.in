@@ -15,7 +15,7 @@ orbit_mode                orbit_propagation_eqm
 % If 'orbit_propagation_eqm' is selected, then ignore the following parameters refer to VEQ (Variational Equations)
 
 ---------------------------------------------------------------------------
-% Orbit arc length in hours
+% Orbit arc length in seconds
 Orbit_arc_length           5400
 ---------------------------------------------------------------------------
 
