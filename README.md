@@ -9,7 +9,7 @@ GEORB is a software package for Precise Orbit Determination (POD) of Low Earth O
 
 GEORB has been released as open source in 2022 while it has been developed by Thomas since 2007. 
 
-GEORB has been used in orbit determination of the Gravity Recovery And Climate Experiment (GRACE), GRACE Follow-On (GRACE-FO) and Gravity Field and Steady-State Ocean Circulation (GOCE) missions. The current released version focuses on the POD and accelerometer calibration of the GRACE Follow-On mission.
+GEORB' current release delivers data products of precise orbtis, calibrated acceleromer data and gravity field models of the Gravity Recovery And Climate Experiment (GRACE) and GRACE Follow-On (GRACE-FO) missions. 
  
 
 ---
