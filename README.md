@@ -17,6 +17,13 @@ GEORB' current release delivers data products of precise orbtis, calibrated acce
 
 Thomas Loudis Papanikolaou (2023). GEORB: Release for precise orbit determination of low Earth orbiters and satellite gravity missions, *Software Impacts*, doi: [https://doi.org/10.1016/j.simpa.2023.100502](https://www.sciencedirect.com/science/article/pii/S2665963823000398). 
 
+---
+## Data Products: 
+
+Thomas Loudis Papanikolaou (2023b). Precise orbit data and Gravity field models for GRACE Follow-On mission. VBN. doi: [https://doi.org/10.5278/8b4d5e8d-0010-4461-a58e-b5b39637bd51](https://doi.org/10.5278/8b4d5e8d-0010-4461-a58e-b5b39637bd51)
+
+Thomas Loudis Papanikolaou (2023c). DORUS time-variable gravity field models. VBN. doi: [https://doi.org/10.5278/b9644d2d-697f-4b73-bf73-c79582e6572b](https://doi.org/10.5278/b9644d2d-697f-4b73-bf73-c79582e6572b)
+
 
 ---
 ## Guide: Instructions for configuration and data requirements
