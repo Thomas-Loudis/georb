@@ -5,11 +5,17 @@
 
 # Gravity and precisE ORBit determination system
   
-GEORB is a software package for Precise Orbit Determination (POD) of Low Earth Orbiters (LEOs), gravity field recovery based on satellite gravity missions and design of future space missions. 
+GEORB is a software package for Precise Orbit Determination (POD) of Low Earth Orbiters (LEOs) and satellite gravity missions, gravity field recovery and design of future space missions. 
 
-GEORB has been released as open source in 2022 while it has been developed by Thomas since 2007. 
+Released as open source in 2022 while it has been developed by Thomas since 2007. 
 
-GEORB' current release delivers data products of precise orbtis, calibrated acceleromer data and gravity field models for the Gravity Recovery And Climate Experiment (GRACE) and GRACE Follow-On (GRACE-FO) missions. 
+GEORB has supported the Gravity Recovery And Climate Experiment (GRACE), and Gravity Field and Steady-State Ocean Circulation (GOCE) missions. The current release delivers data products of precise orbits, calibrated accelerometer data and gravity field models for the GRACE Follow-On mission launched by NASA and GFZ in 2018. 
+
+Data Products (major):
+
+- Precise Orbit data
+- Gravity Field models
+- Calibration of on-board accelerometer data 
  
 
 ---
