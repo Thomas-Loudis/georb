@@ -1,4 +1,4 @@
-![georb_logo_v7](https://user-images.githubusercontent.com/102968112/182955140-320d8bae-7220-4e0c-8c9d-60481c1ce031.png)
+![GEORB Logo @thomaspap](https://thomaspap.com/georb_logo_thomaspap.jpg)
 
 
 # 
