@@ -1,4 +1,4 @@
-![GEORB Logo @thomaspap](https://thomaspap.com/GEORB_logo_bw.png)
+![GEORB Logo @thomaspap](https://thomaspap.com/GEORB_logo_bw2024.png)
 
 
 # 
