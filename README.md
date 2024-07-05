@@ -1,5 +1,4 @@
-![GEORB Logo @thomaspap](https://thomaspap.com/GEORB_logo_bw2024.png)
-
+![GEORB_logo_bbw_2024](https://github.com/Thomas-Loudis/georb/assets/102968112/17c74208-7d07-4549-9024-de82b546dc69)
 
 # 
 
