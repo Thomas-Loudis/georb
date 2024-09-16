@@ -8,7 +8,7 @@
 
 GEORB was created by Dr. [Thomas Loudis Papanikolaou](https://thomaspap.com) as a long-term project, initiated in 2007 and released as open source in 2022. It is designed as a versatile tool to support academic research in satellite geodesy and orbital mechanics, as well as industrial applications in Earth observation and space exploration.
 
-GEORB specialises in data analysis of satellite gravity missions and simulation of future space gravity missions, supporting revolutionary missions such as the Gravity Recovery And Climate Experiment (GRACE), and Gravity Field and Steady-State Ocean Circulation (GOCE) missions. The current release delivers data products of precise orbits, calibrated accelerometer data and time-variable gravity field models for the NASA/GFZ’ GRACE Follow-On mission. 
+GEORB specialises in data analysis of satellite gravity missions and simulation of future space gravity missions, supporting revolutionary missions such as the [Gravity Recovery And Climate Experiment (GRACE)](https://www.jpl.nasa.gov/missions/gravity-recovery-and-climate-experiment-grace), and [Gravity Field and Steady-State Ocean Circulation (GOCE)](https://earth.esa.int/eogateway/missions/goce) missions. The current release delivers data products of precise orbits, calibrated accelerometer data and time-variable gravity field models for the NASA/GFZ’ [GRACE Follow-On](https://www.jpl.nasa.gov/missions/gravity-recovery-and-climate-experiment-follow-on-grace-fo) mission. 
 
 Data Products (major):
 - Precise Orbit data
