@@ -43,13 +43,19 @@ function [Va] = gauss_jackson_int(zo,a,g,d,MSparam)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Backwards Differences of acceleration ao
-[N1 Na] = size(a);
-clear N1
+[N1, Na] = size(a);
+%clear N1
+
+% Va = zeros(Na,N1);
 for i = 1 : Na
     [Vai] = backdiff(a(:,i));
+    if i == 1
+        [k1, k2] = size(Vai);
+        Va = zeros(Na,k2);
+    end
     Va(i,:) = Vai;
 end
-clear i
+% clear i
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,4 +1,4 @@
-function [accel_vec, partials_r, partials_p] = force_empaccel(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config)
+function [accel_vec, partials_r, partials_p] = force_empaccel(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -31,7 +31,7 @@ function [accel_vec, partials_r, partials_p] = force_empaccel(mjd,Z_crs,Rtrs2crs
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-global pulses_stoch_accel_glob 
+pulses_stoch_accel_glob = orbit_model_struct.empirical_forces_pulses;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Equations mode: EQM or VEQ
@@ -64,7 +64,7 @@ if test == 1
     N_param_pulses     = pulses_accel_struct.parameters_number;
     accel_duration     = pulses_accel_struct.duration;
     emp_accel_type = pulses_accel_struct.parameters_type;
-    [f_pulses, PD_pulses_param, PD_pulses_r, PD_pulses_v] = stoch_accel(rGCRS, vGCRS, mjd, Sec_00, accel_duration, pulses_matrix, pulses_axes_vec_01, N_param_pulses,emp_accel_type);
+    [f_pulses, PD_pulses_param, PD_pulses_r, PD_pulses_v] = stoch_accel(rGCRS, vGCRS, mjd, Sec_00, accel_duration, pulses_matrix, pulses_axes_vec_01, N_param_pulses,emp_accel_type, orbit_model_struct);
 else    
     f_pulses = [0 0 0]';
     PD_pulses_r = zeros(3,3);

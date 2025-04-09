@@ -1,4 +1,4 @@
-function [rgith,vgith] = dexxxeph_bcs2gcs(zbith,zbEMB,zgM,HDfilename)
+function [rgith,vgith] = dexxxeph_bcs2gcs(zbith,zbEMB,zgM, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -29,7 +29,13 @@ function [rgith,vgith] = dexxxeph_bcs2gcs(zbith,zbEMB,zgM,HDfilename)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Finding Earth-Moon masses ratio according to the DExxx constants
-[GMconstant,AU,emrat,deformat,deperiod] = dexxxeph_readhd(HDfilename);
+%[GMconstant,AU,emrat,deformat,deperiod] = dexxxeph_readhd(HDfilename);
+% Forces model settings matrix
+planets_struct = orbit_model_struct.planets;
+
+% GMconstant = planets_struct.DE_GMconstant;
+% AU = planets_struct.DE_AU;
+emrat = planets_struct.DE_EMRAT;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

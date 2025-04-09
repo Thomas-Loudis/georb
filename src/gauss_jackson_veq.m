@@ -55,6 +55,7 @@ function [veqZ] = gauss_jackson_veq(V_veqZr_dv2,g,d,MSparam)
 % veqZr array
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [sz1 sz2 sz3] = size(V_veqZr_dv2);
+sumV_array = zeros(sz1,sz2);
 for i1 = 1 : sz1
     for i2 = 1 : sz2
         sumV_veqZr_dv2 = 0;
@@ -65,11 +66,12 @@ for i1 = 1 : sz1
     end
 end
 veqZr = MSparam(3,1)^2 * sumV_array;
-clear sz1 sz2 sz3 i1 i2 i3 sumV_veqZr_dv2 sumV_array
+% clear sz1 sz2 sz3 i1 i2 i3 sumV_veqZr_dv2 sumV_array
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % veqZv array
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [sz1 sz2 sz3] = size(V_veqZr_dv2);
+sumV_array = zeros(sz1,sz2);
 for i1 = 1 : sz1
     for i2 = 1 : sz2
         sumV_veqZr_dv2 = 0;
@@ -80,7 +82,7 @@ for i1 = 1 : sz1
     end
 end
 veqZv = MSparam(3,1) * sumV_array;
-clear sz1 sz2 sz3 i1 i2 i3 sumV_veqZr_dv2 sumV_array
+% clear sz1 sz2 sz3 i1 i2 i3 sumV_veqZr_dv2 sumV_array
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

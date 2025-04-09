@@ -77,7 +77,13 @@ if test_keyword == 1
     mission_test = 'GRACE';
     test_mission_keyword = strcmp(mission_name, mission_test);
     if test_mission_keyword == 1
-        dataformat_suffix = '.asc';
+        test_datarelease_ver_keyword = strcmp(datarelease_ver, '01');
+        if test_datarelease_ver_keyword == 1
+            % Release 1
+            dataformat_suffix = '.asc';
+        else
+            dataformat_suffix = '.txt';
+        end
     end
     Nchar = length(orbiting_object_name);
     id_letter = orbiting_object_name(Nchar);
@@ -103,7 +109,13 @@ if test_keyword == 1
     mission_test = 'GRACE';
     test_mission_keyword = strcmp(mission_name, mission_test);
     if test_mission_keyword == 1
-        dataformat_suffix = '.asc';
+        test_datarelease_ver_keyword = strcmp(datarelease_ver, '01');
+        if test_datarelease_ver_keyword == 1
+            % Release 1
+            dataformat_suffix = '.asc';
+        else
+            dataformat_suffix = '.txt';
+        end
     end
     Nchar = length(orbiting_object_name);
     id_letter = orbiting_object_name(Nchar);
@@ -129,7 +141,13 @@ if test_keyword == 1
     mission_test = 'GRACE';
     test_mission_keyword = strcmp(mission_name, mission_test);
     if test_mission_keyword == 1
-        dataformat_suffix = '.asc';
+        test_datarelease_ver_keyword = strcmp(datarelease_ver, '01');
+        if test_datarelease_ver_keyword == 1
+            % Release 1
+            dataformat_suffix = '.asc';
+        else
+            dataformat_suffix = '.txt';
+        end
     end
     Nchar = length(orbiting_object_name);
     id_letter = orbiting_object_name(Nchar);
@@ -155,7 +173,13 @@ if test_keyword == 1
     mission_test = 'GRACE';
     test_mission_keyword = strcmp(mission_name, mission_test);
     if test_mission_keyword == 1
-        dataformat_suffix = '.asc';
+        test_datarelease_ver_keyword = strcmp(datarelease_ver, '01');
+        if test_datarelease_ver_keyword == 1
+            % Release 1
+            dataformat_suffix = '.asc';
+        else
+            dataformat_suffix = '.txt';
+        end
     end
     Nchar = length(orbiting_object_name);
     id_letter = orbiting_object_name(Nchar);
@@ -173,7 +197,7 @@ end
 data_keyword = 'AOD1B';
 test_keyword = strcmp(datalevel_name,data_keyword);
 if test_keyword == 1
-    dataformat_suffix  = '.asc';
+    dataformat_suffix = '.asc';
     release_ver = datarelease_ver;
     format_ext  = dataformat_suffix;
     id_letter = 'X';
@@ -198,7 +222,13 @@ if test_keyword == 1
     mission_test = 'GRACE';
     test_mission_keyword = strcmp(mission_name, mission_test);
     if test_mission_keyword == 1
-        dataformat_suffix = '.asc';
+        test_datarelease_ver_keyword = strcmp(datarelease_ver, '01');
+        if test_datarelease_ver_keyword == 1
+            % Release 1
+            dataformat_suffix = '.asc';
+        else
+            dataformat_suffix = '.txt';
+        end
         id_letter = 'X';
     end
     release_ver = datarelease_ver;
@@ -251,9 +281,40 @@ if test_keyword == 1
             satellite_name_data = 'GRACEFO-2';
         end
     end
+    mission_test = 'GRACE';
+    test_mission_keyword = strcmp(mission_name, mission_test);
+    if test_mission_keyword == 1
+        dataformat_suffix = '.txt';
+        sat_id_keyword = 'GRACE-A';
+        test_keyword_satellite = strcmp(orbiting_object_name,sat_id_keyword);
+        if test_keyword_satellite == 1
+            satellite_name_data = 'GRACE-1';
+        end
+        sat_id_keyword = 'GRACE-B';
+        test_keyword_satellite = strcmp(orbiting_object_name,sat_id_keyword);
+        if test_keyword_satellite == 1
+            satellite_name_data = 'GRACE-2';
+        end
+    end    
     format_ext  = dataformat_suffix;
     % Data file name considering format name conventions
     data_filename = sprintf('%s%1c%s%1c%d%1c%s%1c%s%1c%s', satellite_name_data,'_',data_keyword,'_',year,'-',fname_month,'-',fname_day,format_ext);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% GEORB: Orbit Data
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% GRACE-C_59412_orbit_crf.orb
+data_keyword = 'GEORB_orbit';
+test_keyword = strcmp(datalevel_name,data_keyword);
+if test_keyword == 1
+    satellite_name_data = orbiting_object_name;
+    dataformat_suffix = '.orb';
+    format_ext  = dataformat_suffix;
+    % Data file name considering format name conventions
+    %data_filename = sprintf('%s%1c%d%1c%s%s', satellite_name_data,'_',fix(MJD_day),'_','orbit_crf',format_ext);
+    data_filename = sprintf('%s%1c%d%1c%s%s', satellite_name_data,'_',fix(MJD_day),'_','orbit_trf',format_ext);
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

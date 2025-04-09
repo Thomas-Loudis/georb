@@ -1,4 +1,4 @@
-function [accel_bodies, accel_indirectJ2, partials_r, Moon_Z_crs, Sun_Z_crs, GM_Moon,GM_Sun] = force_planets(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config, GM_Earth, radius_Earth, C20)
+function [accel_bodies, accel_indirectJ2, partials_r, Moon_Z_crs, Sun_Z_crs, GM_Moon,GM_Sun] = force_planets(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config, GM_Earth, radius_Earth, C20, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -32,7 +32,8 @@ function [accel_bodies, accel_indirectJ2, partials_r, Moon_Z_crs, Sun_Z_crs, GM_
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-global planets_glob 
+% Forces model settings matrix
+planets_glob = orbit_model_struct.planets;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Equations mode: EQM or VEQ
@@ -71,44 +72,55 @@ if test_planets == 1 || test_tides == 1
     DExxxfilename = planets_struct.ephemeris_filename;
     DEcheby  = planets_struct.DE_chebyshev;
     DErecord = planets_struct.DE_datarecords;
+    DE_format = planets_struct.DE_format;
+    DE_datarec_period = planets_struct.DE_datarec_period;
+    GMconstant = planets_struct.DE_GMconstant;
+    AU = planets_struct.DE_AU;
+    EMRAT = planets_struct.DE_EMRAT;
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    deln = length(DExxxfilename);
+    HDxxxfilename = ['header.' DExxxfilename(deln-2:deln)];
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % DExxx Reading :
     % 1. DE files (DE data and Header) or
-    % 2. global matrices "DEcheby" "DErecord"
+    % 2. Matrices "DEcheby" "DErecord"
     % Select : 1    
     if jd > DErecord(3,1) || jd < DErecord(2,1)
-        [DEcheby,DErecord,deformat] = dexxxeph_read(DEfilename,HDfilename,jd);    
+        [DEcheby,DErecord,deformat] = dexxxeph_read(DExxxfilename,HDxxxfilename,jd);    
         planets_glob.DE_chebyshev = DEcheby;
         planets_glob.DE_datarecords = DErecord;
     end
     % Select : 2
-    deln = length(DExxxfilename);
-    HDxxxfilename = ['header.' DExxxfilename(deln-2:deln)];
+    % deln = length(DExxxfilename);
+    % HDxxxfilename = ['header.' DExxxfilename(deln-2:deln)];
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Sun and Moon Geocentric coordinates
-    [rgMoon,vgMoon] = dexxxeph_stategcrf(10,jd,HDxxxfilename,DEcheby,DErecord);
-    [rgSun,vgSun] = dexxxeph_stategcrf(11,jd,HDxxxfilename,DEcheby,DErecord);
+    [rgMoon,vgMoon] = dexxxeph_stategcrf(10,jd,HDxxxfilename,DEcheby,DErecord, orbit_model_struct);
+    [rgSun,vgSun] = dexxxeph_stategcrf(11,jd,HDxxxfilename,DEcheby,DErecord, orbit_model_struct);
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Sun Velocity : Relativistic corrections
-    JD2 = jd + 1 / (24*3600);
-    [rgSun2,vgSun2] = dexxxeph_stategcrf(11,JD2,HDxxxfilename,DEcheby,DErecord);
-    VgSun_dfr = (rgSun2 - rgSun) / 1;
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Body-Fixed positions of Sun and Moon (Transformation : GCRS to ITRS) 
     rgMoon_ITRS = (eopmatrix)' * rgMoon;
     rgSun_ITRS = (eopmatrix)' * rgSun;
     % GM of Sun & Moon in m^3/sec^2 (converted from au^3/d^2 to m^3/sec^2)
-    [GMconstant] = dexxxeph_readhd(HDxxxfilename,GM_Earth);
+    %[GMconstant] = dexxxeph_readhd(HDxxxfilename,GM_Earth);
     GMmoon = GMconstant(10,1);
     GMsun  = GMconstant(11,1);
+else
+    rgMoon = [0; 0; 0];
+    vgMoon = [0; 0; 0];
+    rgSun  = [0; 0; 0];
+    vgSun  = [0; 0; 0];
+    GMmoon = 0;
+    GMsun  = 0;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Sun, Moon and Planets 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -129,10 +141,10 @@ if test == 1
                 rg3rd_meter = rgSun;
             else                
                 % Celestial body's state vector
-                [rg3rd_meter,vg3rd_meter] = dexxxeph_stategcrf(body_ith,jd,HDxxxfilename,DEcheby,DErecord);
+                [rg3rd_meter,vg3rd_meter] = dexxxeph_stategcrf(body_ith,jd,HDxxxfilename,DEcheby,DErecord, orbit_model_struct);
             end
             % GMbody in m^3/sec^2 (converted from au^3/d^2 to m^3/sec^2)
-            [GMconstant] = dexxxeph_readhd(HDxxxfilename);
+            %[GMconstant] = dexxxeph_readhd(HDxxxfilename);
             GMbody = GMconstant(body_ith,1);
             % Perturbing acceleration
             [abody_x,abody_y,abody_z] = accel_gm3rd(rg3rd_meter,rGCRS,GMbody);

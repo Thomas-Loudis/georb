@@ -50,7 +50,9 @@ veqZv = veqZo(4:6,:);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Backwards Differences of veqZr_dv2 (3D array)
-[sz1 sz2 sz3] = size(veqZr_dv2);
+[sz1, sz2, sz3] = size(veqZr_dv2);
+V_veqZr_dv2 = zeros(sz1,sz2,sz3);
+veqZr_dv2_i1i2 = zeros(sz3,1);
 for i1 = 1 : sz1
     for i2 = 1 : sz2
         jrun = 0;
@@ -58,17 +60,17 @@ for i1 = 1 : sz1
             jrun = jrun + 1;
             veqZr_dv2_i1i2(jrun,1) = veqZr_dv2(i1,i2,i3);
         end
-        clear i3 jrun
+        % clear i3 jrun
         % veqZr_dv2_i1i2   : column matrix
         % V_veqZr_dv2_i1i2 : row matrix
         [V_veqZr_dv2_i1i2] = backdiff(veqZr_dv2_i1i2);
         for i3 = 1 : sz3
             V_veqZr_dv2(i1,i2,i3) = V_veqZr_dv2_i1i2(1,i3);
         end       
-        clear i3 V_veqZr_dv2_i1i2 veqZr_dv2_i1i2
+        % clear i3 V_veqZr_dv2_i1i2 veqZr_dv2_i1i2
     end
 end
-clear i1 i2 i3 sz1 sz2 sz3
+% clear i1 i2 i3 sz1 sz2 sz3
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -76,7 +78,8 @@ clear i1 i2 i3 sz1 sz2 sz3
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  V(^-1)ao
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[sz1 sz2 sz3] = size(V_veqZr_dv2);
+[sz1, sz2, sz3] = size(V_veqZr_dv2);
+sum_V1_veqZr_dv2 = zeros(sz1,sz2);
 for i1 = 1 : sz1
     for i2 = 1 : sz2
         sum_V1 = 0;
@@ -86,13 +89,14 @@ for i1 = 1 : sz1
         sum_V1_veqZr_dv2(i1,i2) = sum_V1;
     end 
 end
-clear j sz1 sz2 sz3
+% clear j sz1 sz2 sz3
 V1_veqZr_dv2 = (1 / MSparam(3,1)) * veqZv - sum_V1_veqZr_dv2;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  V(^-2)ao
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sum_V2_d1 = d(1,1+1) * V1_veqZr_dv2;
-[sz1 sz2 sz3] = size(V_veqZr_dv2);
+[sz1, sz2, sz3] = size(V_veqZr_dv2);
+sum_V2_veqZr_dv2 = zeros(sz1,sz2);
 for i1 = 1 : sz1
     for i2 = 1 : sz2
         sum_V2 = 0;
@@ -102,7 +106,7 @@ for i1 = 1 : sz1
         sum_V2_veqZr_dv2(i1,i2) = sum_V2 + sum_V2_d1(i1,i2);
     end
 end
-clear j sz1 sz2 sz3
+% clear j sz1 sz2 sz3
 V2_veqZr_dv2 = (1 / MSparam(3,1)^2) * veqZr - sum_V2_veqZr_dv2;  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

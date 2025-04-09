@@ -1,4 +1,4 @@
-function [orbc,err,veqZarray,veqParray] = integr_ms_veq(zo,arc,MSparam,RKparam,eopdat,dpint)
+function [orbc,err,veqZarray,veqParray] = integr_ms_veq(zo,arc,MSparam,RKparam,eopdat,dpint, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -79,21 +79,18 @@ for j = 1 : MSparam(2,1)
         sum_g = sum_g + (1 / (j+1-k)) * gj(1,k+1);
     end
     gj(1,j+1) = 1 - sum_g;
-    clear sum_g
 end
-clear j k
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Coefficients bmj
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+bmj = zeros(1, MSparam(2,1));
 for j = 1 : MSparam(2,1)
     sum_b = 0;
     for l = MSparam(2,1)-j : MSparam(2,1)-1
         sum_b = sum_b + gj(1,l+1) * binom_coeff(l,MSparam(2,1)-j);
     end
     bmj(1,j) = (-1)^(MSparam(2,1)-j) * sum_b;
-    clear sum_b
 end
-clear j l
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Coefficients g*j
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -105,39 +102,35 @@ for j = 1 : MSparam(2,1)+1
         sum_g = sum_g + (1 / (j+1-k)) * gj_ast(1,k+1);
     end
     gj_ast(1,j+1) = - sum_g;
-    clear sum_g
 end
-clear j k
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Coefficients b*mj (bmj_ast)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+bmj_ast = zeros(1,MSparam(2,1));
 for j = 1 : MSparam(2,1)
     sum_b = 0;
     for l = MSparam(2,1)-j : MSparam(2,1)-1
         sum_b = sum_b + gj_ast(1,l+1) * binom_coeff(l,MSparam(2,1)-j);
     end
-    bmj_ast(1,j) = (-1)^(MSparam(2,1)-j) * sum_b;
-    clear sum_b
+    bmj_ast(1,j) = (-1)^(MSparam(2,1)-j) * sum_b; 
 end
-clear j l
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Coefficients delta (dj)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+dj = zeros(1,MSparam(2,1)+1+1);
 for j = 0 : MSparam(2,1)+1
     dj(1,j+1) = (1 - j) * gj_ast(1,j+1);
 end
-clear j
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Coefficients delta* (d*j: dj_ast)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  d*j for j=0: d*0 = 1
+dj_ast = zeros(1,MSparam(2,1)+1+1);
 dj_ast(1,1) = 1;
 for j = 1 : MSparam(2,1)+1
     dj_ast(1,j+1) = dj(1,j+1) - dj(1,j);
 end
-clear j
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -149,9 +142,8 @@ arcRK = (MSparam(2,1) - 1) * MSparam(3,1);
 RKparam(1,1) = MSparam(4,1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Orbit Integration for the first steps
-[orbcRK,errRK,veqZarrayRK,veqParrayRK] = integr_rk_veq(zo,arcRK,RKparam,eopdat,dpint);
+[orbcRK,errRK,veqZarrayRK,veqParrayRK] = integr_rk_veq(zo,arcRK,RKparam,eopdat,dpint, orbit_model_struct);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Function evaluations for the first steps of function "f":  f = [v' a']
@@ -159,7 +151,6 @@ RKparam(1,1) = MSparam(4,1);
 % - v:  Velocity vector in GCRS
 % - a:  Acceleration vector in GCRS
 [RK RK2] = size(orbcRK);
-%clear RK2
 
 % Number of parameters of sensitivity matrix
 [sz1, sz2] = size(veqParrayRK);
@@ -176,7 +167,7 @@ for istart = 1 : RK
     zRK = orbcRK(istart,1:7);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Perturbations Acceleration and Partial Derivatives 
-    [fx,fy,fz,pdv_acc,pdv_acc_param] = veq_accl(zRK,eopdat,dpint);    
+    [fx,fy,fz,pdv_acc,pdv_acc_param] = veq_accl(zRK,eopdat,dpint, orbit_model_struct);    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     f(istart,:) = [v' fx fy fz];
     accl(istart,:) = [fx fy fz];
@@ -215,7 +206,6 @@ tmax = to + arc - arcRK;
 rGCRS = [orbcRK(sz1,2) orbcRK(sz1,3) orbcRK(sz1,4)]';
 % vo: denoted by "vGCRS"
 vGCRS = [orbcRK(sz1,5) orbcRK(sz1,6) orbcRK(sz1,7)]';
-clear sz1 sz2
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -223,10 +213,9 @@ clear sz1 sz2
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [sz1 sz2] = size(veqZarrayRK);
 veqZo_ms = veqZarrayRK(sz1-5 : end , 2 : end);
-clear sz1 sz2
+% clear sz1 sz2
 [sz1 sz2] = size(veqParrayRK);
 veqPo_ms = veqParrayRK(sz1-5 : end, 2 : end);
-clear sz1 sz2
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -242,7 +231,10 @@ orbc = zeros(Nepochs,7);
 arc_ms = arc - arcRK;
 orbc_ms = zeros(fix(arc_ms/h), 7);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-N_orbc_ms = arc_ms/h;
+N_orbc_ms = arc_ms/h; 
+Nepochs_MS = fix(arc_ms/h);
+veqZarrayMS = zeros(6 * Nepochs_MS , 1 + 6);
+veqParrayMS = zeros(6 * Nepochs_MS , 1 + Nparam);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -265,7 +257,6 @@ for t = to : h : tmax-1
     % State Transition Matrix
     [V_veqZr_dv2] = gauss_jackson_int_veq(veqZo_ms,veqZr_dv2,gj_ast,dj_ast,MSparam);
     [veqZ] = gauss_jackson_veq(V_veqZr_dv2,gj,dj,MSparam);
-    %clear V_veqZr_dv2
     % Sensitivity Matrix
     [V_veqPr_dv2] = gauss_jackson_int_veq(veqPo_ms,veqPr_dv2,gj_ast,dj_ast,MSparam);
     [veqP] = gauss_jackson_veq(V_veqPr_dv2,gj,dj,MSparam);    
@@ -281,7 +272,7 @@ for t = to : h : tmax-1
     % Function evaluations for next point's first steps
     zmjd = [TT/(24*3600) rGCRS' vGCRS'];
     % Acceleration & Partial derivatives
-    [fx,fy,fz,pdv_acc,pdv_acc_param] = veq_accl(zmjd,eopdat,dpint);
+    [fx,fy,fz,pdv_acc,pdv_acc_param] = veq_accl(zmjd,eopdat,dpint, orbit_model_struct);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % EQM : Function evaluations for next point's first steps
     [na, n2] = size(accl);
@@ -375,7 +366,7 @@ for t = to : h : tmax-1
     % Corrector : Function evaluations for first steps    
     zmjd = [TT/(24*3600) rp' vp'];
     % Acceleration & Partial derivatives
-    [fx,fy,fz,pdv_acc] = veq_accl(zmjd,eopdat,dpint);
+    [fx,fy,fz,pdv_acc] = veq_accl(zmjd,eopdat,dpint, orbit_model_struct);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     [na n2] = size(accl);
     ap = accl(2:na,:);
@@ -416,7 +407,7 @@ for t = to : h : tmax-1
     % Function evaluations for next point's first steps
     zmjd = [TT/(24*3600) rGCRS' vGCRS'];
     % Acceleration & Partial derivatives
-    [fx,fy,fz,pdv_acc] = veq_accl(zmjd,eopdat,dpint);
+    [fx,fy,fz,pdv_acc] = veq_accl(zmjd,eopdat,dpint, orbit_model_struct);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     [na n2] = size(accl);
     accl = accl(2:na,:);                                        

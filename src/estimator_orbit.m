@@ -1,4 +1,4 @@
-function [Xmatrix,Xmatrix_alt, bmatrix, Amatrix, Cx, Cv] = estimator_orbit (orbref,veqZarray,veqParray,orbobs,COVobs,obstype)
+function [Xmatrix,Xmatrix_alt, bmatrix, Amatrix, Cx, Cv, NEQn, NEQu] = estimator_orbit (orbref,veqZarray,veqParray,orbobs,sigma_obs,obstype)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -100,7 +100,7 @@ Amatrix = Amatrix_all;
 % Parameters Estimation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Least-Squares solution
-[Xmatrix NEQn, NEQu] = estimator_neq_sol(Amatrix, bmatrix);
+[Xmatrix, NEQn, NEQu] = estimator_neq_sol(Amatrix, bmatrix, sigma_obs);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -123,11 +123,11 @@ m_param = dim1;
 sigma = sqrt(error_matrix' * error_matrix / (n_obs - m_param) );
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Covariance matrix of parameters
-%Cx = sigma^2 * inv(NEQn);
+% Cx = sigma^2 * inv(NEQn);
 
 % Covariance matrix of errors
-%Cv = sigma^2 * (inv(P_matrix) - Amatrix * inv(NEQn) * Amatrix');
-%Cv = sigma^2 * ( - Amatrix * inv(NEQn) * Amatrix');
+% Cv = sigma^2 * (inv(P_matrix) - Amatrix * inv(NEQn) * Amatrix');
+% Cv = sigma^2 * ( - Amatrix * inv(NEQn) * Amatrix');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Cx = 0;
 Cv = 0;

@@ -33,23 +33,25 @@ function [eop] = eop_read(filename,mjd)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Last modified:
 % 06/04/2011    Thomas Papanikolaou 
-%               Upgrade reading of IERS 08 C04 EOP series format.
+%               Upgrade reading IERS 08 C04 EOP series format.
 % 21/11/2022    Thomas Papanikolaou 
 %               Upgrade reading commands and rename to eop_read.m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+[nmjd n2] = size(mjd);
+% Preallocation 
+eop = zeros(nmjd,6);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Read EOP series data format
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[nmjd n2] = size(mjd);
-clear n2
 fid = fopen(filename);
 i = 1;
 while (~feof(fid))
   line = fgetl(fid);
 % FORMAT(3(I4),I7,2(F11.6),2(F12.7),2(F11.6),2(F11.6),2(F11.7),2(F12.6))
-  param_1 = sscanf(line,'%s %*');
+  % param_1 = sscanf(line,'%s %*');
   mjdi = sscanf(line,'%*s%*s%*s %d %*'); 
   if mjdi == mjd(i,1) %1 + i
       mjd_dpi = mjdi;
@@ -66,5 +68,4 @@ while (~feof(fid))
   end
 end
 fclose(fid);
-clear i
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

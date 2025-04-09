@@ -1,4 +1,4 @@
-function [orbc] = integr_ms(zo,arc,MSparam,RKparam,eopdat,dpint)
+function [orbc, forces_accel] = integr_ms(zo,arc,MSparam,RKparam,eopdat,dpint, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -38,8 +38,10 @@ function [orbc] = integr_ms(zo,arc,MSparam,RKparam,eopdat,dpint)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Thomas D. Papanikolaou, AUTH                                    May  2009
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
+% Last modified:
+% 23/01/2025, Thomas Loudis Papanikolaou
+%             Output of forces matrix (acceleration vector per epoch)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Multistep methods Coefficients computations
@@ -57,10 +59,13 @@ function [orbc] = integr_ms(zo,arc,MSparam,RKparam,eopdat,dpint)
 % Numerical value for go: go = 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+order_integr = MSparam(2,1);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Coefficients gj
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Numerical value for go: go = 1
+gj = zeros(1,order_integr+1);
 gj(1,1) = 1;
 for j = 1 : MSparam(2,1)
     sum_g = 0;
@@ -68,25 +73,23 @@ for j = 1 : MSparam(2,1)
         sum_g = sum_g + (1 / (j+1-k)) * gj(1,k+1);
     end
     gj(1,j+1) = 1 - sum_g;
-    clear sum_g
 end
-clear j k
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Coefficients bmj
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+bmj = zeros(1,order_integr);
 for j = 1 : MSparam(2,1)
     sum_b = 0;
     for l = MSparam(2,1)-j : MSparam(2,1)-1
         sum_b = sum_b + gj(1,l+1) * binom_coeff(l,MSparam(2,1)-j);
     end
     bmj(1,j) = (-1)^(MSparam(2,1)-j) * sum_b;
-    clear sum_b
 end
-clear j l
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Coefficients g*j
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Numerical value for g*o: g_o = 1
+gj_ast = zeros(1,order_integr+1);
 gj_ast(1,1) = 1;
 for j = 1 : MSparam(2,1)+1
     sum_g = 0;
@@ -94,40 +97,35 @@ for j = 1 : MSparam(2,1)+1
         sum_g = sum_g + (1 / (j+1-k)) * gj_ast(1,k+1);
     end
     gj_ast(1,j+1) = - sum_g;
-    clear sum_g
 end
-clear j k
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Coefficients b*mj (bmj_ast)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+bmj_ast = zeros(1,order_integr);
 for j = 1 : MSparam(2,1)
     sum_b = 0;
     for l = MSparam(2,1)-j : MSparam(2,1)-1
         sum_b = sum_b + gj_ast(1,l+1) * binom_coeff(l,MSparam(2,1)-j);
     end
     bmj_ast(1,j) = (-1)^(MSparam(2,1)-j) * sum_b;
-    clear sum_b
 end
-clear j l
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Coefficients delta (dj)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+dj = zeros(1,order_integr+2);
 for j = 0 : MSparam(2,1)+1
     dj(1,j+1) = (1 - j) * gj_ast(1,j+1);
 end
-clear j
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Coefficients delta* (d*j: dj_ast)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+dj_ast = zeros(1,order_integr+2);
 %  d*j for j=0: d*0 = 1
 dj_ast(1,1) = 1;
 for j = 1 : MSparam(2,1)+1
     dj_ast(1,j+1) = dj(1,j+1) - dj(1,j);
 end
-clear j
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Start Integrator for the first steps.
@@ -138,7 +136,7 @@ arcRK = (MSparam(2,1) - 1) * MSparam(3,1);
 RKparam(1,1) = MSparam(4,1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Orbit Integration for the first steps
-[orbcRK] = integr_rk(zo,arcRK,RKparam,eopdat,dpint);
+[orbcRK] = integr_rk(zo,arcRK,RKparam,eopdat,dpint,orbit_model_struct);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -146,18 +144,17 @@ RKparam(1,1) = MSparam(4,1);
 % - v:  Velocity vector in GCRS
 % - a:  Acceleration vector in GCRS
 [RK RK2] = size(orbcRK);
-clear RK2
+% clear RK2
+f = zeros(RK,6);
+accl = zeros(RK,3);
 for j = 1 : RK
     v = orbcRK(j,5:7)';
     zRK = orbcRK(j,1:7);
-    [fx,fy,fz] = accel(zRK,eopdat,dpint);
+    [fx,fy,fz] = accel(zRK,eopdat,dpint, orbit_model_struct);
     f(j,:) = [v' fx fy fz];
     accl(j,:) = [fx fy fz];
-    clear tmjd r v zRK fx fy fz
 end
-clear j RK
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Orbit Integration based on Multistep Methods
@@ -175,7 +172,6 @@ tmax = to + arc - arcRK;
 rGCRS = [orbcRK(sz1,2) orbcRK(sz1,3) orbcRK(sz1,4)]';
 % vo: denoted by "vGCRS"
 vGCRS = [orbcRK(sz1,5) orbcRK(sz1,6) orbcRK(sz1,7)]';
-clear sz1 sz2
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -187,9 +183,25 @@ h = MSparam(3,1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Matrices Preallocation
 Nepochs = fix(arc/h)+1;
-orbc = zeros(Nepochs,7);
+% orbc = zeros(Nepochs,7);
 arc_ms = arc - arcRK;
 orbc_ms = zeros(fix(arc_ms/h),7);
+
+% Forces accleration matrix
+% acceleration_matrix = zeros(Nepochs,7);
+[Nepochs_orbcRK, d2] = size(orbcRK);
+[Nepochs_orbc_ms, d2] = size(orbc_ms);
+Nepochs_orbitarc = Nepochs_orbcRK + Nepochs_orbc_ms;
+forces_accel = zeros(Nepochs_orbitarc,7);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% RK arc
+[d1 d2] = size(accl);
+forces_accel(1:Nepochs_orbcRK,1) = orbcRK(1:Nepochs_orbcRK,1);
+forces_accel(1:Nepochs_orbcRK,2) = accl(1:Nepochs_orbcRK,1);
+forces_accel(1:Nepochs_orbcRK,3) = accl(1:Nepochs_orbcRK,2);
+forces_accel(1:Nepochs_orbcRK,4) = accl(1:Nepochs_orbcRK,3);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -209,7 +221,7 @@ for t = to : h : tmax-1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Function evaluations for next point's first steps
     zmjd = [TT/(24*3600) rGCRS' vGCRS'];
-    [fx,fy,fz] = accel(zmjd,eopdat,dpint);
+    [fx,fy,fz] = accel(zmjd,eopdat,dpint, orbit_model_struct);
     [nf n2] = size(f);
     f = f(2:nf,:);
     f = [f
@@ -236,7 +248,7 @@ for t = to : h : tmax-1
     TT = t + h;
     % Function evaluations for Adams-Moulton method's first steps
     zmjd = [TT/(24*3600) rp' vp'];
-    [fx,fy,fz] = accel(zmjd,eopdat,dpint);    
+    [fx,fy,fz] = accel(zmjd,eopdat,dpint, orbit_model_struct);    
     [nf n2] = size(f);
     fp = f(2:nf,:);
     fp = [fp
@@ -252,7 +264,7 @@ for t = to : h : tmax-1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Function evaluations for next point's first steps
     zmjd = [TT/(24*3600) rGCRS' vGCRS'];
-    [fx,fy,fz] = accel(zmjd,eopdat,dpint);
+    [fx,fy,fz] = accel(zmjd,eopdat,dpint, orbit_model_struct);
     f = f(2:nf,:);
     clear nf n2
     f = [f
@@ -262,7 +274,7 @@ for t = to : h : tmax-1
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-MSparam(1,1)
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Stoermer method
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -291,7 +303,7 @@ for t = to : h : tmax-1
            r'      ];    
     % Function evaluations for next point's first steps
     zmjd = [TT/(24*3600) rGCRS' vGCRS'];
-    [fx,fy,fz] = accel(zmjd,eopdat,dpint);
+    [fx,fy,fz] = accel(zmjd,eopdat,dpint, orbit_model_struct);
     [nf n2] = size(accl);
     accl = accl(2:nf,:);
     accl = [accl
@@ -325,7 +337,7 @@ for t = to : h : tmax-1
     TT = t + h;
     % Function evaluations for Cowell method's first steps
     zmjd = [TT/(24*3600) rp' vp'];
-    [fx,fy,fz] = accel(zmjd,eopdat,dpint);
+    [fx,fy,fz] = accel(zmjd,eopdat,dpint, orbit_model_struct);
     [na n2] = size(accl);
     ap = accl(2:na,:);
     clear na n2
@@ -345,7 +357,7 @@ for t = to : h : tmax-1
            r'      ];
     % Function evaluation for next point
     zmjd = [TT/(24*3600) rGCRS' vGCRS'];
-    [fx,fy,fz] = accel(zmjd,eopdat,dpint);
+    [fx,fy,fz] = accel(zmjd,eopdat,dpint, orbit_model_struct);
     [na n2] = size(accl);
     accl = accl(2:na,:);
     clear na n2
@@ -367,7 +379,6 @@ for t = to : h : tmax-1
     zoGJ = [rGCRS; vGCRS];
     [Va] = gauss_jackson_int(zoGJ,accl,gj_ast,dj_ast,MSparam);
     [z] = gauss_jackson(Va,gj,dj,MSparam);
-    clear zoGJ Va
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % State vector for next epoch
     TT = t + h;
@@ -377,14 +388,15 @@ for t = to : h : tmax-1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Function evaluations for next point's first steps
     zmjd = [TT/(24*3600) rGCRS' vGCRS'];
-    [fx,fy,fz] = accel(zmjd,eopdat,dpint);
+    [fx,fy,fz] = accel(zmjd,eopdat,dpint, orbit_model_struct);
+    % Forces:: output acceleration matrix
+    forces_accel(i + Nepochs_orbcRK, :) = [TT fx fy fz 0 0 0];
     % Functions evaluations for next point's first steps
-    [na n2] = size(accl);
-    accl = accl(2:na,:);
-    clear na n2
-    accl = [accl
-            fx fy fz];
-    clear fx fy fz
+    [na, n2] = size(accl);
+    accel_next_step = zeros(na, n2);
+    accel_next_step(1:na-1,:) = accl(2:na,:);
+    accel_next_step(na,:) = [fx fy fz];
+    accl = accel_next_step;
     i = i + 1;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -407,7 +419,7 @@ for t = to : h : tmax-1
     TT = t + h;
     % Function evaluations for first steps    
     zmjd = [TT/(24*3600) rp' vp'];
-    [fx,fy,fz] = accel(zmjd,eopdat,dpint);
+    [fx,fy,fz] = accel(zmjd,eopdat,dpint, orbit_model_struct);
     [na n2] = size(accl);
     ap = accl(2:na,:);
     clear na n2
@@ -427,7 +439,7 @@ for t = to : h : tmax-1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Function evaluations for next point's first steps
     zmjd = [TT/(24*3600) rGCRS' vGCRS'];
-    [fx,fy,fz] = accel(zmjd,eopdat,dpint);
+    [fx,fy,fz] = accel(zmjd,eopdat,dpint, orbit_model_struct);
     [na n2] = size(accl);
     accl = accl(2:na,:);
     clear na n2
@@ -442,6 +454,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Epochs MJD conversion from seconds to days
 orbc_ms(:,1) = orbc_ms(:,1) / (24 * 3600);
+forces_accel(1 + Nepochs_orbcRK : Nepochs_orbitarc,1) = forces_accel(1 + Nepochs_orbcRK : Nepochs_orbitarc,1) / (24 * 3600);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Remove columns "er" & "ev" from "orbcRK"
 orbcRK_2 = [orbcRK(:,1:7)];

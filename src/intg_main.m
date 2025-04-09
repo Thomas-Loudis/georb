@@ -1,5 +1,4 @@
-function [orbc,err,veqZarray,veqParray,orbk,orbt] = intg_main(intg,Zo,arc,MSprm,RKprm,eopdat,dpint,intgVEQ)
-global GM_glob
+function [orbc,err,veqZarray,veqParray,orbk,orbt, forces_accel, Gmatrix, Rmatrix] = intg_main(intg,Zo,arc,MSprm,RKprm,eopdat,dpint,intgVEQ, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -50,6 +49,8 @@ global GM_glob
 % Last modified:
 % 07/12/2022, Dr. Thomas Loudis Papanikolaou
 %             Code upgrade 
+% 07/04/2025  Thomas Loudis Papanikolaou
+%             Source Code minor upgrade 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -60,9 +61,10 @@ if intgVEQ == 0
     % Equation of motion
     % (Single numerical integration)
     if intg == 1 || intg == 2 || intg == 3
-        [orbc,err] = integr_rk(Zo,arc,RKprm,eopdat,dpint);
+        [orbc,err] = integr_rk(Zo,arc,RKprm,eopdat,dpint, orbit_model_struct);
+        forces_accel = 0;
     else
-        [orbc] = integr_ms(Zo,arc,MSprm,RKprm,eopdat,dpint);
+        [orbc, forces_accel] = integr_ms(Zo,arc,MSprm,RKprm,eopdat,dpint,orbit_model_struct);
         err = 0;
     end
     veqZarray = 0;
@@ -71,10 +73,11 @@ elseif intgVEQ == 1
     % Equation of motion and Variational Equations
     % (Combined numerical integration) 
     if intg == 1 || intg == 2 || intg == 3
-        [orbc,err,veqZarray,veqParray] = intgveq_rk(Zo,arc,RKprm,eopdat,dpint);
+        [orbc,err,veqZarray,veqParray] = integr_rk_veq(Zo,arc,RKprm,eopdat,dpint, orbit_model_struct);
     else
-        [orbc,err,veqZarray,veqParray] = integr_ms_veq(Zo,arc,MSprm,RKprm,eopdat,dpint);
+        [orbc,err,veqZarray,veqParray] = integr_ms_veq(Zo,arc,MSprm,RKprm,eopdat,dpint, orbit_model_struct);
     end
+    forces_accel = 0;
 end
 
 if MSprm(1,1) == 6 || MSprm(1,1) == 7
@@ -82,10 +85,12 @@ if MSprm(1,1) == 6 || MSprm(1,1) == 7
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Keplerian Elements computations
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Force model structure matrix
+GM_glob = orbit_model_struct.GM_Earth;
+
 [sz1 sz2] = size(orbc);
 % Preallocation 
 orbk = zeros(sz1, sz2);
@@ -99,5 +104,12 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Orbit transformation from GCRS to ITRS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[orbt] = orbc2t(orbc,eopdat,dpint);
+[orbt] = orbc2t(orbc,eopdat,dpint,orbit_model_struct);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Gravity Gradient matrix and Earth Orientation matrix
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Gmatrix = zeros(3,3);
+Rmatrix = zeros(3,3);
+

@@ -1,4 +1,4 @@
-function [accel_vec] = force_relativistic(mjd,Z_crs,Rtrs2crs, EQ_mode,ORB_config, GM_Earth,GM_Sun,z_Sun)
+function [accel_vec] = force_relativistic(mjd,Z_crs,Rtrs2crs, EQ_mode,ORB_config, GM_Earth,GM_Sun,z_Sun, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -32,8 +32,8 @@ function [accel_vec] = force_relativistic(mjd,Z_crs,Rtrs2crs, EQ_mode,ORB_config
 % Code extracted from function force_eqm_veq. 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-global relativistic_effects_glob 
+% Forces model settings matrix
+relativistic_effects_glob = orbit_model_struct.relativistic_effects;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Equations mode: EQM or VEQ
@@ -73,7 +73,7 @@ ppn_gama = struct_array.PPN_gama;
 cspeedlight = struct_array.speedoflight;
 
 test = strcmp(Relativity_yn,'y');
-if test == 1 && VEQ_mode_test == 0
+if test == 1  % && VEQ_mode_test == 0
     % State Vector
     zGCRS = Z_crs;
     % Earth state vector with respect to Sun

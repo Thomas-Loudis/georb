@@ -1,4 +1,4 @@
-function [ax,ay,az] = accel(z,eop,dpint)
+function [ax,ay,az] = accel(z,eop,dpint, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -35,4 +35,4 @@ function [ax,ay,az] = accel(z,eop,dpint)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 EQ_mode = 'EQM';
-[ax,ay,az,pdv_acc,pdv_acc_param] = force_eqm_veq(z,eop,dpint, EQ_mode);
+[ax,ay,az,pdv_acc,pdv_acc_param] = force_eqm_veq(z,eop,dpint, EQ_mode, orbit_model_struct);

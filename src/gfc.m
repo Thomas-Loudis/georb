@@ -61,7 +61,8 @@ while (~feof(fid))
       Nmax_egm = sscanf(line_ith,'%*s %d %*');
     end
     clear test
-
+    
+    tide_system = 'tide_free';
     test = strcmp(str1,'tide_system');
     if test == 1
       tide_system = sscanf(line_ith,'%*s %s %*');

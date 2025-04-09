@@ -55,11 +55,11 @@ end
 
 % Normalized functions for variable degree n and order m
 for n = 2 : nmax
-    for m = 1 : n
-        if n >= (m+1)
+    for m = 1 : n-1
+        % if n >= (m+1)
             P_f2 = sqrt(2*n-1) * c * Pnm_norm(n-1+1,m+1);
             P_f3 = sqrt( ( (n-1+m)*(n-1-m) ) / (2*n-3) ) * Pnm_norm(n-2+1,m+1) ;
             Pnm_norm(n+1,m+1) = ( sqrt(2*n+1) / sqrt( (n+m)*(n-m) ) ) * (P_f2 - P_f3) ;
-        end
+        % end
     end
 end

@@ -1,4 +1,4 @@
-function [yint] = interp_Lagrange(X,Y,xint,dpint)
+function [yint] = interp_Lagrange(X_matrix,Y_matrix,xint,dpint)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -28,9 +28,7 @@ function [yint] = interp_Lagrange(X,Y,xint,dpint)
 dpint_initial = dpint;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Test if interpolation is required or not
-% Find index position of the first X value before xint 
-[sz1 sz2] = size(X);
+[sz1 sz2] = size(X_matrix);
 N_dataseries = sz1;
 
 if dpint > N_dataseries
@@ -38,21 +36,99 @@ if dpint > N_dataseries
     dpint = N_dataseries;
 end
 
-dt_1epoch = X(sz1,1) - X(sz1-1,1);
+dataseries_trunc = 2;
+i0 = 1;
+iN = N_dataseries;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 1st approach
+if dataseries_trunc == 1
 
+factor = 3;
+if N_dataseries > (factor * dpint)
+    Nloop = fix(N_dataseries / (factor * dpint));
+else
+    Nloop = 0;
+end
+delta_limit = 10^-10;
+for iloop = 1 : Nloop 
+    Np = iN - i0;
+    i_centre = fix(Np / 2);
+    if (iN - i0) > 4 * dpint
+        if xint < X_matrix(i_centre,1)
+            iN = i_centre;
+        elseif xint == X_matrix(i_centre,1)
+            i0 = i_centre;
+        else
+            i0 = i_centre;
+        end
+    else
+        break
+    end
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 2nd approach based on log2
+elseif dataseries_trunc == 2
+x_log2 = fix( log2(N_dataseries / dpint) );
+Nloop = x_log2 - 1;
+for iloop = 1 : Nloop
+    % iloop
+    Np = iN - (i0 -1);
+    i_centre = fix(Np / 2) + i0;
+    if xint < X_matrix(i_centre,1)
+        iN = i_centre;
+    else
+        i0 = i_centre;
+    end
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end
+
+X = X_matrix(i0:iN,1);
+Y = Y_matrix(i0:iN,:);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Convert MJD to seconds
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% time_factor = 86400;
+% X(:,1) = X(:,1) * time_factor;
+% xint = xint * time_factor;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Test if interpolation is required or not
+% Find index position of the first X value before xint 
+[sz1 sz2] = size(X);
+N_dataseries = sz1;
+Time_diglimit = 10^-8;
+if dpint > N_dataseries
+    fprintf('%s \n','Number of data points of interpolator is higher of the number of data series points. Interpolation number of data points is reduced accordingly.')
+    dpint = N_dataseries;
+end
+
+% Edges
 if xint < X(1,1)
     fprintf('%s \n','Interpolation epoch is out of the data span')
     fprintf('%s %f   %s %f \n','Interpolation epoch :',xint,'Data series first epoch :',X(1,1))
     Xo_indx = 1 + (fix(dpint/2) - 1);
     interpolation = +1;
-elseif xint > X(sz1,1) + dt_1epoch
+end
+if xint > X(sz1,1) % + dt_1epoch
     fprintf('%s \n','Interpolation epoch is out of the data span')
     fprintf('%s %f   %s %f \n','Interpolation epoch :',xint,'Data series last epoch :',X(sz1,1))        
-    Xo_indx = sz1 -dpint+1 + (fix(dpint/2) - 1); 
+    Xo_indx = sz1 -dpint+1 + (fix(dpint/2) - 1);
     interpolation = +1;
 end
+
+% Xo_indx :: Index of the first data entry to be used for interpolation
 for i = 1 : sz1
-    if abs(xint - X(i,1)) < 10^-10
+    % if abs(xint - X(i,1)) < 10^-10
+    delta_abs = abs(xint - X(i,1));
+    if delta_abs < Time_diglimit
+    % if fix(xint - X(i,1)) == 0
         yint = Y(i,1);
         interpolation = -1;
         break

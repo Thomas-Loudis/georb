@@ -38,40 +38,39 @@ function [GM,ae,Cnm,Snm,sCnm,sSnm,nmax, tide_system] = gfc_tv1(egmfilename,n_tru
 % Read .gfc file and format Cnm,Snm and sCnm,sSnm lower triangular matrices
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 fid = fopen(egmfilename);
-while (~feof(fid))
+% while (~feof(fid))
+header_status = 1;
+while (header_status == 1)  
     line_ith = fgetl(fid);
     str1 = sscanf(line_ith,'%s %*');
 
     test = strcmp(str1,'earth_gravity_constant');
     if test == 1
-%       GM = sscanf(line_ith,'%*s %e %*');
-      GM = str2num( sscanf(line_ith,'%*s %s %*') );
+      GM = sscanf(line_ith,'%*s %e %*');
     end
-    clear test
 
     test = strcmp(str1,'radius');
     if test == 1
-%       ae = sscanf(line_ith,'%*s %f %*')
-%       ae = sscanf(line_ith,'%*s %e %*')
-      ae = str2num( sscanf(line_ith,'%*s %s %*') );
+      ae = sscanf(line_ith,'%*s %e %*');
     end
-    clear test
 
     test = strcmp(str1,'max_degree');
     if test == 1
       Nmax_egm = sscanf(line_ith,'%*s %d %*');
     end
-    clear test
 
     test = strcmp(str1,'tide_system');
     if test == 1
       tide_system = sscanf(line_ith,'%*s %s %*');
     end
-    clear test    
+
+    test = strcmp(str1,'end_of_head');
+    if test == 1
+      header_status = 0;
+    end    
+
 end
 fclose(fid);
-clear fid line_ith str1 test
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Arrays initialization
@@ -86,7 +85,6 @@ Cnm = zeros(n_sz+1,n_sz+1);
 Snm = zeros(n_sz+1,n_sz+1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 fid = fopen(egmfilename);
 while (~feof(fid))
@@ -96,68 +94,69 @@ while (~feof(fid))
 % Static gravity coefficients
     test = strcmp(str1,'gfc');
     if test == 1
-      n_ith = sscanf(line_ith,'%*s %d %*');
+      data_ith_vec = sscanf(line_ith,'%*s %d %d %e %e %e %e %*');
+      n_ith = data_ith_vec(1,1);
       if (n_ith <= n_trunc) | (n_trunc == -1)
           % read SHC degree, order and respective coefficients values
           n = n_ith;
-          m = sscanf(line_ith,'%*s %*d %d %*');
-%           Cnm(n+1,m+1) = sscanf(line_ith,'%*s %*d %*d %f %*');
-%           Snm(n+1,m+1) = sscanf(line_ith,'%*s %*d %*d %*f %f %*');
-          Cnm(n+1,m+1) = str2num( sscanf(line_ith,'%*s %*s %*s %s %*') );
-          Snm(n+1,m+1) = str2num( sscanf(line_ith,'%*s %*s %*s %*s %s %*') );          
+          m = data_ith_vec(2,1);
+          Cnm(n+1,m+1) = data_ith_vec(3,1);
+          Snm(n+1,m+1) = data_ith_vec(4,1);         
           if sigma_shc ~= 0
-%               sCnm(n+1,m+1) = sscanf(line_ith,'%*s %*d %*d %*f %*f %f %*');
-%               sSnm(n+1,m+1) = sscanf(line_ith,'%*s %*d %*d %*f %*f %*f %f %*');
-              sCnm(n+1,m+1) = str2num( sscanf(line_ith,'%*s %*s %*s %*s %*s %s %*') );
-              sSnm(n+1,m+1) = str2num( sscanf(line_ith,'%*s %*s %*s %*s %*s %*s %s %*') );
+              sCnm(n+1,m+1) = data_ith_vec(5,1);
+              sSnm(n+1,m+1) = data_ith_vec(6,1);         
           end
-          clear n m
       end
     end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Time-variable gravity coefficients
     test = strcmp(str1,'gfct');	
-    if test == 1
-      n_ith = sscanf(line_ith,'%*s %d %*');
+    if test == 1        
+      data_ith_vec = sscanf(line_ith,'%*s %d %d %e %e %e %e %e %*');
+      % n_ith = sscanf(line_ith,'%*s %d %*');
+      n_ith = data_ith_vec(1,1);
       if (n_ith <= n_trunc) | (n_trunc == -1)
           % read SHC degree, order and respective coefficients values
           n = n_ith;
-          m = sscanf(line_ith,'%*s %*d %d %*');
-          Cnm_t0  = str2num( sscanf(line_ith,'%*s %*s %*s %s %*') );
-          Snm_t0  = str2num( sscanf(line_ith,'%*s %*s %*s %*s %s %*') );          
-          sCnm_t0 = str2num( sscanf(line_ith,'%*s %*s %*s %*s %*s %s %*') );          
-          sSnm_t0 = str2num( sscanf(line_ith,'%*s %*s %*s %*s %*s %*s %s %*') );          
           t0      = sscanf(line_ith,'%*s %*s %*s %*s %*s %*s %*s %s %*');          		  
+          m       = data_ith_vec(2,1);
+          Cnm_t0  = data_ith_vec(3,1);
+          Snm_t0  = data_ith_vec(4,1);          
+          sCnm_t0 = data_ith_vec(5,1);          
+          sSnm_t0 = data_ith_vec(6,1);          
 
           % Read next (3) lines for "trend,acos,asin" coefficients  
 		  % Trend
 		  line_ith = fgetl(fid);
-          Cnm_trend  = sscanf(line_ith,'%*s %*d %*d %f %*f %*f %*f %*');
-          Snm_trend  = sscanf(line_ith,'%*s %*d %*d %*f %f %*f %*f %*');
-          sCnm_trend = sscanf(line_ith,'%*s %*d %*d %*f %*f %f %*f %*');
-          sSnm_trend = sscanf(line_ith,'%*s %*d %*d %*f %*f %*f %f %*');	  
-          
+          data_ith_vec = sscanf(line_ith,'%*s %d %d %e %e %e %e %e %*');
+          Cnm_trend  = data_ith_vec(3,1);
+          Snm_trend  = data_ith_vec(4,1);          
+          sCnm_trend = data_ith_vec(5,1);          
+          sSnm_trend = data_ith_vec(6,1);          
+         
 		  % acos
 		  line_ith = fgetl(fid);
-          Cnm_acos  = sscanf(line_ith,'%*s %*d %*d %f %*f %*f %*f %*d %*');
-          Snm_acos  = sscanf(line_ith,'%*s %*d %*d %*f %f %*f %*f %*d %*');
-          sCnm_acos = sscanf(line_ith,'%*s %*d %*d %*f %*f %f %*f %*d %*');
-          sSnm_acos = sscanf(line_ith,'%*s %*d %*d %*f %*f %*f %f %*d %*');	  
-          period    = sscanf(line_ith,'%*s %*d %*d %*f %*f %*f %*f %d %*');	  
+          data_ith_vec = sscanf(line_ith,'%*s %d %d %e %e %e %e %e %*');
+          Cnm_acos  = data_ith_vec(3,1);
+          Snm_acos  = data_ith_vec(4,1);          
+          sCnm_acos = data_ith_vec(5,1);          
+          sSnm_acos = data_ith_vec(6,1);          
+          period    = data_ith_vec(7,1);          
 
 		  % asin
 		  line_ith = fgetl(fid);
-          Cnm_asin  = sscanf(line_ith,'%*s %*d %*d %f %*f %*f %*f %*d %*');
-          Snm_asin  = sscanf(line_ith,'%*s %*d %*d %*f %f %*f %*f %*d %*');
-          sCnm_asin = sscanf(line_ith,'%*s %*d %*d %*f %*f %f %*f %*d %*');
-          sSnm_asin = sscanf(line_ith,'%*s %*d %*d %*f %*f %*f %f %*d %*');	  
-          period    = sscanf(line_ith,'%*s %*d %*d %*f %*f %*f %*f %d %*');	  
+          data_ith_vec = sscanf(line_ith,'%*s %d %d %e %e %e %e %e %*');
+          Cnm_asin  = data_ith_vec(3,1);
+          Snm_asin  = data_ith_vec(4,1);          
+          sCnm_asin = data_ith_vec(5,1);          
+          sSnm_asin = data_ith_vec(6,1);          
+          period    = data_ith_vec(7,1);            
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	  
 		  % delta_t = (t_ys - t0_ys) / period
 		  T_days = period * 365.25;
-      	  Y_t0 = str2num(t0(1:4));  
-      	  M_t0 = str2num(t0(5:6));  
-      	  D_t0 = str2num(t0(7:8));
+      	  Y_t0 = sscanf(t0(1:4),'%d%*');  
+      	  M_t0 = sscanf(t0(5:6),'%d%*'); 
+      	  D_t0 = sscanf(t0(7:8),'%d%*');
 		  sec_t0 = 0;	  
 		  [jd_t0,mjd_t0] = MJD_date(sec_t0,D_t0,M_t0,Y_t0);
 		  delta_t = (mjd_t - mjd_t0) / T_days;			
@@ -172,13 +171,10 @@ Snm_i = Snm_t0 + Snm_trend * delta_t + Snm_acos * cos(2*pi * delta_t) + Snm_asin
               sCnm(n+1,m+1) = sCnm_t0;
               sSnm(n+1,m+1) = sSnm_t0;
           end
-          clear n m
       end
     end
-    clear test str1  
 end
 fclose(fid);
-clear fid line_ith str1 test 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -191,6 +187,5 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % maximum degree (n) and order (m)
 [nmax n2] = size(Cnm);
-clear n2
 nmax = nmax-1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,4 +1,4 @@
-function [partials_2nd_rpl, partials_2nd_xyz, partials_1st_rpl, partials_1st_xyz] = harmonics_partials_2nd(r,n_max,m_max,GM,ae,Cnm,Snm)
+function [partials_2nd_rpl, partials_2nd_xyz, partials_1st_rpl, partials_1st_xyz] = harmonics_partials_2nd(r,n_max,m_max,GM,ae,Cnm,Snm, legendre_functions_struct, n_min)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -50,7 +50,7 @@ function [partials_2nd_rpl, partials_2nd_xyz, partials_1st_rpl, partials_1st_xyz
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 1st order of partials of gravitational potential
-[partials_1st_rpl, partials_1st_xyz] = harmonics_partials_1st(r,n_max,m_max,GM,ae,Cnm,Snm);
+[partials_1st_rpl, partials_1st_xyz] = harmonics_partials_1st(r,n_max,m_max,GM,ae,Cnm,Snm, legendre_functions_struct, n_min);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 dV_r     = partials_1st_rpl(1,1);
 dV_phi   = partials_1st_rpl(2,1);
@@ -61,14 +61,18 @@ dV_lamda = partials_1st_rpl(3,1);
 % computation of spherical coordinates (in radians)
 [lamda,phi,l] = lamda_phi(r);
 rdist = l;
-% Normalized associated Legendre functions
-[Pnm_norm] = Legendre_functions(phi,n_max);
+% % Normalized associated Legendre functions
+% [Pnm_norm] = Legendre_functions(phi,n_max);
+% 
+% % First-order derivatives of normalized associated Legendre functions
+% [dPnm_norm] = Legendre1ord(phi,n_max) ;
+% 
+% % Second-order derivatives of the Normalized Associated Legendre functions
+% [d2Pnm_norm] = Legendre2ord(phi,n_max) ;
 
-% First-order derivatives of normalized associated Legendre functions
-[dPnm_norm] = Legendre1ord(phi,n_max) ;
-
-% Second-order derivatives of the Normalized Associated Legendre functions
-[d2Pnm_norm] = Legendre2ord(phi,n_max) ;
+Pnm_norm = legendre_functions_struct.Pnm_norm;
+dPnm_norm = legendre_functions_struct.Pnm_norm_derivatives_1st;
+d2Pnm_norm = legendre_functions_struct.Pnm_norm_derivatives_2nd;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -78,7 +82,7 @@ rdist = l;
 % V_LamdaLamda (VLL)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Vrr = 0; Vrt = 0; VrL = 0; Vtt = 0; VtL = 0; VLL = 0;
-for n = 0 : n_max
+for n = n_min : n_max
     for m = 0 : n
         Vrr_f = (GM / ae^3) * (n+1)*(n+2) * (ae / l)^(n+3) ;
         Vrr = Vrr + Vrr_f * ( Cnm(n+1,m+1) * cos(m*lamda) + Snm(n+1,m+1) * sin(m*lamda) ) * Pnm_norm(n+1,m+1) ;

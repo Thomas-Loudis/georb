@@ -1,4 +1,4 @@
-function [orbc,err,veqZarray,veqParray] = integr_rk_veq(zo,arc,RKparam,eop,dpint)
+function [orbc,err,veqZarray,veqParray] = integr_rk_veq(zo,arc,RKparam,eop,dpint, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -44,14 +44,12 @@ function [orbc,err,veqZarray,veqParray] = integr_rk_veq(zo,arc,RKparam,eop,dpint
 %  22/08/2013  Dr. Thomas Papanikolaou
 %              Upgrade for adding empirical modelling parameters (e.g. CPR) 
 %  26/05/2020  Dr. Thomas Papanikolaou
-%              Call the global variable Nparam_GLOB of the number of unkown
-%              parametrs to be estimated in addition to the initial state
-%              vector 
+%              Call variable Nparam_GLOB of the number of unkown parametrs
+%               to be estimated in addition to the initial state vector             
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-global Nparam_GLOB
-Nparam = Nparam_GLOB;
+Nparam = orbit_model_struct.forces_param_estim_no;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RK integration method's parameters
@@ -118,7 +116,7 @@ i = 1;
 for t = to : h : tmax-1
     i = i + 1;        
     % computation of state vector at next epoch in the GCRS
-    [z_q,e_z,veqZ,veqP] = rkn768_veq(zGCRS,RKparam,eop,dpint,veqZo,veqPo);    
+    [z_q,e_z,veqZ,veqP] = rkn768_veq(zGCRS,RKparam,eop,dpint,veqZo,veqPo, orbit_model_struct);    
     % State vector at next epoch TT (to+h) in the GCRS
     TT = t + h;    
     rGCRS = z_q(1,1:3)';
@@ -143,7 +141,7 @@ i = 1;
 for t = to : h : tmax-1
     i = i + 1;
     % computation of state vector at next epoch in the GCRS
-    [z_q,e_z,z_int,ez_int] = rkn646fd(zGCRS,RKparam,eop,dpint);
+    [z_q,e_z,z_int,ez_int] = rkn646fd(zGCRS,RKparam,eop,dpint, orbit_model_struct);
     % State vector at next epoch (to+h) in the GCRS
     TT = t + h;
     rGCRS = z_q(1,1:3)';

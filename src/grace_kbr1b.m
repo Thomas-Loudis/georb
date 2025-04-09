@@ -1,4 +1,4 @@
-function [kbr1b,biasrange,rangerate,rangeaccl] = grace_kbr1b(filename,tstop)
+function [kbr1b,biasrange,rangerate,rangeaccl] = grace_kbr1b(filename)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -32,11 +32,6 @@ function [kbr1b,biasrange,rangerate,rangeaccl] = grace_kbr1b(filename,tstop)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-% Reading or not the whole day data
-if tstop == 0
-    tstop = 24 * 3600;
-end
-
 % ISDC GRACE data GPS Time start epoch: 12:00 01-Jan-2000
 [jd2000,mjd2000] = mjd3(12*3600,1,1,2000);
 
@@ -56,13 +51,24 @@ while (~feof(fid))
     test = strcmp(str_endheader,endofheader_grace);
     if test == 1
         i = 1;
-    end    
+       position_end_of_header = ftell(fid);             
+    end   
+    % Releases 2, 3
+    str_endheader = sscanf(line,'%s%c%s%c%s%c%s%*');
+    endofheader_grace = '# END OF HEADER';
+    test = strcmp(str_endheader,endofheader_grace);
+    if test == 1
+        i = 1;
+       position_end_of_header = ftell(fid);             
+    end        
+    
     % GRACE-FO satellites (3 and 4 or C and D)
     str_endheader = sscanf(line,'%20c %*');
     endofheader_gracefo = '# End of YAML header';
     test = strcmp(str_endheader,endofheader_gracefo);
     if test == 1
         i = 1;
+       position_end_of_header = ftell(fid);             
     end
     %if i == 1
     if Nepochs == 1
@@ -83,21 +89,19 @@ rangeaccl = zeros(Nepochs,3);
 
 % Read and store data
 fid = fopen(filename);
+fseek(fid,position_end_of_header,'bof');
 % Read ISDC file
 i = 0;
 j = 1;
 while (~feof(fid))
     line = fgetl(fid);
-    if i == 1
+%     if i == 1
         tgps2000 = str2num(line(1:9));
         mjd = mjd2000 + tgps2000 / (24*3600);
         tgps2000_o = (fix(mjd) - mjd2000) * (24*3600);
         % Seconds sice 0h
         tgps = tgps2000 - tgps2000_o;
         %[tgps,D,M,Y] = MJD_inv(mjd);
-        if tgps > tstop
-            break
-        end        
         kbrdata = [str2num(line(1:end))];
         kbr1b(j,:) = [mjd tgps kbrdata(2:end)];
         % Corrected Biased Range
@@ -113,27 +117,10 @@ while (~feof(fid))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Phase-break epochs
 % 1 June 2021: Thomas Papanikolaou, Revision for GRACE Follow-on data
-        %qualflg = sscanf(line,'%*d %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*d %*d %*d %*d %s %*'); 
         qualflg = sscanf(line,'%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %s %*');
         if qualflg(1,1) == '1'
             phasebreak_epoch = [mjd tgps];
         end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    end
-
-    % GRACE satellites (1 and 2 or A and B)
-    str_endheader = sscanf(line,'%13c %*');
-    endofheader_grace = 'END OF HEADER';
-    test = strcmp(str_endheader,endofheader_grace);
-    if test == 1
-        i = 1;
-    end    
-    % GRACE-FO satellites (3 and 4 or C and D)
-    str_endheader = sscanf(line,'%20c %*');
-    endofheader_gracefo = '# End of YAML header';
-    test = strcmp(str_endheader,endofheader_gracefo);
-    if test == 1
-        i = 1;
-    end    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
 end
 fclose(fid);

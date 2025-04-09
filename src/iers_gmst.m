@@ -1,4 +1,4 @@
-function [gmst] = iers_gmst(mjd,eop,dpint)
+function [gmst] = iers_gmst(mjd,eop,dpint, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -23,7 +23,12 @@ function [gmst] = iers_gmst(mjd,eop,dpint)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Thomas D. Papanikolaou, AUTH                                    June 2011
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Last modified:
+% 07/04/2025  Thomas Loudis Papanikolaou
+%             Source Code minor upgrade 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+TAI_UTC_table = orbit_model_struct.TAI_UTC_table;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % EOP : UT1_UTC Interpolation
@@ -36,7 +41,7 @@ UT1_UTC = eop(:,4);
 % Civil date (D,Mh,Yr)
 [TT,Dy,Mh,Yr] = MJD_inv(mjd);
 % computation of UTC time
-[UTC,GPS_time] = time_scales(TT,mjd);
+[UTC,GPS_time] = time_scales(TT,mjd,TAI_UTC_table);
 % MJD in UTC time scale
 [jd,mjd_int] = MJD_date(UTC,Dy,Mh,Yr);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

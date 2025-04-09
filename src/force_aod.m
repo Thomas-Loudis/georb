@@ -1,4 +1,4 @@
-function [accel_vec] = force_aod(mjd,Z_crs,Rtrs2crs, EQ_mode,ORB_config)
+function [accel_vec] = force_aod(mjd,Z_crs,Rtrs2crs, EQ_mode,ORB_config, legendre_functions_struct, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -32,8 +32,6 @@ function [accel_vec] = force_aod(mjd,Z_crs,Rtrs2crs, EQ_mode,ORB_config)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-global aod_struct_glob 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Equations mode: EQM or VEQ
 VEQ_mode_test = strcmp(EQ_mode,'VEQ');
@@ -60,12 +58,12 @@ param_keyword = 'aod_effects';
 [aod_effects_yn] = read_param_cfg(ORB_config,param_keyword);
 test = strcmp(aod_effects_yn,'y');
 if test == 1  &&  VEQ_mode_test == 0  
-    % Global array (structure)  
+    % Forces model' structure array 
+    aod_struct_glob = orbit_model_struct.aod_effects;
     struct_array = aod_struct_glob;         
     % Spherical Harmonic coefficients matrices  
     GM_shc      = struct_array.GM;
     radius_shc  = struct_array.radius;
-    %atm_tides_degree = struct_array.degree
     if VEQ_mode_test == 1
     nm_values = struct_array.degree_veq;
     else
@@ -77,7 +75,7 @@ if test == 1  &&  VEQ_mode_test == 0
     Cnm_shc  = struct_array.Cnm;
     Snm_shc  = struct_array.Snm;
     % Acceleration vector computation based on sherical harmonics series
-    [ax_AOD,ay_AOD,az_AOD] = accel_aod(rITRS,degree_trunc,order_trunc,GM_shc,radius_shc, Cnm_shc, Snm_shc, mjd);
+    [ax_AOD,ay_AOD,az_AOD] = accel_aod(rITRS,degree_trunc,order_trunc,GM_shc,radius_shc, Cnm_shc, Snm_shc, mjd, legendre_functions_struct, struct_array);
     % Transformation of acceleration from ITRS to the GCRS
     a_AOD_crf = eopmatrix * [ax_AOD; ay_AOD; az_AOD]; 
 else

@@ -1,4 +1,4 @@
-function [accel_vec, partials_r, partials_p] = force_cpr(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config, GM_Earth)
+function [accel_vec, partials_r, partials_p] = force_cpr(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config, GM_Earth, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -31,7 +31,7 @@ function [accel_vec, partials_r, partials_p] = force_cpr(mjd,Z_crs,Rtrs2crs, EQ_
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-global emp_cpr_glob 
+emp_cpr_glob = orbit_model_struct.empirical_forces_cpr; 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Equations mode: EQM or VEQ

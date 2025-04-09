@@ -1,4 +1,4 @@
-function [potential_partials_rpl, potential_partials_xyz] = harmonics_partials_1st(r,n_max,m_max,GM,ae,Cnm,Snm)
+function [potential_partials_rpl, potential_partials_xyz] = harmonics_partials_1st(r,n_max,m_max,GM,ae,Cnm,Snm, legendre_functions_struct, n_min)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -40,12 +40,13 @@ function [potential_partials_rpl, potential_partials_xyz] = harmonics_partials_1
 % computation of spherical coordinates in radians
 [lamda,phi,l] = lamda_phi(r);      
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% computation of normalized associated Legendre functions
-[Pnm_norm] = Legendre_functions(phi,n_max);
-% First-order derivatives of normalized associated Legendre functions
-[dPnm_norm] = Legendre1ord(phi,n_max) ;
+% % computation of normalized associated Legendre functions
+% [Pnm_norm] = Legendre_functions(phi,n_max);
+% % First-order derivatives of normalized associated Legendre functions
+% [dPnm_norm] = Legendre1ord(phi,n_max) ;
+Pnm_norm = legendre_functions_struct.Pnm_norm;
+dPnm_norm = legendre_functions_struct.Pnm_norm_derivatives_1st;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 % 2nd approach:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -54,11 +55,10 @@ function [potential_partials_rpl, potential_partials_xyz] = harmonics_partials_1
 % - dV_r     : partial derivative of geopotential to radius
 % - dV_phi   : partial derivative of geopotential to latitude
 % - dV_lamda : partial derivative of geopotential to longtitude
-
 dV_r = 0;
 dV_phi = 0;
 dV_lamda = 0;
-for n = 0 : n_max
+for n = n_min : n_max
     if n > m_max
         m_limit = m_max;
     else

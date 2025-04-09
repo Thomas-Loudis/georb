@@ -1,4 +1,4 @@
-function [ax,ay,az,pdv_acc,pdv_acc_param] = force_eqm_veq(z,eop,dpint, EQ_mode)
+function [ax,ay,az,pdv_acc,pdv_acc_param, Uearth] = force_eqm_veq(z,eop,dpint, EQ_mode, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -39,12 +39,23 @@ function [ax,ay,az,pdv_acc,pdv_acc_param] = force_eqm_veq(z,eop,dpint, EQ_mode)
 %             into one function as force_eqm_veq.m
 % 15/12/2022  Thomas Loudis Papanikolaou
 %             Code upgrade; Writing functions force_xxxxx.m per effect
-%             to be called by force_eqm_veq.m 
+%             to be called by force_eqm_veq.m
+% 07/04/2025  Thomas Loudis Papanikolaou
+%             Source Code minor upgrade 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-global ORB_config_struct_glob
-global Nmodel_PARAM_ESTIM_glob Nparam_GLOB
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Forces model structure matrix
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Configuration structure array
+ORB_config_struct_glob = orbit_model_struct.orbit_config;
+% Gravity Field
+gfm_struct_glob = orbit_model_struct.gravity_field;
+% orbit_model_struct.GM_Earth = GM;
+Nmodel_PARAM_ESTIM_glob = orbit_model_struct.forces_param_estim_yn;
+Nparam_GLOB = orbit_model_struct.forces_param_estim_no;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Equations mode: EQM or VEQ
@@ -66,7 +77,7 @@ zGCRS = [rGCRS; vGCRS];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Celestial (GCRS) to Terrestrial (ITRS) transformation
-[eopmatrix,deopmatrix] = trs2crs(mjd,eop,dpint);
+[eopmatrix,deopmatrix] = trs2crs(mjd,eop,dpint, orbit_model_struct);
 % Position vector in ITRS
 rITRS = (eopmatrix)' * rGCRS;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -80,6 +91,35 @@ Z_crs = [rGCRS; vGCRS];
 Rtrs2crs = eopmatrix;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SHC array (structure)
+struct_array = gfm_struct_glob;
+% Degree, Order truncation values
+if VEQ_mode_test == 1
+    nm_values = struct_array.degree_veq;
+else
+    nm_values = struct_array.degree_eqm;
+end
+degree_GFM = nm_values(1);
+order_GFM  = nm_values(2);
+n_max = degree_GFM;
+
+% computation of spherical coordinates (in radians)
+[lamda,phi,l] = lamda_phi(rITRS);
+rdist = l;
+% Normalized associated Legendre functions
+[Pnm_norm] = Legendre_functions(phi,n_max);
+
+% First-order derivatives of normalized associated Legendre functions
+[dPnm_norm] = Legendre1ord(phi,n_max) ;
+
+% Second-order derivatives of the Normalized Associated Legendre functions
+[d2Pnm_norm] = Legendre2ord(phi,n_max) ;
+
+legendre_functions_struct.Pnm_norm = Pnm_norm;
+legendre_functions_struct.Pnm_norm_derivatives_1st = dPnm_norm;
+legendre_functions_struct.Pnm_norm_derivatives_2nd = d2Pnm_norm;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Gravitational effects
@@ -88,16 +128,22 @@ Rtrs2crs = eopmatrix;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Gravity Field model
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[accel_vec, partials_r, partials_p, GM_Earth, radius_Earth, Cnm_tidefree, Snm_GFM] = force_gravity(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config);
+[accel_vec, partials_r, partials_p_not, GM_Earth, radius_Earth, Cnm_tidefree, Snm_GFM] = force_gravity(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config, legendre_functions_struct, gfm_struct_glob);
 a_earth = accel_vec;
 Uearth = partials_r;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Gravtiy parameter estimation 
+[partials_p] = force_gravity_estim(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config, gfm_struct_glob);
+% Gravity field partials w.r.t. unknown parameters 
+PD_grav_param = partials_p;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Sun, Moon and Planets orbital perturbations
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 C20 = Cnm_tidefree(2+1,0+1);
-[accel_bodies, accel_indirectJ2, partials_r, Moon_Z_crs, Sun_Z_crs, GM_Moon,GM_Sun] = force_planets(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config, GM_Earth, radius_Earth, C20);
+[accel_bodies, accel_indirectJ2, partials_r, Moon_Z_crs, Sun_Z_crs, GM_Moon,GM_Sun] = force_planets(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config, GM_Earth, radius_Earth, C20, orbit_model_struct);
 a_bodies = accel_bodies;
 a_indirectJ2 = accel_indirectJ2;
 pdv_3rdbodies = partials_r;
@@ -113,7 +159,7 @@ pdv_3rdbodies = partials_r;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 r_Moon = Moon_Z_crs(1:3,1);
 r_Sun  = Sun_Z_crs(1:3,1);
-[accel_tides, accel_atm_tides, partials_r] = force_tides(mjd,Z_crs,Rtrs2crs, EQ_mode,ORB_config, GM_Earth,radius_Earth,GM_Moon,r_Moon,GM_Sun,r_Sun, eop,dpint);
+[accel_tides, accel_atm_tides, partials_r] = force_tides(mjd,Z_crs,Rtrs2crs, EQ_mode,ORB_config, GM_Earth,radius_Earth,GM_Moon,r_Moon,GM_Sun,r_Sun, eop,dpint, legendre_functions_struct, orbit_model_struct);
 a_tides = accel_tides;
 a_atm_tides_crf = accel_atm_tides;
 Utides_icrs = partials_r;    
@@ -122,14 +168,19 @@ Utides_icrs = partials_r;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Relativistic Effects as corrections to satellite's acceleration
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[accel_vec] = force_relativistic(mjd,Z_crs,Rtrs2crs, EQ_mode,ORB_config, GM_Earth,GM_Sun,Sun_Z_crs);
+[accel_vec] = force_relativistic(mjd,Z_crs,Rtrs2crs, EQ_mode,ORB_config, GM_Earth,GM_Sun,Sun_Z_crs, orbit_model_struct);
 a_relativistic = accel_vec;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Yukawa effects 
+% [a_yukawa] = yukawa_force(rGCRS,GM_Earth)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Atmosphere and Ocean De-Aliasing (AOD) effects
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[accel_vec] = force_aod(mjd,Z_crs,Rtrs2crs, EQ_mode,ORB_config);
+[accel_vec] = force_aod(mjd,Z_crs,Rtrs2crs, EQ_mode,ORB_config, legendre_functions_struct, orbit_model_struct);
 a_AOD_crf = accel_vec;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -152,7 +203,7 @@ if test_nongrav == 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 % Accelerometer data processing and calibration modelling 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-[accel_vec, partials_r, partials_p] = force_acc(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config);
+[accel_vec, partials_r, partials_p] = force_acc(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config, orbit_model_struct);
 facc_ICRF = accel_vec;
 pdv_nongrav = partials_r;
 PD_ACC_Cal_Param = partials_p;
@@ -178,7 +229,7 @@ a_nongrav = facc_ICRF;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Empirical forces modelling based on Cycle-Per-Revolution acceleration terms 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[accel_vec, partials_r, partials_p] = force_cpr(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config, GM_Earth);
+[accel_vec, partials_r, partials_p] = force_cpr(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config, GM_Earth, orbit_model_struct);
 a_emp = accel_vec;
 PD_emp_Z = partials_r;
 PD_accemp_P = partials_p;
@@ -187,7 +238,7 @@ PD_accemp_P = partials_p;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Empirical Accelerations :: Pulses or Piecewise accelerations 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[accel_vec, partials_r, partials_p] = force_empaccel(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config);
+[accel_vec, partials_r, partials_p] = force_empaccel(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config, orbit_model_struct);
 f_pulses = accel_vec;
 PD_pulses_param = partials_p;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -241,6 +292,15 @@ if Nmodel_PARAM_ESTIM(3) == 1
     for i_param = 1 : n2
         Nparam = Nparam + 1;
         pdv_acc_param(:,Nparam) = PD_pulses_param(:,i_param);
+    end
+end
+
+% Gravity field parameters :: Potential harmonics coefficients 
+if Nmodel_PARAM_ESTIM(4) == 1
+    [n1 n2] = size(PD_grav_param);
+    for i_param = 1 : n2
+        Nparam = Nparam + 1;
+        pdv_acc_param(:,Nparam) = PD_grav_param(:,i_param);
     end
 end
 

@@ -72,7 +72,6 @@ end
 fclose(fid);
 clear fid line_ith str1 test
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Arrays initialization
 if n_trunc == -1
@@ -232,11 +231,9 @@ while (~feof(fid))
               line_ith = fgetl(fid);
           end
           end
-
 		  test_to = 0;
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%G(t)=gfct(t0)+trnd*(t-t0)+asin1*sin(2pi/p1*(t-t0))+acos1*cos(2pi/p1*(t-t0))
+% G(t)=gfct(t0)+trnd*(t-t0)+asin1*sin(2pi/p1*(t-t0))+acos1*cos(2pi/p1*(t-t0))
 %                         +asin2*sin(2pi/p2*(t-t0))+acos2*cos(2pi/p2*(t-t0))
 T_days = period1 * 365.25;
 delta_t = (mjd_t - mjd_t0) / T_days;			
@@ -244,7 +241,7 @@ Cnm_i = Cnm_t0 + Cnm_trend * delta_t + Cnm_acos1 * cos(2*pi/period1 * delta_t) +
     								 + Cnm_acos2 * cos(2*pi/period2 * delta_t) + Cnm_asin2 * sin(2*pi/period2 * delta_t) ;                               
 Snm_i = Snm_t0 + Snm_trend * delta_t + Snm_acos1 * cos(2*pi/period1 * delta_t) + Snm_asin1 * sin(2*pi/period1 * delta_t) ...
 									 + Snm_acos2 * cos(2*pi/period2 * delta_t) + Snm_asin2 * sin(2*pi/period2 * delta_t) ;
- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
           Cnm(n+1,m+1) = Cnm_i;
           Snm(n+1,m+1) = Snm_i;          
           if sigma_shc ~= 0

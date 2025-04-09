@@ -1,4 +1,4 @@
-function [rg3rd_meter,vg3rd_meter] = dexxxeph_stategcrf(body_ith,jd,HDxxxfilename,DEcheby,DErecord)
+function [rg3rd_meter,vg3rd_meter] = dexxxeph_stategcrf(body_ith,jd,HDxxxfilename,DEcheby,DErecord, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -31,11 +31,11 @@ function [rg3rd_meter,vg3rd_meter] = dexxxeph_stategcrf(body_ith,jd,HDxxxfilenam
 
 
 % Moon Geocentric coordinates (Km,Km/d)
-[rgMoon,vgMoon,chebycoef] = dexxxeph_state(10,jd,HDxxxfilename,DEcheby,DErecord);
+[rgMoon,vgMoon,chebycoef] = dexxxeph_state(10,jd,HDxxxfilename,DEcheby,DErecord, orbit_model_struct);
 zgMoon = [rgMoon' vgMoon'];
 
 % Earh-Moon-Barycenter coordinates in Solar System Barycentrer (Km,Km/d)
-[rEMB,vEMB,chebycoef] = dexxxeph_state(3,jd,HDxxxfilename,DEcheby,DErecord);
+[rEMB,vEMB,chebycoef] = dexxxeph_state(3,jd,HDxxxfilename,DEcheby,DErecord, orbit_model_struct);
 zbEMB = [rEMB' vEMB'];
 
 % Planetary Coordinates
@@ -44,10 +44,10 @@ if body_ith == 10
     vg3rd = vgMoon;
 else
     % Celestial body's state vector
-    [rb3rd,vb3rd,chebycoef] = dexxxeph_state(body_ith,jd,HDxxxfilename,DEcheby,DErecord);
+    [rb3rd,vb3rd,chebycoef] = dexxxeph_state(body_ith,jd,HDxxxfilename,DEcheby,DErecord, orbit_model_struct);
     zb3rd = [rb3rd' vb3rd'];
     % Transformation : Barycentric to Geocentric Celestial Reference Frame
-    [rg3rd,vg3rd] = dexxxeph_bcs2gcs(zb3rd,zbEMB,zgMoon,HDxxxfilename);
+    [rg3rd,vg3rd] = dexxxeph_bcs2gcs(zb3rd,zbEMB,zgMoon, orbit_model_struct);
 end
 
 % State vector Units Conversion: Km and Km/day to m and m/sec

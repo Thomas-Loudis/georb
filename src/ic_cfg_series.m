@@ -21,7 +21,7 @@ function [ic_data_mjd2] = ic_cfg_series(ic_data_mjd1, i_arc, arc_length)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-N_orbit_arcs = sscanf(ic_data_mjd1,'%*s %*s %*s %*s %*s %*s %*s %*s %s %*');
+N_orbit_arcs = sscanf(ic_data_mjd1,'%*s %*s %*s %*s %*s %*s %*s %*s %d %*');
 Orbit_arc_length = arc_length;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -61,13 +61,15 @@ object_id  = sscanf(ic_data_mjd1,'%s %*');
 ref_frame  = sscanf(ic_data_mjd1,'%*s %s %*');
 time_scale = sscanf(ic_data_mjd1,'%*s %*s %s %*');
 %IC_Zo = sscanf(ic_data_mjd1,'%*s%*s%*s%*s%*s%*s%*s%*s%*s %f %f %f %f %f %f %*');
-IC_param = sscanf(ic_data_mjd1,'%*s%*s%*s%*s%*s%*s%*s%*s%*s %700c %*');
+% IC_param = sscanf(ic_data_mjd1,'%*s%*s%*s%*s%*s%*s%*s%*s%*s %700c %*');
+IC_param = sscanf(ic_data_mjd1,'%*s%*s%*s%*s%*s%*s%*s%*s%*s %10000c');
 
-ic_data_mjd2 = sprintf('%s %s %s %s %d %f 0 0 %d %s ', object_id, ref_frame, time_scale, 'MJD', MJD_day, Sec_00h, N_orbit_arcs, IC_param); 
+% ic_data_mjd2 = sprintf('%s %s %s %s %d %f 0 0 %d %s ', object_id, ref_frame, time_scale, 'MJD', MJD_day, Sec_00h, N_orbit_arcs, IC_param); 
+ic_data_mjd2 = sprintf('%s %s %s %s %d %f %d %d %d %s', object_id, ref_frame, time_scale, 'MJD', MJD_day, Sec_00h, 0, 0, N_orbit_arcs, IC_param) ;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if i_arc == 1
-    ic_data_mjd2 = ic_data_mjd1;
-end
+% if i_arc == 1
+%     ic_data_mjd2 = ic_data_mjd1;
+% end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

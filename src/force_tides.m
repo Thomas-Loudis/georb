@@ -1,4 +1,4 @@
-function [accel_tides, accel_atm_tides, partials_r] = force_tides(mjd,Z_crs,Rtrs2crs, EQ_mode,ORB_config, GM_Earth,radius_Earth,GM_Moon,r_Moon,GM_Sun,r_Sun, eop,dpint)
+function [accel_tides, accel_atm_tides, partials_r] = force_tides(mjd,Z_crs,Rtrs2crs, EQ_mode,ORB_config, GM_Earth,radius_Earth,GM_Moon,r_Moon,GM_Sun,r_Sun, eop,dpint, legendre_functions_struct, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -35,14 +35,22 @@ function [accel_tides, accel_atm_tides, partials_r] = force_tides(mjd,Z_crs,Rtrs
 % Remark:
 % Code extracted from function force_eqm_veq. 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Last modified
+% 30/08/2024  Dr. Thomas Loudis Papanikolaou
+%             Upgrade of the ocean pole tide
+% 07/04/2025  Thomas Loudis Papanikolaou
+%             Source Code minor upgrade 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-global ocean_tides_struct_glob 
-global aod_tides_struct_glb
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Equations mode: EQM or VEQ
 VEQ_mode_test = strcmp(EQ_mode,'VEQ');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Harmonics Synthesis start degree
+n_min = 2;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -85,9 +93,8 @@ if test == 1
     test = strcmp(solid_earth_tides_1_non_freq,'y');
     if test == 1
         [dCnm_solid1,dSnm_solid1] = tides_solid1(GM_Earth,radius_Earth,GMmoon,rgMoon_ITRS,GMsun,rgSun_ITRS);
-         % Solid Earth Tides (1) acceleration vector (in ITRS)
-        %[ax,ay,az] = accel_tide(rITRS,4,4,GM_Earth,radius_Earth,dCnm_solid1,dSnm_solid1);
-        [partials_rpl, partials_xyz] = potential_partials_1st(rITRS,4,4,GM_Earth,radius_Earth,dCnm_solid1,dSnm_solid1);
+        % Solid Earth Tides (1) acceleration vector (in ITRS)
+        [partials_rpl, partials_xyz] = potential_partials_1st(rITRS,4,4,GM_Earth,radius_Earth,dCnm_solid1,dSnm_solid1, legendre_functions_struct, n_min);
         ax = partials_xyz(1,1);
         ay = partials_xyz(2,1);
         az = partials_xyz(3,1);        
@@ -104,10 +111,9 @@ if test == 1
     [solid_earth_tides_2_freq] = read_param_cfg(ORB_config,param_keyword);
     test = strcmp(solid_earth_tides_2_freq,'y');
     if test == 1
-        [dCnm_solid2,dSnm_solid2] = tides_solid2(mjd,eop,dpint);
-         % Solid Earth Tides (2) acceleration vector (in ITRS)
-        %[ax,ay,az] = accel_tide(rITRS,2,2,GM_Earth,radius_Earth,dCnm_solid2,dSnm_solid2);
-        [partials_rpl, partials_xyz] = potential_partials_1st(rITRS,2,2,GM_Earth,radius_Earth,dCnm_solid2,dSnm_solid2);
+        [dCnm_solid2,dSnm_solid2] = tides_solid2(mjd,eop,dpint, orbit_model_struct);
+        % Solid Earth Tides (2) acceleration vector (in ITRS)
+        [partials_rpl, partials_xyz] = potential_partials_1st(rITRS,2,2,GM_Earth,radius_Earth,dCnm_solid2,dSnm_solid2, legendre_functions_struct, n_min);
         ax = partials_xyz(1,1);
         ay = partials_xyz(2,1);
         az = partials_xyz(3,1);
@@ -120,7 +126,6 @@ if test == 1
     end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Ocean Tides
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -128,7 +133,8 @@ if test == 1
     [ocean_tides_yn] = read_param_cfg(ORB_config,param_keyword);
     test = strcmp(ocean_tides_yn,'y');
     if test == 1
-        % Global array (structure) of Atmospheric Tides   
+        % Ocean Tides structure array
+        ocean_tides_struct_glob = orbit_model_struct.ocean_tides;
         struct_array = ocean_tides_struct_glob;         
         % Spherical Harmonic coefficients matrices  
         if VEQ_mode_test == 1
@@ -145,15 +151,14 @@ if test == 1
         ocean_tides_dCnm_minus = struct_array.dCnm_minus;
         ocean_tides_dSnm_minus = struct_array.dSnm_minus;         
         % Ocean Tide model
-        [dCnm_ocean,dSnm_ocean] = tides_ocean(degree_trunc,order_trunc,mjd,eop,dpint,ocean_tides_delaunay_doodson_multipliers,ocean_tides_dCnm_plus,ocean_tides_dSnm_plus,ocean_tides_dCnm_minus,ocean_tides_dSnm_minus);
+        [dCnm_ocean,dSnm_ocean] = tides_ocean(degree_trunc,order_trunc,mjd,eop,dpint,ocean_tides_delaunay_doodson_multipliers,ocean_tides_dCnm_plus,ocean_tides_dSnm_plus,ocean_tides_dCnm_minus,ocean_tides_dSnm_minus, orbit_model_struct);
         % Ocean Tides Acceleration vector (in ITRS)
-        [partials_rpl, partials_xyz] = potential_partials_1st(rITRS,degree_trunc,order_trunc,GM_Earth,radius_Earth,dCnm_ocean,dSnm_ocean);
+        [partials_rpl, partials_xyz] = potential_partials_1st(rITRS,degree_trunc,order_trunc,GM_Earth,radius_Earth,dCnm_ocean,dSnm_ocean, legendre_functions_struct, n_min);
         ax = partials_xyz(1,1);
         ay = partials_xyz(2,1);
         az = partials_xyz(3,1);        
         % Transformation of acceleration from ITRS to the GCRS
         a_ocean_GCRS = eopmatrix * [ax; ay; az];
-
     else
         dCnm_ocean = zeros(10+1,10+1);
         dSnm_ocean = zeros(10+1,10+1);
@@ -162,7 +167,6 @@ if test == 1
     % Ocean Tides acceleration vector (in celestial reference frame GCRS)
     a_ocean = a_ocean_GCRS;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Pole Tide
@@ -173,10 +177,9 @@ param_keyword = 'solid_earth_pole_tide';
 [solid_earth_pole_tide_yn] = read_param_cfg(ORB_config,param_keyword);
 test = strcmp(solid_earth_pole_tide_yn,'y');
 if test == 1
-[dCnm_se_pole_tide, dSnm_se_pole_tide] = tides_pole_solidearth(mjd,eop,dpint);
+[dCnm_se_pole_tide, dSnm_se_pole_tide] = tides_pole_solidearth(mjd,eop,dpint, orbit_model_struct);
 % Acceleration vector (in ITRS)
-%[ax,ay,az] = accel_tide(rITRS,2,2,GM_Earth,radius_Earth,dCnm_se_pole_tide,dSnm_se_pole_tide);
-[partials_rpl, partials_xyz] = potential_partials_1st(rITRS,2,2,GM_Earth,radius_Earth,dCnm_se_pole_tide,dSnm_se_pole_tide);
+[partials_rpl, partials_xyz] = potential_partials_1st(rITRS,2,2,GM_Earth,radius_Earth,dCnm_se_pole_tide,dSnm_se_pole_tide, legendre_functions_struct, n_min);
 ax = partials_xyz(1,1);
 ay = partials_xyz(2,1);
 az = partials_xyz(3,1);
@@ -196,9 +199,18 @@ param_keyword = 'ocean_pole_tide';
 [ocean_pole_tide_yn] = read_param_cfg(ORB_config,param_keyword);
 test = strcmp(ocean_pole_tide_yn,'y');
 if test == 1
-[dCnm_ocean_pole_tide, dSnm_ocean_pole_tide] = tides_pole_ocean(mjd,eop,dpint);
+oceanpoletide_struct = orbit_model_struct.oceanpoletide;    
+% Degree expansion truncation
+if VEQ_mode_test == 1
+    nm_values = oceanpoletide_struct.opoletide_degree_veq;
+else
+    nm_values = oceanpoletide_struct.opoletide_degree_eqm;
+end
+n_max_opoletide = nm_values(1);
+m_max_opoletide = nm_values(2);
+[dCnm_ocean_pole_tide, dSnm_ocean_pole_tide] = tides_pole_ocean(mjd,eop,dpint,GM_Earth,radius_Earth,n_max_opoletide,m_max_opoletide, orbit_model_struct);
 % Acceleration vector (in ITRS)
-[partials_rpl, partials_xyz] = potential_partials_1st(rITRS,2,2,GM_Earth,radius_Earth,dCnm_ocean_pole_tide,dSnm_ocean_pole_tide);
+[partials_rpl, partials_xyz] = potential_partials_1st(rITRS,n_max_opoletide,m_max_opoletide,GM_Earth,radius_Earth,dCnm_ocean_pole_tide,dSnm_ocean_pole_tide, legendre_functions_struct, n_min);
 ax = partials_xyz(1,1);
 ay = partials_xyz(2,1);
 az = partials_xyz(3,1);
@@ -215,12 +227,17 @@ end
 % Tides SHC array :: corrections to Cnm,Snm   
     % Solid Earth Tides corrections array
     [dCnm_solid,dSnm_solid] = tides_add2(dCnm_solid1,dSnm_solid1,dCnm_solid2,dSnm_solid2,-1);
+
     % Tides corrections array including Ocean Tides
-    [dCnm_tide,dSnm_tide] = tides_add2(dCnm_ocean,dSnm_ocean,dCnm_solid,dSnm_solid,-1);
-    %[dCnm_tide,dSnm_tide] = tides_add2(dCnm_solid,dSnm_solid,dCnm_ocean,dSnm_ocean,-1);    
+    [dCnm_tide_solidocean,dSnm_tide_solidocean] = tides_add2(dCnm_ocean,dSnm_ocean,dCnm_solid,dSnm_solid,-1);
+    %[dCnm_tide,dSnm_tide] = tides_add2(dCnm_solid,dSnm_solid,dCnm_ocean,dSnm_ocean,-1);
+
+    % Add Ocean Pole Tide to the tides corrections array
+    [dCnm_tide,dSnm_tide] = tides_add2(dCnm_tide_solidocean,dSnm_tide_solidocean,dCnm_ocean_pole_tide,dSnm_ocean_pole_tide,-1);
+
     % Include the Pole Tide corrections
-    dCnm_tide(2+1,1+1) = dCnm_tide(2+1,1+1) + dCnm_se_pole_tide(2+1,1+1) + dCnm_ocean_pole_tide(2+1,1+1);
-    dSnm_tide(2+1,1+1) = dSnm_tide(2+1,1+1) + dSnm_se_pole_tide(2+1,1+1) + dSnm_ocean_pole_tide(2+1,1+1);
+    dCnm_tide(2+1,1+1) = dCnm_tide(2+1,1+1) + dCnm_se_pole_tide(2+1,1+1); % + dCnm_ocean_pole_tide(2+1,1+1);
+    dSnm_tide(2+1,1+1) = dSnm_tide(2+1,1+1) + dSnm_se_pole_tide(2+1,1+1); % + dSnm_ocean_pole_tide(2+1,1+1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -237,15 +254,15 @@ else
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-   
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Atmospheric Tides
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 param_keyword = 'atm_tides';
 [atm_tides_yn] = read_param_cfg(ORB_config,param_keyword);
 test = strcmp(atm_tides_yn,'y');
-if test == 1
-    % Global array (structure) of Atmospheric Tides   
+if test == 1  &&  VEQ_mode_test == 0
+    % Atmospheric Tides structure array
+    aod_tides_struct_glb = orbit_model_struct.atm_tides;
     struct_array = aod_tides_struct_glb;         
     % Atmospheric Tides Spherical Harmonic coefficients matrices  
     atmtides_GM      = struct_array.GM;
@@ -265,28 +282,34 @@ if test == 1
     atm_tides_dCnm_minus = struct_array.dCnm_minus;
     atm_tides_dSnm_minus = struct_array.dSnm_minus;
     % Matrices dCnm_atm_tides, dSnm_atm_tides
-    [dCnm_atm_tides,dSnm_atm_tides] = tides_ocean(degree_trunc,order_trunc,mjd,eop,dpint,atmtides_delaunay_doodson_multipliers,atm_tides_dCnm_plus,atm_tides_dSnm_plus,atm_tides_dCnm_minus,atm_tides_dSnm_minus); 
+    [dCnm_atm_tides,dSnm_atm_tides] = tides_ocean(degree_trunc,order_trunc,mjd,eop,dpint,atmtides_delaunay_doodson_multipliers,atm_tides_dCnm_plus,atm_tides_dSnm_plus,atm_tides_dCnm_minus,atm_tides_dSnm_minus, orbit_model_struct); 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+n = 0; m = 0;
+dCnm_atm_tides(n+1,m+1) = 0;
+dSnm_atm_tides(n+1,m+1) = 0;
+n = 1; m = 0;
+dCnm_atm_tides(n+1,m+1) = 0;
+dSnm_atm_tides(n+1,m+1) = 0;
+n = 1; m = 1;
+dCnm_atm_tides(n+1,m+1) = 0;
+dSnm_atm_tides(n+1,m+1) = 0;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
     % Atmospheric Tides Acceleration vector (in ITRS)
-    %[ax,ay,az] = accel_tide(rITRS,degree_trunc,order_trunc,atmtides_GM,atmtides_radius,dCnm_atm_tides,dSnm_atm_tides);
-    [partials_rpl, partials_xyz] = potential_partials_1st(rITRS,degree_trunc,order_trunc,atmtides_GM,atmtides_radius,dCnm_atm_tides,dSnm_atm_tides);
+    [partials_rpl, partials_xyz] = potential_partials_1st(rITRS,degree_trunc,order_trunc,atmtides_GM,atmtides_radius,dCnm_atm_tides,dSnm_atm_tides, legendre_functions_struct, n_min);
     ax = partials_xyz(1,1);
     ay = partials_xyz(2,1);
     az = partials_xyz(3,1);
     % Transformation of acceleration from ITRS to the GCRS
     a_atm_tides_crf = eopmatrix * [ax; ay; az]; 
     
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Tides corrections array including Atmospheric Tides
-    [dCnm_tides_sum,dSnm_tides_sum] = tides_add2(dCnm_atm_tides,dSnm_atm_tides,dCnm_tide,dSnm_tide,-1);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-       
+    [dCnm_tides_sum,dSnm_tides_sum] = tides_add2(dCnm_atm_tides,dSnm_atm_tides,dCnm_tide,dSnm_tide,-1);       
 else
     a_atm_tides_crf = [0; 0; 0];
     dCnm_tides_sum = dCnm_tide;
     dSnm_tides_sum = dSnm_tide;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % VEQ : Partial derivatives of tides acceleration w.r.t. state vector in ITRS
@@ -301,7 +324,7 @@ if VEQ_mode_test == 1
     n_tides = d1 - 1;
     m_tides = d2 - 1;
     % Geopotential 2nd order partial derivatives 
-    [partials_2nd_spher, partials_2nd_xyz, partials_1st_spher, partials_1st_xyz] = potential_partials_2nd(rITRS,n_tides,m_tides,GM_Earth,radius_Earth,dCnm_tides_sum,dSnm_tides_sum);
+    [partials_2nd_spher, partials_2nd_xyz, partials_1st_spher, partials_1st_xyz] = potential_partials_2nd(rITRS,n_tides,m_tides,GM_Earth,radius_Earth,dCnm_tides_sum,dSnm_tides_sum, legendre_functions_struct, n_min);
     Utides_itrs = partials_2nd_xyz;
     % Transformation from ITRS to GCRS
     % (df/dr)_Inertial = EOP(t) * (df/dr)_Terrestrial * inv( EOP(t) )
@@ -311,7 +334,6 @@ else
 end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 accel_tides = a_tides;

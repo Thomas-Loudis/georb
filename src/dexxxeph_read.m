@@ -1,4 +1,4 @@
-function [decbv,datarecord,deformat] = dexxxeph_read(DEfilename,HDfilename,tjd)
+function [decbv,datarecord,deformat,datarec_period] = dexxxeph_read(DEfilename,HDfilename,tjd)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -25,12 +25,43 @@ function [decbv,datarecord,deformat] = dexxxeph_read(DEfilename,HDfilename,tjd)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % Read: Header file
+% fid = fopen(HDfilename);
+% i = 0;
+% j = 0;
+% line_no = 0;
+% while (~feof(fid))
+%     line = fgetl(fid);
+%     i = i + 1;
+%     if i == 1
+%         line1num = sscanf(line,'%s %d');
+%         [sz1 sz2] = size(line1num);
+%         ncoeff = line1num(sz1,sz2);
+%     end
+%     if length(line) > 11
+%         if line(1:12) == 'GROUP   1050'
+%             line_no = i;
+%         end
+%     end
+%     if line_no > 0
+%         if i >= (line_no+2) & i <= (line_no+4)
+%             j = j + 1;
+%             deformat(j,:) = str2num(line);
+%         end
+%     end
+% end
+% fclose(fid);
+% clear i j fid sz1 sz2 line_no
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Read: Header file
+% Read DExxx Header file: header.xxx
 fid = fopen(HDfilename);
 i = 0;
 j = 0;
 line_no = 0;
+linei_group1030 = -1000;
 while (~feof(fid))
     line = fgetl(fid);
     i = i + 1;
@@ -39,6 +70,18 @@ while (~feof(fid))
         [sz1 sz2] = size(line1num);
         ncoeff = line1num(sz1,sz2);
     end
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
+    linei_group1030 = linei_group1030 + 1;
+    if length(line) > 11
+        if line(1:12) == 'GROUP   1030'
+            linei_group1030 = 1;
+        end
+    end
+    if linei_group1030 == 3
+        group1030 = str2num(line);
+        tspan = group1030(1,3);
+    end
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
     if length(line) > 11
         if line(1:12) == 'GROUP   1050'
             line_no = i;
@@ -54,6 +97,12 @@ end
 fclose(fid);
 clear i j fid sz1 sz2 line_no
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Coefficients set of the complete data record period (32 days)
+datarec_period = tspan;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Computing the number of Chebychev coefficients for each of the 13 items

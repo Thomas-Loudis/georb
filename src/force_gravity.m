@@ -1,4 +1,4 @@
-function [accel_vec, partials_r, partials_p, GM_Earth, radius_Earth, Cnm_tidefree, Snm_GFM] = force_gravity(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config)
+function [accel_vec, partials_r, partials_p, GM_Earth, radius_Earth, Cnm_tidefree, Snm_GFM] = force_gravity(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config, legendre_functions_struct, gfm_struct_glob)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -30,8 +30,6 @@ function [accel_vec, partials_r, partials_p, GM_Earth, radius_Earth, Cnm_tidefre
 % Code extracted from function force_eqm_veq. 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-global gfm_struct_glob 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Equations mode: EQM or VEQ
@@ -125,16 +123,19 @@ if test_central_grav == 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Geopotential (full terms)
 elseif test_static_grav == 1 || test_timevar_grav == 1   
+    % Spherical Harmonic Synthesis start degree
+    degree_min = 0;
     if VEQ_mode_test == 0
+
     % Acceleration in ITRS
-    [partials_rpl, partials_xyz] = potential_partials_1st(rITRS,degree_GFM,order_GFM,GM_Earth,radius_Earth,Cnm_tidefree,Snm_GFM);
+    [partials_rpl, partials_xyz] = potential_partials_1st(rITRS,degree_GFM,order_GFM,GM_Earth,radius_Earth,Cnm_tidefree,Snm_GFM, legendre_functions_struct, degree_min);
     ax = partials_xyz(1,1);
     ay = partials_xyz(2,1);
     az = partials_xyz(3,1);
     Uearth = zeros(3,3);
     elseif VEQ_mode_test == 1
         % Acceleration and Partials w.r.t. state vector in ITRS
-        [partials_2nd_spher, partials_2nd_xyz, partials_1st_spher, partials_1st_xyz] = potential_partials_2nd(rITRS,degree_GFM,order_GFM,GM_Earth,radius_Earth,Cnm_tidefree,Snm_GFM);        
+        [partials_2nd_spher, partials_2nd_xyz, partials_1st_spher, partials_1st_xyz] = potential_partials_2nd(rITRS,degree_GFM,order_GFM,GM_Earth,radius_Earth,Cnm_tidefree,Snm_GFM, legendre_functions_struct, degree_min);        
         Uearth = partials_2nd_xyz;
         ax = partials_1st_xyz(1,1);
         ay = partials_1st_xyz(2,1);

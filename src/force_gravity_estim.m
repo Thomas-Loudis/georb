@@ -1,14 +1,14 @@
-function [accel_vec, partials_r, partials_p] = force_acc(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config, orbit_model_struct)
+function [partials_p] = force_gravity_estim(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config, gfm_struct_glob)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Function: force_acc
+% Function: force_gravity_estim
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Purpose:
-%  Accelerometer data processing and calibration modelling for capturing
-%  the non-gravitational effects
+%  Gravity Field parameter estimation partial derivatives
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Input arguments:
 % - mjd:            Epoch's Modified Julian Day number including fraction of the day) in TT (Terrestrial Time)
 % - Z_crs:          State vector in Celestial Reference Frame (GCRS)   
 %                   z = [r' v']
@@ -19,19 +19,12 @@ function [accel_vec, partials_r, partials_p] = force_acc(mjd,Z_crs,Rtrs2crs, EQ_
 % - Configuration array:    Orbit master configuration structure array
 %
 % Output arguments:
-% - accel_vec:      Acceleration vector cartesian components in GCRS
-% - partials_r:     Partials w.r.t. position vector 
 % - partials_p:     Partials w.r.t. parameters 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Author:  Thomas Loudis Papanikolaou                                     
-% Created: 15 December 2022
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Remark:
-% Code extracted from function force_eqm_veq. 
+% Created: 21 March 2023
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Orbit/Force model matrix
-accelerometer_data_cal_glob = orbit_model_struct.accelerometer_struct; 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Equations mode: EQM or VEQ
@@ -52,46 +45,59 @@ rITRS = (eopmatrix)' * rGCRS;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-% Satellite Accelerometer data (non-gravitational effects)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-param_keyword = 'acc_data';
-[acc_data] = read_param_cfg(ORB_config,param_keyword);
-test_accelerometer = strcmp(acc_data,'y');
-if test_accelerometer == 1    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% CHAMP
-%     [t,D,M,Y] = MJD_inv(mjd);
-%     [facc_x,facc_y,facc_z] = accel_acc(mjd,t,accl,4);
-%     facc = [ facc_x; facc_y; facc_z];
+% Gravitational effects
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Gravity Field structure array  
+struct_array = gfm_struct_glob;         
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% GRACE and GRACE Follow-On missions
+% Gravity Field model
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Accelerometer Calibration Parameters matrix
-accelerometer_struct = accelerometer_data_cal_glob;
-acc_cal_param = accelerometer_struct.cal_parameters;
-acc1b_array_TT = accelerometer_struct.ACC1B_data_array;
-acc_dpint = accelerometer_struct.acc_interp_no;
-sca1b_array = accelerometer_struct.SCA1B_data_array;
-sca_dpint = accelerometer_struct.sca_interp_no;
-
-[PD_ACC_Cal_Param, facc_ICRF, facc_SRF] = pdv_grace_acc(mjd, acc_cal_param, acc1b_array_TT, sca1b_array, acc_dpint, sca_dpint, orbit_model_struct);
-pdv_nongrav = zeros(3,3);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+param_keyword = 'Earth_Gravity_Field';
+[effect_yn] = read_param_cfg(ORB_config,param_keyword);
+test = strcmp(effect_yn,'y');
+if test == 1    
+    % GM and radius
+    GM_Earth   = struct_array.GM;
+    radius_Earth = struct_array.radius;    
 else
-    facc_ICRF = [0; 0; 0];
-    % VEQ pdv
-    pdv_nongrav = zeros(3,3); 
-    PD_ACC_Cal_Param = zeros(3,1);
+    % Standards
+    GM_Earth     = 3.9860044150e+14;
+    radius_Earth = 6.3781363000e+06; 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Output arguments
-accel_vec = facc_ICRF;
-partials_r = pdv_nongrav;
-partials_p = PD_ACC_Cal_Param;
+% Gravity Field parameters estimation y/n 
+grav_paramestim_yn = struct_array.param_estim_yn;
+test_grav_paramestim_10 = strcmp(grav_paramestim_yn,'y');
+if test_grav_paramestim_10 == 1    
+    % Cnm_paramestim = struct_array.Cnm_estim; 
+    % Snm_paramestim = struct_array.Snm_estim; 
+
+    % Gravity Field parameters to be estimated :: Maximum degree of coefficients
+    Nrange = struct_array.param_estim_degree;
+    Nparam_grav_min = Nrange(1,1);
+    Nparam_grav_max = Nrange(1,2);
+    Nparam_grav = struct_array.parameters_number;
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Gravity Field partials w.r.t. harmonics coefficients
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if test_grav_paramestim_10 == 1    
+    if VEQ_mode_test == 0    
+        partials_p_coef = zeros(3,Nparam_grav);       
+    elseif VEQ_mode_test == 1        
+        % Partials w.r.t. gravity field parameters
+        [partials_p_coef, partials_c, partials_s] = potential_partials_coef(rITRS,Nparam_grav_max,Nparam_grav_min,GM_Earth,radius_Earth,gfm_struct_glob);        
+    end    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+else
+    partials_p_coef = zeros(3,1);
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+partials_p = partials_p_coef;

@@ -1,4 +1,4 @@
-function [orbc,err] = integr_rk(zo,arc,RKparam,eop,dpint)
+function [orbc,err] = integr_rk(zo,arc,RKparam,eop,dpint, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -85,7 +85,7 @@ i = 1;
 TT = to;
 for i = 2 : Nepochs
     % computation of state vector at next epoch in the GCRS
-    [z_q,e_z] = rkn768(zGCRS,RKparam,eop,dpint);
+    [z_q,e_z] = rkn768(zGCRS,RKparam,eop,dpint,orbit_model_struct);
     % State vector at next epoch TT (to+h) in the GCRS
     TT = TT + h;    
     rGCRS = z_q(1,1:3)';
@@ -103,7 +103,7 @@ i = 1;
 for t = to : h : tmax-1
     i = i + 1;
     % computation of state vector at next epoch in the GCRS
-    [z_q,e_z,z_int,ez_int] = rkn646fd(zGCRS,RKparam,eop,dpint);
+    [z_q,e_z,z_int,ez_int] = rkn646fd(zGCRS,RKparam,eop,dpint,orbit_model_struct);
     % State vector at next epoch (to+h) in the GCRS
     TT = t + h;
     rGCRS = z_q(1,1:3)';

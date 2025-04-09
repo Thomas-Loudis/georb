@@ -1,4 +1,4 @@
-function [gnv1b,COVmatrix] = grace_gnv1b(filename,tstop)
+function [gnv1b,COVmatrix] = grace_gnv1b(filename)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -31,11 +31,6 @@ function [gnv1b,COVmatrix] = grace_gnv1b(filename,tstop)
 % Covariance matrix formulation: Reading or not
 COV_flag = 0;
 
-% Reading or not the whole day data
-if tstop == 0
-    tstop = 24 * 3600;
-end
-
 % ISDC GRACE data GPS Time start epoch: 12:00 01-Jan-2000
 [jd2000,mjd2000] = mjd3(12*3600,1,1,2000);
 
@@ -54,13 +49,23 @@ while (~feof(fid))
     test = strcmp(str_endheader,endofheader_grace);
     if test == 1
         i = 1;
+       position_end_of_header = ftell(fid);             
     end    
+    % Releases 2, 3
+    str_endheader = sscanf(line,'%s%c%s%c%s%c%s%*');
+    endofheader_grace = '# END OF HEADER';
+    test = strcmp(str_endheader,endofheader_grace);
+    if test == 1
+        i = 1;
+       position_end_of_header = ftell(fid);             
+    end        
     % GRACE-FO satellites (3 and 4 or C and D)
     str_endheader = sscanf(line,'%20c %*');
     endofheader_gracefo = '# End of YAML header';
     test = strcmp(str_endheader,endofheader_gracefo);
     if test == 1
         i = 1;
+       position_end_of_header = ftell(fid);             
     end
 end
 fclose(fid);
@@ -76,22 +81,23 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 fid = fopen(filename);
+fseek(fid,position_end_of_header,'bof');
 i = 0;
 j = 1;
 while (~feof(fid))
     line = fgetl(fid);
-    if i == 1
-        tgps2000 = str2num(line(1:9));
-        mjd = mjd2000 + tgps2000 / (24*3600);
-        tgps2000_o = (fix(mjd) - mjd2000) * (24*3600);
-        % Seconds sice 0h
-        tgps = tgps2000 - tgps2000_o;
-        %[tgps,D,M,Y] = MJD_inv(mjd);
-        if j > 1 && tgps > tstop
-            break
-        end        
-        gnv1bdata = [str2num(line(15:end))];
-        gnv1b(j,:) = [mjd tgps gnv1bdata(1,1:3) gnv1bdata(1,7:9)];        
+    [data_ith_vec] = sscanf(line,'%d %*s %*s %e %e %e %e %e %e %e %e %e %e %e %e %*');
+    tgps2000 = fix(data_ith_vec(1,1));
+    mjd = mjd2000 + tgps2000 / (24*3600);
+    tgps2000_o = (fix(mjd) - mjd2000) * (24*3600);
+    % Seconds sice 0h
+    tgps = tgps2000 - tgps2000_o;
+    %[tgps,D,M,Y] = MJD_inv(mjd);
+    % gnv1bdata = [str2num(line(15:end))];
+    % gnv1b(j,:) = [mjd tgps gnv1bdata(1,1:3) gnv1bdata(1,7:9)];
+    gnv1bdata_pos = data_ith_vec(2:4,1)';
+    gnv1bdata_vel = data_ith_vec(8:10,1)';
+    gnv1b(j,:) = [mjd tgps gnv1bdata_pos gnv1bdata_vel];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Covariace matrix of positions
 if COV_flag > 0
@@ -103,22 +109,6 @@ if COV_flag > 0
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         j = j + 1;
-    end
-
-    % GRACE satellites (1 and 2 or A and B)
-    str_endheader = sscanf(line,'%13c %*');
-    endofheader_grace = 'END OF HEADER';
-    test = strcmp(str_endheader,endofheader_grace);
-    if test == 1
-        i = 1;
-    end    
-    % GRACE-FO satellites (3 and 4 or C and D)
-    str_endheader = sscanf(line,'%20c %*');
-    endofheader_gracefo = '# End of YAML header';
-    test = strcmp(str_endheader,endofheader_gracefo);
-    if test == 1
-        i = 1;
-    end
 end
 fclose(fid);
 

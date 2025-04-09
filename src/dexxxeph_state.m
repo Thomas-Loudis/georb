@@ -1,4 +1,4 @@
-function [r,v,chebycoef] = dexxxeph_state(body_ith,tjd,HDfilename,decbv,derecord)
+function [r,v,chebycoef] = dexxxeph_state(body_ith,tjd,HDfilename,decbv,derecord, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -30,47 +30,61 @@ function [r,v,chebycoef] = dexxxeph_state(body_ith,tjd,HDfilename,decbv,derecord
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % Read DExxx Header file: header.xxx
+% fid = fopen(HDfilename);
+% i = 0;
+% j = 0;
+% line_no = 0;
+% linei_group1030 = -1000;
+% while (~feof(fid))
+%     line = fgetl(fid);
+%     i = i + 1;
+%     if i == 1
+%         line1num = sscanf(line,'%s %d');
+%         [sz1 sz2] = size(line1num);
+%         ncoeff = line1num(sz1,sz2);
+%     end
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
+%     linei_group1030 = linei_group1030 + 1;
+%     if length(line) > 11
+%         if line(1:12) == 'GROUP   1030'
+%             linei_group1030 = 1;
+%         end
+%     end
+%     if linei_group1030 == 3
+%         group1030 = str2num(line);
+%         tspan = group1030(1,3);
+%     end
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+%     if length(line) > 11
+%         if line(1:12) == 'GROUP   1050'
+%             line_no = i;
+%         end
+%     end
+%     if line_no > 0
+%         if i >= (line_no+2) & i <= (line_no+4)
+%             j = j + 1;
+%             deformat(j,:) = str2num(line);
+%         end
+%     end
+% end
+% fclose(fid);
+% clear i j fid sz1 sz2 line_no
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Read DExxx Header file: header.xxx
-fid = fopen(HDfilename);
-i = 0;
-j = 0;
-line_no = 0;
-linei_group1030 = -1000;
-while (~feof(fid))
-    line = fgetl(fid);
-    i = i + 1;
-    if i == 1
-        line1num = sscanf(line,'%s %d');
-        [sz1 sz2] = size(line1num);
-        ncoeff = line1num(sz1,sz2);
-    end
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
-    linei_group1030 = linei_group1030 + 1;
-    if length(line) > 11
-        if line(1:12) == 'GROUP   1030'
-            linei_group1030 = 1;
-        end
-    end
-    if linei_group1030 == 3
-        group1030 = str2num(line);
-        tspan = group1030(1,3);
-    end
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-    if length(line) > 11
-        if line(1:12) == 'GROUP   1050'
-            line_no = i;
-        end
-    end
-    if line_no > 0
-        if i >= (line_no+2) & i <= (line_no+4)
-            j = j + 1;
-            deformat(j,:) = str2num(line);
-        end
-    end
-end
-fclose(fid);
-clear i j fid sz1 sz2 line_no
+planets_struct = orbit_model_struct.planets;
+    
+DE_format = planets_struct.DE_format;
+DE_datarec_period = planets_struct.DE_datarec_period;
+
+deformat = DE_format;
+tspan = DE_datarec_period;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Computing the number of Chebychev coefficients for each of the 13 items
 [sz1 sz2] = size(deformat);
@@ -81,7 +95,7 @@ for j = 1 : sz2
         deformat(4,j) = 3 * deformat(2,j) * deformat(3,j);
     end
 end
-clear sz1 sz2 j 
+% clear sz1 sz2 j 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -95,10 +109,10 @@ t2 = derecord(3,1);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Storing the required Chebychev coefficients from the full data record
-if deformat(3,body_ith) == 1
-    nchebycoef = deformat(4,body_ith);
-    chebycoef = decbv(1:nchebycoef,body_ith);
-else
+% if deformat(3,body_ith) == 1
+%     nchebycoef = deformat(4,body_ith);
+%     chebycoef = decbv(1:nchebycoef,body_ith);
+% else
     % Interval of days at computation epoch sicne t1 of the Data record
     tjd_interval = tjd - t1; 
     % Coefficients set of the complete data record period (32 days)
@@ -109,11 +123,17 @@ else
     % Read Chebychev coefficients for the computation epoch's subinterval
     chebycoef_indx1 = (subinterval_epoch-1) * deformat(2,body_ith) * 3 + 1;
     chebycoef_indx2 = (subinterval_epoch) * deformat(2,body_ith) * 3;
+
+if deformat(3,body_ith) == 1
+    nchebycoef = deformat(4,body_ith);
+    chebycoef = decbv(1:nchebycoef,body_ith);
+else
     chebycoef = decbv(chebycoef_indx1 : chebycoef_indx2,body_ith);
+end
     % JD at the start and end of epoch's subinterval coefficients
     subinterval_t1 = t1 + subinterval_body * (subinterval_epoch-1);
     subinterval_t2 = t1 + subinterval_body * subinterval_epoch;    
-end
+% end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
