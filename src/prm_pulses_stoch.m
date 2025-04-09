@@ -77,7 +77,6 @@ if cfg_mode == 2
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Read Configuration file
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -120,7 +119,7 @@ while (~feof(fid))
 % Time interval of the acceleration (duration) 
     test = strcmp(str1,'stoch_time_interval');
     if test == 1
-      stoch_time_interval = sscanf(line_ith,'%*s %d %*') 
+      stoch_time_interval = sscanf(line_ith,'%*s %d %*'); 
     end
     
 % Time offset of first and last pulses epochs (seconds)
@@ -150,7 +149,6 @@ fclose(fid);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Pulses axes vector
 pulses_axes_vec_01(1,1) = PULSES_axis_1;
@@ -175,26 +173,9 @@ mjd_epoch0 = IC_MJDo;
 sec_epoch0 = IC_Sec_00;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Test if stochastic pulses are included in the orbit modelling
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% True
-test = strcmp(PULSES_estim_yn,'y');
-if test == 1
-% Form the Pulses matrix    
-    [pulses_matrix_init, N_pulses_axes, N_pulses_param] = pulses_init(N_pulses_epochs, pulses_axes_vec_01, mjd_epoch0, sec_epoch0, pulse_step, pulse_offset);
-end
-
-% False
-test = strcmp(PULSES_estim_yn,'n');
-if test == 1
-    N_pulses_param     = 0;
-    pulses_matrix_init = 0;
-    N_pulses_axes = 0;
-end
-
+% Pulses or Empirical accelerations in the orbit modelling
 [pulses_matrix_init, N_pulses_axes, N_pulses_param] = pulses_init(N_pulses_epochs, pulses_axes_vec_01, mjd_epoch0, sec_epoch0, pulse_step, pulse_offset);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Structure array
@@ -223,3 +204,4 @@ pulses_accel_struct.step = pulse_step;
 % Empirical accelerations: Time duration interval 
 pulses_accel_struct.duration = stoch_time_interval;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+

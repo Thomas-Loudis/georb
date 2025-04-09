@@ -1,4 +1,4 @@
-function [orbte,orbce,orbke, ext_orbit_comp_yn] = prm_orbext(cfg_fname,GM,eopdat,dpint)
+function [orbte,orbce,orbke, ext_orbit_comp_yn] = prm_orbext(cfg_fname,GM,eopdat,dpint, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -37,8 +37,9 @@ function [orbte,orbce,orbke, ext_orbit_comp_yn] = prm_orbext(cfg_fname,GM,eopdat
 %              Code upgrade based on the new orbit configuration format
 % 30/10/2022  Dr. Thomas Papanikolaou
 %             Read orbit configuration format via structure array or file
+% 07/04/2025  Thomas Loudis Papanikolaou
+%             Source Code minor upgrade 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 cfg_mode = 2;
 
@@ -69,7 +70,6 @@ if cfg_mode == 2
     [ext_orbit_data_fname] = read_param_cfg(cfg_fname,param_keyword);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Read .in configuration file
@@ -120,17 +120,9 @@ if GM == 0
     GM = 3.986004415 * 10^14;
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Call prm_ic for IC and MJDo
-[orbit_arc_length, IC_MJDo, IC_Zo_vec, EOP_data, EOP_interp_no] = prm_ic(cfg_fname);
-MJDo = IC_MJDo;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Orbiting Object/Satellite name to ID number
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-prmsat = 0;
-
 % GRACE satellite mission
 test_grace = 0;    
 test = strcmp(Object_SAT_ID,'GRACE-A');
@@ -173,7 +165,6 @@ if test == 1
 end
 
 % External Orbit data format :: GRACE gnv1b
-test = strcmp(ext_orbit_type,'gnv1b');
 test_gnv1b = strcmp(ext_orbit_type,'gnv1b');
 test_kepler = strcmp(ext_orbit_type,'Kepler'); 
 test_goce = strcmp(ext_orbit_type,'goce_pso'); 
@@ -191,21 +182,22 @@ elseif test_goce == 1
     % GOCE Reduced-Dynamic orbit
     orbfname = ext_orbit_data_fname;
     orbtype = ext_orbtype;
-    arc = orbit_arc_length;
-    tstop = arc + 180;
+    % arc = orbit_arc_length;
+    tstop = 0;
     [orbte] = sp3c_orb(orbfname,orbtype,tstop);
     
 elseif test_gnv1b == 1
     % GRACE-FO and GRACE GNV1B orbts        
     gnv1bfname = ext_orbit_data_fname;
-    [gnv1b] = grace_gnv1b(gnv1bfname,0);
+    [gnv1b] = grace_gnv1b(gnv1bfname);
     [sz1 sz2] = size(gnv1b);
     orbte = zeros(sz1,sz2-1);
     for i = 1 : sz1
         mjdgps = gnv1b(i,1);
         [t,D,M,Y] = MJD_inv(mjdgps);
         tgps = gnv1b(i,2);
-        [tutc,tTT] = time_scales_GPS(tgps,mjdgps);      
+        % [tutc,tTT] = time_scales_GPS(tgps,mjdgps);
+        tTT = tgps + 51.184;
         mjdTT = mjdgps + (tTT-tgps)/60/60/24;
         orbte(i,:) = [mjdTT gnv1b(i,3:end)];
     end    
@@ -219,14 +211,20 @@ end
 
 test = strcmp(ext_orbit_type,'georb');
 if test == 1
-    % test_itsg_redyn = 1;
+    % GEORB orbit data format
+    [orbit_data_matrix] = read_georb_data(ext_orbit_data_fname);
+    orbte(:,1)   = orbit_data_matrix(:,1) + orbit_data_matrix(:,2) / 86400;
+    orbte(:,2:7) = orbit_data_matrix(:,3:8);    
+    % % Orbit transformation from GCRS to ITRS
+    % orbce = orbte;
+    % [orbte] = orbc2t(orbce,eopdat,dpint);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if dpint > 0  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Orbit transformation from ITRS to GCRS
-[orbce] = orbt2c(orbte,eopdat,dpint);
+[orbce] = orbt2c(orbte,eopdat,dpint,orbit_model_struct);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Keplerian Elements computations
 [sz1 sz2] = size(orbce);

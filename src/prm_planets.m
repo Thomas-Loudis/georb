@@ -82,7 +82,8 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Sun Moon Planets        : 0 0 0 0 0 0 0 0 0 1 1
-fmod_planets = [0 0 0 0 0 0 0 0 0 1 1];
+% fmod_planets = [0 0 0 0 0 0 0 0 0 1 1];
+fmod_planets = [1 1 0 1 1 1 1 1 1 1 1];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -94,9 +95,15 @@ MJDo = IC_MJDo;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Read Planetary/Lunar ephemeris data
+% Read Planetary/Lunar ephemeris (DE) data and header files
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Read DE data file
 JDo = MJDo + 2400000.5;
-[DEcheby,DErecord,deformat] = dexxxeph_read(planets_DE_fname,planets_DE_header,JDo);
+[DEcheby,DErecord,DE_format,DE_datarec_period] = dexxxeph_read(planets_DE_fname,planets_DE_header,JDo);
+
+% Read DE Header file
+%[GMconstant,AU,EMRAT,deformat_hd,deperiod_hd] = dexxxeph_readhd(HDfilename,GMearth);
+[GMconstant,AU,EMRAT,deformat_hd,deperiod_hd] = dexxxeph_readhd(planets_DE_header);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -104,6 +111,12 @@ JDo = MJDo + 2400000.5;
 planets_struct.planets_peturbation_yn = effect_yn;
 planets_struct.bodies_list_yn = fmod_planets;
 planets_struct.ephemeris_filename = planets_DE_fname;
+planets_struct.ephemeris_header = planets_DE_header;
 planets_struct.DE_chebyshev = DEcheby;
 planets_struct.DE_datarecords = DErecord;
+planets_struct.DE_format = DE_format;
+planets_struct.DE_datarec_period = DE_datarec_period;
+planets_struct.DE_GMconstant = GMconstant;
+planets_struct.DE_AU = AU;
+planets_struct.DE_EMRAT = EMRAT;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

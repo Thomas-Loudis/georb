@@ -26,7 +26,9 @@ function [GM,ae,nmax, dCnm_plus, dSnm_plus, dCnm_minus, dSnm_minus] = read_aod_t
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 fid = fopen(aod_tides_filename);
-while (~feof(fid))
+% while (~feof(fid))
+header_status = 1;
+while (header_status == 1)
     line_ith = fgetl(fid);
     str_test = sscanf(line_ith,'%s%1c%s %*');
 
@@ -65,7 +67,13 @@ while (~feof(fid))
     test = strcmp(keyword_test,'NUMBER OF DATA RECORDS');
     if test == 1
       data_rec_number = sscanf(line_ith,'%*s %*s %*s %*s %*s %d %*');
-    end    
+    end  
+    
+    str_test = sscanf(line_ith,'%s%1c%s%1c%s %*');
+    test = strcmp(str_test,'END OF HEADER');
+    if test == 1
+      header_status = 0;
+    end        
 end
 fclose(fid);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -110,10 +118,15 @@ while (i_datarec_cos <= N_coefficients)
     line_ith = fgetl(fid);
     keyword_data_set = sscanf(line_ith,'%s%1c%s %*');    
     % Read and store Stokes coeffiecients of all data sets effects
-    n_i   = sscanf(line_ith,'%d %*');
-    m_i   = sscanf(line_ith,'%*d %d %*');
-    Cnm_plus  = sscanf(line_ith,'%*d %*d %f %*');
-    Cnm_minus = sscanf(line_ith,'%*d %*d %*f %f %*');    
+    % n_i   = sscanf(line_ith,'%d %*')
+    % m_i   = sscanf(line_ith,'%*d %d %*')
+    % Cnm_plus  = sscanf(line_ith,'%*d %*d %f %*');
+    % Cnm_minus = sscanf(line_ith,'%*d %*d %*f %f %*');
+    [data_ith_vec] = sscanf(line_ith,'%d %d %f %f %*');
+    n_i = data_ith_vec(1,1);
+    m_i = data_ith_vec(2,1);
+    Cnm_plus = data_ith_vec(3,1);
+    Cnm_minus = data_ith_vec(4,1);      
     % Store coefficients to overall 3dimensional matrices
     dCnm_plus (n_i + 1, m_i + 1) = Cnm_plus;
     dCnm_minus(n_i + 1, m_i + 1) = Cnm_minus;
@@ -131,10 +144,15 @@ while (i_datarec_cos <= N_coefficients)
     line_ith = fgetl(fid);
     keyword_data_set = sscanf(line_ith,'%s%1c%s %*');    
     % Read and store Stokes coeffiecients of all data sets effects
-    n_i   = sscanf(line_ith,'%d %*');
-    m_i   = sscanf(line_ith,'%*d %d %*');
-    Snm_plus  = sscanf(line_ith,'%*d %*d %f %*');
-    Snm_minus = sscanf(line_ith,'%*d %*d %*f %f %*');    
+    % n_i   = sscanf(line_ith,'%d %*');
+    % m_i   = sscanf(line_ith,'%*d %d %*');
+    % Snm_plus  = sscanf(line_ith,'%*d %*d %f %*');
+    % Snm_minus = sscanf(line_ith,'%*d %*d %*f %f %*');    
+    [data_ith_vec] = sscanf(line_ith,'%d %d %f %f %*');
+    n_i = data_ith_vec(1,1);
+    m_i = data_ith_vec(2,1);
+    Snm_plus = data_ith_vec(3,1);
+    Snm_minus = data_ith_vec(4,1);          
     % Store coefficients to overall 3dimensional matrices
     dSnm_plus (n_i + 1, m_i + 1) = Snm_plus;
     dSnm_minus(n_i + 1, m_i + 1) = Snm_minus;

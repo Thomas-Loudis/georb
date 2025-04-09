@@ -47,7 +47,6 @@ function [otides_struct, delaunay_doodson_multipliers, dCnm_plus, dSnm_plus, dCn
 % Coefficients Unit : 10^-12 (IERS Conventions 2010)
 % Coefficients Unit : 10^-11 (IERS Conventions 2010 updated 23/09/11)
 fes2004_cfunit = 10^(-11);
-%fprintf('%s %.0e \n','FES2004 Coefficients Unit :',fes2004_cfunit);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -102,7 +101,6 @@ dCnm_minus = zeros(Nmax_otides+1,Nmax_otides+1,Nfreq_otides);
 dSnm_minus = zeros(Nmax_otides+1,Nmax_otides+1,Nfreq_otides);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Read FES model data file
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -154,32 +152,9 @@ end
 fclose(fid);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Strucutre array
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% i_struct = 0;
-% 
-% i_struct = i_struct + 1;
-% otides_struct(i_struct).names  = 'delaunay_doodson_multipliers';
-% otides_struct(i_struct).values = delaunay_doodson_multipliers;
-% 
-% i_struct = i_struct + 1;
-% otides_struct(i_struct).names  = 'dCnm_plus';
-% otides_struct(i_struct).values = dCnm_plus;
-% 
-% i_struct = i_struct + 1;
-% otides_struct(i_struct).names  = 'dSnm_plus';
-% otides_struct(i_struct).values = dSnm_plus;
-% 
-% i_struct = i_struct + 1;
-% otides_struct(i_struct).names  = 'dCnm_minus';
-% otides_struct(i_struct).values = dCnm_minus;
-% 
-% i_struct = i_struct + 1;
-% otides_struct(i_struct).names  = 'dSnm_minus';
-% otides_struct(i_struct).values = dSnm_minus;
-
 otides_struct.degree = Nmax_otides;
 otides_struct.delaunay_doodson_multipl = delaunay_doodson_multipliers;
 otides_struct.dCnm_plus  = dCnm_plus;

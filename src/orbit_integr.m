@@ -1,4 +1,4 @@
-function [orbc,orbk,orbt,veqZarray,veqParray] = orbit_integr(cfg_fname, VEQ_sol)
+function [orbc,orbk,orbt,veqZarray,veqParray,forces_accel, Gmatrix, Rmatrix] = orbit_integr(cfg_fname, VEQ_sol, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -15,20 +15,18 @@ function [orbc,orbk,orbt,veqZarray,veqParray] = orbit_integr(cfg_fname, VEQ_sol)
 %             Function renamed & upgaded from mainf_DOD to orbintegr
 % 08/07/2022, Thomas Loudis Papanikolaou 
 %             Code modifications for the release of July 2022
+% 07/04/2025  Thomas Loudis Papanikolaou
+%             Source Code minor upgrade 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Global variables called
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-global ORBARC_glb Zo_ICRF_glb
-global EOP_DAT_glob EOP_dpint_glob
-global Nparam_GLOB 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Zo      = Zo_ICRF_glb;
-arc     = ORBARC_glb;
-eopdat  = EOP_DAT_glob;
-dpint   = EOP_dpint_glob;
+IC_MJDo = orbit_model_struct.IC_MJD; 
+Zo      = orbit_model_struct.IC_CRF; 
+arc     = orbit_model_struct.orbit_arc_length_sec; 
+eopdat  = orbit_model_struct.EOP_data; 
+dpint   = orbit_model_struct.EOP_interp_no; 
+Nparam_GLOB = orbit_model_struct.forces_param_estim_no; 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -102,7 +100,7 @@ RKprm(4,1) = integr_RKN_sigma;
 % Numerical Integration of Equation of Motion and Variational Equations
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 intg = intg_method_id;
-[orbc,err,veqZarray,veqParray,orbk,orbt] = intg_main(intg,Zo,arc,MSprm,RKprm,eopdat,dpint,VEQ_sol);
+[orbc,err,veqZarray,veqParray,orbk,orbt,forces_accel, Gmatrix, Rmatrix] = intg_main(intg,Zo,arc,MSprm,RKprm,eopdat,dpint,VEQ_sol, orbit_model_struct);
 if Nparam_GLOB == 0   
     veqParray = 0;
 end

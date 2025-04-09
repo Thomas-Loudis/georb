@@ -1,4 +1,4 @@
-function [z_q,e_z,veqZ,veqP] = rkn768_veq(zo,RKparam,eop,dpint,veqZo,veqPo)
+function [z_q,e_z,veqZ,veqP] = rkn768_veq(zo,RKparam,eop,dpint,veqZo,veqPo, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -112,8 +112,7 @@ end
 clear i1 iv
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Sensitivity Matrix Initial values: veqPo (6xNp)
-[sz6 Np_veqP] = size(veqPo);
-clear sz6
+[sz6, Np_veqP] = size(veqPo);
 veqP_ro = zeros(3,Np_veqP);
 veqP_vo = zeros(3,Np_veqP);
 ir = 1;
@@ -195,7 +194,7 @@ for i = 0 : s
         % Force model is indepedent from velocity vector
         zmjd = [t(i+1)/(24*3600) r(:,i+1)' vo'];
         % Acceleration & Partial Derivatives
-        [fx,fy,fz,pdv_acc,pdv_acc_param] = veq_accl(zmjd,eop,dpint);
+        [fx,fy,fz,pdv_acc,pdv_acc_param] = veq_accl(zmjd,eop,dpint, orbit_model_struct);
         k(:,i+1) = [fx; fy; fz];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %       Function evaluations (gi) for State Transition matrix
@@ -239,7 +238,7 @@ for i = 0 : s
         zmjd = [t(i+1)/(24*3600) r(:,i+1)' vi'];
         
         % Acceleration & Partial Derivatives
-        [fx,fy,fz,pdv_acc,pdv_acc_param] = veq_accl(zmjd,eop,dpint);
+        [fx,fy,fz,pdv_acc,pdv_acc_param] = veq_accl(zmjd,eop,dpint, orbit_model_struct);
         k(:,i+1) = [fx; fy; fz];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %      Function evaluations (gi) for State Transition matrix

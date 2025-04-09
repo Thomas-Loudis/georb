@@ -1,4 +1,4 @@
-function [orbc] = orbt2c(orbt,eopdat,dpint)
+function [orbc] = orbt2c(orbt,eopdat,dpint, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -24,6 +24,8 @@ function [orbc] = orbt2c(orbt,eopdat,dpint)
 % 08/07/2012   Distinguishing for Velocity vector (incuding or not)
 %              In case of position vector only (Kinematic orbit data)
 %              transformation is applied only to position vector coords.
+% 07/04/2025  Thomas Loudis Papanikolaou
+%             Source Code minor upgrade 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -47,7 +49,7 @@ elseif Vel_vector == 0
     orbc = zeros(sz1,4);
 end
 for it = 1 : sz1
-    [EOP,dEOP] = trs2crs(orbt(it,1),eopdat,dpint);
+    [EOP,dEOP] = trs2crs(orbt(it,1),eopdat,dpint, orbit_model_struct);
     rGCRS = (EOP) * orbt(it,2:4)';
     if Vel_vector == 1
         vGCRS = (EOP) * orbt(it,5:7)' + dEOP * orbt(it,2:4)';

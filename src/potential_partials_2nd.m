@@ -1,4 +1,4 @@
-function [partials_2nd_spher, partials_2nd_xyz, partials_1st_spher, partials_1st_xyz] = potential_partials_2nd(r,n_max,m_max,GM,ae,Cnm,Snm)
+function [partials_2nd_spher, partials_2nd_xyz, partials_1st_spher, partials_1st_xyz] = potential_partials_2nd(r,n_max,m_max,GM,ae,Cnm,Snm, legendre_functions_struct, n_min)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -31,5 +31,5 @@ function [partials_2nd_spher, partials_2nd_xyz, partials_1st_spher, partials_1st
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-[partials_2nd_spher, partials_2nd_xyz, partials_1st_spher, partials_1st_xyz] = harmonics_partials_2nd(r,n_max,m_max,GM,ae,Cnm,Snm);
+[partials_2nd_spher, partials_2nd_xyz, partials_1st_spher, partials_1st_xyz] = harmonics_partials_2nd(r,n_max,m_max,GM,ae,Cnm,Snm, legendre_functions_struct, n_min);
 

@@ -54,8 +54,21 @@ if cfg_mode == 2
     param_keyword = 'veq_gravity_model_order';
     [param_value] = read_param_cfg(cfg_fname,param_keyword);
     VEQ_m_max_gfm = sscanf(param_value,'%d %*');
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
+
+% Gravity Field parameters estimation
+    param_keyword = 'grav_field_paramestim_yn';
+    [param_value] = read_param_cfg(cfg_fname,param_keyword);
+    grav_field_paramestim_yn = param_value;
+
+    param_keyword = 'grav_paramestim_degree_min';
+    [param_value] = read_param_cfg(cfg_fname,param_keyword);
+    grav_paramestim_degree_min = sscanf(param_value,'%d %*');
+
+    param_keyword = 'grav_paramestim_degree_max';
+    [param_value] = read_param_cfg(cfg_fname,param_keyword);
+    grav_paramestim_degree_max = sscanf(param_value,'%d %*');
 end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -114,7 +127,27 @@ sigma_shc = 0;
 % Static gravity field models
 test = strcmp(gravity_field_terms,'static');
 if test == 1
-    [GM,ae,Cnm,Snm,sCnm,sSnm,nmax,tide_system] = gfc(gravity_model_fname, n_max_gfm, sigma_shc);    
+    [GM,ae,Cnm,Snm,sCnm,sSnm,nmax,tide_system] = gfc(gravity_model_fname, n_max_gfm, sigma_shc); 
+mission_simulation = ' '
+test_mission_simulation = strcmp(mission_simulation,'MAGIC');
+if test_mission_simulation == 1 
+    % Time Variable gravity solution 
+    timevar_gravity_model = gravity_model_fname
+    n_max_timevar = -1
+    [GM,ae,Cnm_timevar,Snm_timevar,sCnm_timevar,sSnm_timevar,nmax,tide_system] = gfc(gravity_model_fname, n_max_timevar, sigma_shc); 
+    Nmax_TVGmodel = nmax
+    % C20 SLR-like
+    C20_SLR = 5.753616245118756e-11;
+    Cnm_timevar(2+1,0+1) = C20_SLR;
+    % Background model 
+    % gravity_model_fname = 'GOCO06s_aodReduced.gfc';
+    gravity_model_fname = 'EIGEN-6C4.gfc';
+    Background_gravity_model = gravity_model_fname
+    [GM,ae,Cnm_background,Snm_background,sCnm,sSnm,nmax,tide_system] = gfc(gravity_model_fname, n_max_gfm, sigma_shc); 
+    % [GM_background,ae_background,Cnm_background,Snm_background,sCnm_background,sSnm_background,nmax_background,tide_system_background] = gfc(gravity_model_fname, n_max_gfm, sigma_shc);
+    [Cnm, Snm] = harmonics_sum(Cnm_background,Snm_background, Cnm_timevar, Snm_timevar, -1);
+    C20_final = Cnm(2+1,0+1); 
+end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -160,6 +193,21 @@ m_max_veq = VEQ_m_max_gfm;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Gravity Field parameter estimation
+grav_paramestim_yn = grav_field_paramestim_yn;
+grav_paramestim_degree_range(1,1) = grav_paramestim_degree_min;
+grav_paramestim_degree_range(1,2) = grav_paramestim_degree_max;
+
+degree_min = grav_paramestim_degree_min;
+degree_max = grav_paramestim_degree_max;
+order_min  = 0;
+order_max  = degree_max;
+
+% Initialisation of gravity parameters' coefficients matrices 
+[N_param_GRAV, Nparam_C, Nparam_S , C_degree_order, S_degree_order, Cnm_paramestim, Snm_paramestim] = gravity_param_ic(degree_min, degree_max, order_min, order_max);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Strucutre array
 gfm_struct.grav_term  = gravity_field_terms;
 gfm_struct.GM         = GM;
@@ -172,4 +220,14 @@ gfm_struct.Snm        = Snm;
 gfm_struct.Cnm_sigma  = sCnm;
 gfm_struct.Snm_sigma  = sSnm;
 gfm_struct.tide_system = tide_system;
+
+% Gravity Field parameters estimation y/n 
+gfm_struct.param_estim_yn = grav_paramestim_yn;
+gfm_struct.param_estim_degree = grav_paramestim_degree_range;
+gfm_struct.Cnm_estim  = Cnm_paramestim; 
+gfm_struct.Snm_estim  = Snm_paramestim;
+gfm_struct.parameters_number = N_param_GRAV;
+gfm_struct.C_degree_order_estim = C_degree_order;
+gfm_struct.S_degree_order_estim = S_degree_order;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+

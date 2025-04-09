@@ -47,14 +47,18 @@ function [aod_tides_struct] = prm_aodtides_data(config_struct)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 tides_names_array = [
 'P1 163.555 ' 
-'S1 164.555 '
 'K1 165.555 '
+'S1 164.555 '
 'N2 245.655 ' 
 'M2 255.555 '
 'L2 265.455 '
 'T2 272.556 '
 'S2 273.555 ' 
-'R2 274.555 ' ];
+'R2 274.554 ' 
+'T3 381.555 '
+'S3 382.555 '
+'R3 383.555 ' 
+];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 test = strcmp(atm_tides_yn,'y');
@@ -109,6 +113,16 @@ aod_tides_dCnm_minus(:,:,i_freq) = dCnm_m;
 aod_tides_dSnm_minus(:,:,i_freq) = dSnm_m;
 
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Atmospheric Tides model from data file in form of geopotential spherical harmonic coefficients
+prm_aodtides_data_atm_tides = 0;
+if prm_aodtides_data_atm_tides == 2
+atm_tides_potential_fname = 'atmosTides_AOD1BRL06.potential.iers.txt';
+[atmtides_struct, delaunay_doodson_multipliers,aod_tides_dCnm_plus,aod_tides_dSnm_plus,aod_tides_dCnm_minus,aod_tides_dSnm_minus] = read_oceantides(atm_tides_potential_fname);
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+
 %--------------------------------------------------------------------------
 else
 aod_GM = 0;

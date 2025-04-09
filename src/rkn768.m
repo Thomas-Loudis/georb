@@ -1,4 +1,4 @@
-function [z_q,e_z] = rkn768(zo,RKparam,eop,dpint)
+function [z_q,e_z] = rkn768(zo,RKparam,eop,dpint,orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -118,7 +118,7 @@ for i = 0 : s
         % random value for velocity v = vo:
         % Force model is indepedent from velocity vector
         zmjd = [t(i+1)/(24*3600) r(:,i+1)' vo'];
-        [fx,fy,fz] = accel(zmjd,eop,dpint);
+        [fx,fy,fz] = accel(zmjd,eop,dpint,orbit_model_struct);
         k(:,i+1) = [fx; fy; fz];
     else        
 %      Function evaluations (ki) for State vector        
@@ -131,7 +131,7 @@ for i = 0 : s
         % random value for velocity v = vo:
         % Force model is indepedent from velocity vector
         zmjd = [t(i+1)/(24*3600) r(:,i+1)' vo'];
-        [fx,fy,fz] = accel(zmjd,eop,dpint);
+        [fx,fy,fz] = accel(zmjd,eop,dpint, orbit_model_struct);
         k(:,i+1) = [fx; fy; fz];
     end
 end

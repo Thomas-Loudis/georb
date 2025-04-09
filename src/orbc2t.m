@@ -1,4 +1,4 @@
-function [orbt] = orbc2t(orbc,eopdat,dpint)
+function [orbt] = orbc2t(orbc,eopdat,dpint, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -46,7 +46,7 @@ orbt = zeros(d1,d2);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for it = 1 : d1
     mjd_it = orbc(it,1);
-    [EOP,dEOP,EOP_inv,dEOP_inv] = trs2crs(mjd_it,eopdat,dpint);
+    [EOP,dEOP,EOP_inv,dEOP_inv] = trs2crs(mjd_it,eopdat,dpint, orbit_model_struct);
     rITRS = (EOP)' * orbc(it,2:4)';
     if Vel_vector == 0        
     orbt(it,:) = [mjd_it rITRS'];

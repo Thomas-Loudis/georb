@@ -1,4 +1,4 @@
-function [acc_emp,PD_accemp_Z,PD_accemp_P] = pdv_acclempirical(mjd,rGCRS,vGCRS, nCPR, GM)
+function [acc_emp,PD_accemp_Z,PD_accemp_P] = pdv_acclempirical(mjd,rGCRS,vGCRS, nCPR, GM, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -20,12 +20,15 @@ function [acc_emp,PD_accemp_Z,PD_accemp_P] = pdv_acclempirical(mjd,rGCRS,vGCRS, 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Last modified
 % 14/12/2022, Dr. Thomas Loudis Papanikolaou
-%             Code upgrade to use the model's global structure arrays 
+%             Code upgrade to use the orbit model structure arrays 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-global emp_cpr_glob
-global accelerometer_data_cal_glob
-global MJDo_glb
+
+% Forces model matrix 
+emp_cpr_glob = orbit_model_struct.empirical_forces_cpr; 
+accelerometer_data_cal_glob = orbit_model_struct.accelerometer_struct; 
+MJDo_glb = orbit_model_struct.IC_MJD;
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Variables of Empirical Forces based on CPR terms

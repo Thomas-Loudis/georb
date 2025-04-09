@@ -34,6 +34,10 @@ function [acc_cal_param, acc_dpint, acc1b_array_TT, sca1b_array_TT, sca_dpint, a
 %             file
 % 30/10/2022  Dr. Thomas Papanikolaou
 %             Read orbit configuration format via structure array or file
+% 14/04/2023  Dr. Thomas Papanikolaou
+%             Assignment of accelerometer calibration parameters in the
+%             case of using fixed values from a previous orbit parameter
+%             estimation (not being estimated in the current analysis) 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -181,20 +185,36 @@ acc_cal_scale_type = acc_cal_scale;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Accelerometry (Satellite on-board accelerometer measurements)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-tstop = 0;
-
 % Read Accelerometry 1b data
-[acc1b_array] = grace_acc1b(acc_data_fname,tstop);
+[acc1b_array] = grace_acc1b(acc_data_fname);
 
 % Read Star Camera 1b data
-[sca1b_array] = grace_sca1b(sca_data_fname,tstop);
+[sca1b_array] = grace_sca1b(sca_data_fname);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Accelerometry data preprocessing and calibration parameters initialisation
 [acc_cal_param, acc1b_array_TT, sca1b_array_TT] = grace_acc_preproc(acc1b_array,sca1b_array,acc_cal_bias_yn,acc_cal_scale_type);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Set accelerometer calibration parameters to fixed values from the
+% configuration structure array (fixed values obtained from a previous
+% orbit parameter estimation)
+test_accelerometer = strcmp(acc_data_yn,'y');
+test_acc_cal_paramestim_yn = strcmp(acc_cal_paramestim_yn,'y');
+if test_accelerometer == 1  &&  test_acc_cal_paramestim_yn == 0      
+% Read configurable parameter :: Accelerometer calibration parameters initial conditions
+param_keyword = 'acc_cal_parameters_ic';
+[param_value, param_line] = read_param_cfg(cfg_fname,param_keyword);
+acc_cal_apriori_rowmatrix = str2num(param_line);
+acc_cal_param = acc_cal_apriori_rowmatrix';
+
+%[acc_cal_parameters_ic] = read_param_cfg(cfg_fname,param_keyword);
+%acc_cal_param = acc_cal_parameters_ic
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Structure array
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,4 +1,4 @@
-function [orbit_data_matrix] = read_georb_data(data_filename)
+function [orbit_data_matrix, header_data_matrix] = read_georb_data(data_filename)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -16,23 +16,31 @@ function [orbit_data_matrix] = read_georb_data(data_filename)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Dr. Thomas Loudis Papanikolaou                           27 November 2022
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Last modified
+% 8 March 2025 Thomas Loudis
+%              Optimizing code for reading big data, minimizing CPU time by
+%              using only fscanf and removing the use of fgetl
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 fid = fopen(data_filename);
 data_rec_start = 0;
 N_data_rec = 0;
+i_header_rec = 0;
 while (~feof(fid))
     line_ith = fgetl(fid);
-    str1 = sscanf(line_ith,'%s %*');    
-    if data_rec_start > 0
+    str1 = sscanf(line_ith,'%s %*');
+    if data_rec_start == 1
         % Next data record
         N_data_rec = N_data_rec + 1;
-        [data_rec_part, N_data_entry]  = sscanf(line_ith,'%s')
+        [data_rec_part, N_data_entry]  = sscanf(line_ith,'%s');
+        break
     end    
     test = strcmp(str1,'end_of_header');
     if test == 1
        data_rec_start = 1;
+       position_end_of_header = ftell(fid);     
     end
 end
 fclose(fid);
@@ -41,43 +49,46 @@ fclose(fid);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Matrix preallocation
 Nelements = N_data_entry;
-orbit_data_matrix = zeros(N_data_rec, Nelements);
+% orbit_data_matrix = zeros(N_data_rec, Nelements);
+
+% header_data_matrix(1 : i_header_rec).header_data = ' ';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 fid = fopen(data_filename);
 data_rec_start = 0;
 N_data_rec = 0;
+i_header_rec = 0;
 while (~feof(fid))
+% while (data_rec_start < 1)
     line_ith = fgetl(fid);
     str1 = sscanf(line_ith,'%s %*');
-    % Read data records
-    if data_rec_start > 0
-        % Next data record
-        N_data_rec = N_data_rec + 1;
-        % MJD number
-        mjd = sscanf(line_ith,'%d %*');
-        % Seconds since start of the day (00h)
-        sec_00 = sscanf(line_ith,'%*d %f %*');
-        % Store Epoch's arguments to the orbit data matrix
-        orbit_data_matrix(N_data_rec,1) = mjd;
-        orbit_data_matrix(N_data_rec,2) = sec_00;
-        % Number of data elements
-        [data_rec_part, N_data_entry]  = sscanf(line_ith,'%s');
-        % Get read index position after Epoch arguments
-        [data_rec_fields12,n,errmsg, read_index] = sscanf(line_ith,'%s%c',4);
-        Nchar_data = length(line_ith);
-        data_rec_part = line_ith(read_index : Nchar_data);
-        % Read orbit data argument but epoch's ones
-        orbit_data = sscanf(data_rec_part,'%e%*c', (N_data_entry-2)*2);
-        orbit_data_matrix(N_data_rec, 3:N_data_entry) = orbit_data';
+    % Read Header
+    if data_rec_start == 0
+        i_header_rec = i_header_rec + 1;
+        % header_data_matrix.header_data(i_header_rec,:) = line_ith;
+        header_data_matrix(i_header_rec).header_data = line_ith;
+        % header_line_read_str1 = header_data_matrix(i_header_rec).header_data
+        % header_line_str1 = header_data_matrix(i_header_rec).header_data
     end
     % End of Header test 
     test = strcmp(str1,'end_of_header');
     if test == 1
        data_rec_start = 1;
+       break
     end    
 end
 fclose(fid);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+fid = fopen(data_filename);
+fseek(fid,position_end_of_header,'bof');
+size_data_matrix = [Nelements Inf];
+% '%d %d %e'
+% formatSpec = '%e \n'
+formatSpec = '%e';
+data_matrix = fscanf(fid,formatSpec,size_data_matrix);
+fclose(fid);
+orbit_data_matrix = data_matrix';
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

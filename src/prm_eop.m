@@ -1,4 +1,4 @@
-function [EOP_data_array] = prm_eop(eopfilename, eop_interp_points, time_period, MJDo, IAU_PN_model) 
+function [EOP_data_array, IAU_PN_XYs_matrix] = prm_eop(eopfilename, eop_interp_points, time_period, MJDo, IAU_PN_model, TAI_UTC_table) 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % prm_eop : Read Earth Orientation Parameters data and select the
@@ -19,6 +19,8 @@ function [EOP_data_array] = prm_eop(eopfilename, eop_interp_points, time_period,
 % Last modified
 % 28/05/2022   Dr. Thomas Loudis Papanikolaou  
 %              prm3 function has been modified and renamed to prm_eop 
+% 07/04/2025  Thomas Loudis Papanikolaou
+%             Source Code minor upgrade 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -29,7 +31,7 @@ dpint = eop_interp_points;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % MJD of initial epoch's date in UTC time scale
 [TT,day,month,year] = MJD_inv(MJDo);
-[UTC,GPS_time] = time_scales(TT,MJDo);
+[UTC,GPS_time] = time_scales(TT,MJDo,TAI_UTC_table);
 % dt UTC-TT in days
 dt_UTC_TT = (UTC - TT) / (24*3600);
 mjdo_UTC = MJDo + dt_UTC_TT;
@@ -78,11 +80,11 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Read and set global X,y,s from IAU2000A precession-nutation model
-global XYs_IAU200A
+% Read IAU2000A precession-nutation model :: X,Y,s
 eopdat_mjd = eopdat(:,1);
 [XYs] = PN_model_XYs(eopdat_mjd, IAU_PN_model);
 XYs_IAU200A = XYs;
+IAU_PN_XYs_matrix = XYs;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 EOP_data_array = eopdat; 

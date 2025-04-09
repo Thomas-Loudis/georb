@@ -75,7 +75,7 @@ while (~feof(fid))
 % AOD data file name  
     test = strcmp(str1,'AOD_data_filename');
     if test == 1
-      AOD_data_filename = sscanf(line_ith,'%*s %s %*');
+      AOD_data_filename = sscanf(line_ith,'%*s %s %*')
     end
 
 % AOD maximum degree/order  
@@ -96,7 +96,7 @@ test = strcmp(aod_effects_yn,'y');
 if test == 1
     
 % AOD data read and store to Stokes coefficients matrices
-[aod_GM,aod_ae,aod_model_nmax, aod_Cnm, aod_Snm, aod_atm_Cnm, aod_atm_Snm, aod_ocn_Cnm, aod_ocn_Snm, aod_glo_Cnm, aod_glo_Snm, aod_oba_Cnm, aod_oba_Snm] = aod_read(AOD_data_filename);
+[aod_GM,aod_ae,aod_model_nmax, aod_Cnm, aod_Snm, aod_atm_Cnm, aod_atm_Snm, aod_ocn_Cnm, aod_ocn_Snm, aod_glo_Cnm, aod_glo_Snm, aod_oba_Cnm, aod_oba_Snm, aod_struct] = aod_read(AOD_data_filename);
 
 test_data_effect = strcmp(aod_effect_ID,'ATM');
 if test_data_effect == 1    

@@ -1,4 +1,4 @@
-function [obsorbc,obsorbt,obsorbc_ext,obsorbt_ext,obsorbc_full,obsorbt_full,COVobs,COVPform] = orbit_obs(cfg_fname)
+function [obsorbc,obsorbt,obsorbc_ext,obsorbt_ext,obsorbc_full,obsorbt_full,COVobs,COVPform, observation_struct] = orbit_obs(cfg_fname, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -14,15 +14,10 @@ function [obsorbc,obsorbt,obsorbc_ext,obsorbt_ext,obsorbc_full,obsorbt_full,COVo
 %             Code upgrade 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Global variables called
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-global GM_glob 
-global EOP_DAT_glob EOP_dpint_glob
-eopdat  = EOP_DAT_glob;
-dpint   = EOP_dpint_glob;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Orbit model struct matrix 
+GM_glob = orbit_model_struct.GM_Earth;
+eopdat = orbit_model_struct.EOP_data;
+dpint = orbit_model_struct.EOP_interp_no;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Observations model
@@ -30,7 +25,7 @@ dpint   = EOP_dpint_glob;
 % Kinematic Orbit considered as pseudo-Observations
 % OBS : Kinematic Orbit positions
 COVPform = 0;
-[obsorbc, obsorbk, obsorbt, obsorbc_ext, obsorbk_ext, obsorbt_ext, obsorbc_full, obsorbk_full, obsorbt_full, COVobs] = prm_pseudobs(cfg_fname,GM_glob,eopdat,dpint);
+[obsorbc, obsorbk, obsorbt, obsorbc_ext, obsorbk_ext, obsorbt_ext, obsorbc_full, obsorbk_full, obsorbt_full, COVobs] = prm_pseudobs(cfg_fname,GM_glob,eopdat,dpint, orbit_model_struct);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if 1 < 0
@@ -77,3 +72,18 @@ outfilename3 = 'OBSall.out';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Structure array
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Orbit observations in ICRF 
+observation_struct.obs_orbit_crf = obsorbc;
+% Orbit observations in ITRF 
+observation_struct.obs_orbit_trf = obsorbt;
+
+% Observations' covariance matrix 
+observation_struct.obs_cov = COVobs;
+
+% Observations' weight matrix form 
+observation_struct.obs_weight = COVPform;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

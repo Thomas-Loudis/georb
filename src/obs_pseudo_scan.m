@@ -52,7 +52,8 @@ for i = 1 : sz3
     for w = wo : sz1
         id1 = sr1(w,1);
         if abs(id2 - id1) < Time_diglimit           
-            epoch = epoch + 1;
+            epoch = epoch + 1; 
+            wo = w + 1;
             break
         end
     end    
@@ -61,7 +62,7 @@ Nepochs = epoch;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 dsr = zeros(Nepochs,Ncol);
-sr  = zeros(Nepochs, 1 + Ncol-1 + Ncol-1);
+% sr  = zeros(Nepochs, 1 + Ncol-1 + Ncol-1);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Differences are computed at the common points defined by the ID
@@ -90,7 +91,7 @@ for i = 1 : sz3
                 Nepochs_remove = Nepochs_remove + 1;
             end            
             % Array of sr1 and sr2 values at common points
-            sr(epoch,:) = [id1 sr1(w,2:end) sr2(i,2:end)];
+            % sr(epoch,:) = [id1 sr1(w,2:end) sr2(i,2:end)];
             wo = w + 1;
             break
         end
@@ -152,7 +153,7 @@ for i = 1 : sz3
                 obs_residuals(i_epoch_reduced,1) = id1;
             end            
             % Array of sr1 and sr2 values at common points
-            %sr(epoch,:) = [id1 sr1(w,2:end) sr2(i,2:end)];
+            % sr(epoch,:) = [id1 sr1(w,2:end) sr2(i,2:end)];
             wo = w + 1;
             break
         end

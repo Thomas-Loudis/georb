@@ -1,4 +1,4 @@
-function [PD_ACC_Cal_Param, facc_ICRF, facc_SRF] = pdv_grace_acc(mjd, acc_cal_param, acc1b_array_TT, sca_array, acc_dpint, scadpint)
+function [PD_ACC_Cal_Param, facc_ICRF, facc_SRF] = pdv_grace_acc(mjd, acc_cal_param, acc1b_array_TT, sca_array, acc_dpint, scadpint, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -24,8 +24,9 @@ function [PD_ACC_Cal_Param, facc_ICRF, facc_SRF] = pdv_grace_acc(mjd, acc_cal_pa
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-global MJDo_glb
-global accelerometer_data_cal_glob
+% Forces model matrix 
+accelerometer_data_cal_glob = orbit_model_struct.accelerometer_struct; 
+MJDo_glb = orbit_model_struct.IC_MJD;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 accelerometer_struct = accelerometer_data_cal_glob;

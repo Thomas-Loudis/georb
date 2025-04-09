@@ -1,4 +1,4 @@
-function [rms_orbital,rms_orbc,rms_orbk,rms_orbt,dstn,dorbc,dkepl,dorbt,Xmatrix,orbc,orbk,orbt,veqZarray,veqParray,rms_orbc_obs, OBS_matrix, Xaposteriori, OBS_residuals] = orbit_pod (orbit_config_fname)
+function [rms_orbital,rms_orbc,rms_orbk,rms_orbt,dstn,dorbc,dkepl,dorbt,Xmatrix,orbc,orbk,orbt,veqZarray,veqParray,rms_orbc_obs, OBS_matrix, Xaposteriori, OBS_residuals, extorb_crf, forces_accel, Gmatrix, Rmatrix, orbit_model_struct] = orbit_pod (orbit_config_fname, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -28,14 +28,16 @@ function [rms_orbital,rms_orbc,rms_orbk,rms_orbt,dstn,dorbc,dkepl,dorbt,Xmatrix,
 %             Function renamed & upgraded from mainf20120618.m to DOD.m
 % 06/07/2022, Thomas Loudis Papanikolaou
 %             Function upgraded and renamed from DOD to orbit_pod
+% 07/04/2025  Thomas Loudis Papanikolaou
+%             Source Code minor upgrade 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 
-global GM_glob
+
+GM_glob = orbit_model_struct.GM_Earth;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Orbit modelling : Models and data preprocessing | Global variables assignment
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-orbit_model (orbit_config_fname);
+% Orbit modelling :: Initial Conditions 
+% orbit_model (orbit_config_fname);
+% [orbit_model_struct] = orbit_model_ic (orbit_config_fname, orbit_model_struct);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -77,7 +79,19 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 if test_pod_mode == 1
 % Pseudo-Observations based on kinematic orbit data
-[obsorbc,obsorbt,obsorbc_ext,obsorbt_ext,obsorbc_full,obsorbt_full,COVobs,COVPform] = orbit_obs(orbit_config_fname);
+% [obsorbc,obsorbt,obsorbc_ext,obsorbt_ext,obsorbc_full,obsorbt_full,COVobs,COVPform] = orbit_obs(orbit_config_fname);
+
+% observation_struct = observation_data_glob;
+% orbit model strucutre matrix
+observation_struct = orbit_model_struct.observation_struct;
+% Orbit observations in ICRF 
+obsorbc = observation_struct.obs_orbit_crf ;
+% Orbit observations in ITRF 
+obsorbt = observation_struct.obs_orbit_trf ;
+% Observations' covariance matrix 
+COVobs = observation_struct.obs_cov ;
+% Observations' weight matrix form 
+COVPform = observation_struct.obs_weight;
 
 % Observations screening based on outlier threshold 
 % Read configuration file for pseudo-observations outlier threshold    
@@ -93,10 +107,9 @@ else
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Initial Conditions: Initial Epoch and State Vector (apriori values)
-ic_apriori (orbit_config_fname, obsorbc);
+[orbit_model_struct] = ic_apriori (orbit_config_fname, obsorbc, orbit_model_struct);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -109,21 +122,26 @@ ic_apriori (orbit_config_fname, obsorbc);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if test_pod_mode == 1
     %fprintf('\n%s \n\n', 'Dynamic Orbit Determination: in-progress : Iterations of Orbit Integration & Parameter Estimation');   
-    
-if test_pod_mode == 1
+
+param_keyword = 'ic_state_vector_apriori';
+[ic_state_vector_apriori] = read_param_cfg(orbit_config_fname,param_keyword);
+test_ic_apriori = strcmp(ic_state_vector_apriori,'ic');
+if test_ic_apriori == 0    
+% if test_pod_mode == 1
 % IC initialisation based on Short arc solution 
-    %N_short_arcs = 0
+    % N_short_arcs = 0
     N_short_arcs = 3;
     edge_arc_offset = 0;
-    [orbit_arc_long, orbit_arc_short, N_short_arcs] = short_arc_meth (orbit_config_fname, N_short_arcs, -1, 0, 0, edge_arc_offset);
+    % [orbit_arc_long, orbit_arc_short, N_short_arcs] = short_arc_meth (orbit_config_fname, N_short_arcs, -1, 0, 0, edge_arc_offset);
+    [orbit_arc_long, orbit_arc_short, N_short_arcs, orbit_model_struct] = short_arc_meth_v2 (orbit_config_fname, N_short_arcs, -1, 0, 0, edge_arc_offset, orbit_model_struct);
     % Overall iterations number
     Niter_estim = Niter_estim + N_short_arcs;    
-else
+elseif test_ic_apriori == 1    
     N_short_arcs = 0;
     edge_arc_offset = 0;  
-    [orbit_arc_long, orbit_arc_short, N_short_arcs] = short_arc_meth (orbit_config_fname, N_short_arcs, -1, 0, 0, edge_arc_offset);
+    % [orbit_arc_long, orbit_arc_short, N_short_arcs] = short_arc_meth (orbit_config_fname, N_short_arcs, -1, 0, 0, edge_arc_offset);
+    [orbit_arc_long, orbit_arc_short, N_short_arcs, orbit_model_struct] = short_arc_meth_v2 (orbit_config_fname, N_short_arcs, -1, 0, 0, edge_arc_offset, orbit_model_struct);
 end
-
 
 % Orbit Determination iterations loop: start
 for iveq = 0 : Niter_estim + 1 
@@ -131,7 +149,8 @@ for iveq = 0 : Niter_estim + 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Orbit arc length condition
-    [orbit_arc_long, orbit_arc_short, N_short_arcs] = short_arc_meth (orbit_config_fname, N_short_arcs, iveq, orbit_arc_long, orbit_arc_short, edge_arc_offset);
+    % [orbit_arc_long, orbit_arc_short, N_short_arcs] = short_arc_meth (orbit_config_fname, N_short_arcs, iveq, orbit_arc_long, orbit_arc_short, edge_arc_offset);
+    [orbit_arc_long, orbit_arc_short, N_short_arcs, orbit_model_struct] = short_arc_meth_v2 (orbit_config_fname, N_short_arcs, iveq, orbit_arc_long, orbit_arc_short, edge_arc_offset, orbit_model_struct);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -139,20 +158,23 @@ for iveq = 0 : Niter_estim + 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Variational Equations numerical integration solution
 if iveq < Niter_estim + 1       
-    to_VEQ = tic;
+% if iveq <= N_short_arcs + 1   % VEQ set to fixed matrices approach      
+    % to_VEQ = tic;
     MODEid = sprintf('%s%d','VEQ',iveq);
     VEQ_sol = 1;
-    [orbc,orbk,orbt,veqZarray,veqParray] = orbit_integr(orbit_config_fname, VEQ_sol);
-    %fprintf('%s %.3f \n', 'Time (min):  VEQ integration:',toc(to_VEQ)/60);
+    [orbc,orbk,orbt,veqZarray,veqParray,forces_accel_veq] = orbit_integr(orbit_config_fname, VEQ_sol, orbit_model_struct);
+    % fprintf('%s %.3f \n', 'Time (min):  VEQ integration:',toc(to_VEQ)/60);
 end
+
 % Equation of Motion numerical integration solution
-    to_EQM = tic;
+    % to_EQM = tic;
     MODEid = sprintf('%s%d','ESM',iveq);
     VEQ_sol = 0;
-    [orbc,orbk,orbt,veqZarray_0,veqParray_0] = orbit_integr(orbit_config_fname, VEQ_sol);
-    %fprintf('%s %.3f \n', 'Time (min):  EQM integration:',toc(to_EQM)/60);
+    [orbc,orbk,orbt,veqZarray_0,veqParray_0,forces_accel] = orbit_integr(orbit_config_fname, VEQ_sol, orbit_model_struct);
+    % fprintf('%s %.3f \n', 'Time (min):  EQM integration:',toc(to_EQM)/60);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 
+
+to_obs_estim = tic;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Statistics / Residuals / Write Data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -164,17 +186,22 @@ if param_estim_01 > 0
     % Observations residuals
     MODEid2 = sprintf('%s%s',MODEid,'obs');
     [rms_orbital,rms_orbc_obs,rms_orbk,rms_orbt,dstn,dorbc_obs,dkepl,dorbt,rms_3D] = mainf_statistout2(GM_glob,orbc,orbk,orbt,obsorbc,obsorbt,veqZarray,veqParray,MODEid2,i_write);
-%     if iveq == Niter_estim + 1 
-%     fprintf('\n');
-%     fprintf('%s %11.6f %11.6f %11.6f', 'Orbit residuals: RMS(XYZ): ',rms_orbc_obs(1:3));
-%     fprintf('\n\n');
-%     end
-    %if 1<0
+    % fprintf('%s %11.6f %11.6f %11.6f', 'Orbit residuals: RMS(XYZ): ',rms_orbc_obs(1:3));
+    % fprintf('\n\n');
     % External Observations residuals (OBS part not used within estimator)
     %MODEid2 = sprintf('%s%s',MODEid,'obsext');
     %[rms_orbital,rms_orbc,rms_orbk,rms_orbt,dstn,dorbc,dkepl,dorbt,rms_3D] = mainf_statistout2(GM_glob,orbc,orbk,orbt,obsorbc_ext,obsorbt_ext,veqZarray,veqParray,MODEid2,i_write);
     %fprintf('%s %11.6f %11.6f %11.6f \n\n', 'Orbit residuals: XYZ: ',rms_orbc(1:3));
-    %end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+% Weights matrix
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+sigma_obs_weight = 1;
+% if (iveq > 0) 
+%     obs_residuals = dorbc_obs;
+%     sigma_obs_weight = [obs_residuals(:,2); obs_residuals(:,3); obs_residuals(:,4)];    
+% end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
@@ -182,6 +209,7 @@ if param_estim_01 > 0
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 test = strcmp(obs_outliers_yn,'y');
 if test == 1
+    %sigma_obs_weight = pseudo_obs_sigma_outlier;
 if (iveq > 0) && (iveq == Niter_estim)
     obs_sigma_test = pseudo_obs_sigma_outlier;
     orbc_xyz = orbc(:,1:4);
@@ -195,6 +223,15 @@ if (iveq > 0) && (iveq == Niter_estim)
         [obs_reduced, obs_removed, Nepochs_removed, obs_residuals, rms_obs] = obs_pseudo_scan(obsorbc, orbc_xyz, obs_sigma_test);
     end
     obsorbc = obs_reduced;
+    
+% Weights matrix
+    % [residuals_d1_pod residuals_d2_pod] = size(obs_residuals);
+    % sigma_obs_weight = [obs_residuals(:,2); obs_residuals(:,3); obs_residuals(:,4)];    
+    sigma_obs_weight = 1;    
+    fprintf('%s %d', 'Observations screening: Nepochs removed: ',Nepochs_removed);
+    fprintf('\n\n');
+    % fprintf('%s %11.6f %11.6f %11.6f', 'Orbit residuals post obs screening: RMS(XYZ): ',rms_obs(1:3));
+    % fprintf('\n\n');
 end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
@@ -204,12 +241,13 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if iveq < Niter_estim + 1       
     % Least-squares estimation method
-    [Xmatrix,Amatrix2,Wmatrix2] = orbit_estim(orbc, veqZarray, veqParray, obsorbc, COVobs, COVPform);
+    [Xmatrix,Amatrix2,Wmatrix2] = orbit_estim(orbc, veqZarray, veqParray, obsorbc, sigma_obs_weight, COVPform);
 % Estimated Parameters: Update parameters' values to aposteriori values
     ic_apriori_01 = 1;
-    [Zo_estim, Xaposteriori] = param_aposteriori_apriori(Xmatrix, ic_apriori_01);
+    [Zo_estim, Xaposteriori, orbit_model_struct] = param_aposteriori_apriori(Xmatrix, ic_apriori_01, orbit_model_struct);
 end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%       
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % fprintf('%s %.3f \n', 'Time (min): Statistics, OBS screening, Parameters estimation:',toc(to_obs_estim)/60);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%       
@@ -237,18 +275,21 @@ if test == 1
 % Orbit Integration
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Variational Equations numerical integration solution
-    to_VEQ = tic;
+    % to_VEQ = tic;
     MODEid = sprintf('%s%d','VEQ',0);
     VEQ_sol = 1;
-    [orbc,orbk,orbt,veqZarray,veqParray] = orbit_integr(orbit_config_fname, VEQ_sol);
-    %fprintf('%s %.3f \n', 'Time (min):  VEQ integration:',toc(to_VEQ)/60);
+    [orbc,orbk,orbt,veqZarray,veqParray,forces_accel_veq, Gmatrix, Rmatrix] = orbit_integr(orbit_config_fname, VEQ_sol, orbit_model_struct);
+    % fprintf('%s %.3f \n', 'Time (min):  VEQ integration:',toc(to_VEQ)/60);
 % Equation of Motion numerical integration solution
-    to_EQM = tic;
+    % to_EQM = tic;
     MODEid = sprintf('%s%d','ESM',0);
     VEQ_sol = 0;
-    [orbc,orbk,orbt,veqZarray_0,veqParray_0] = orbit_integr(orbit_config_fname, VEQ_sol);
-    %fprintf('%s %.3f \n', 'Time (min):  EQM integration:',toc(to_EQM)/60);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%       
+    [orbc,orbk,orbt,veqZarray_0,veqParray_0,forces_accel] = orbit_integr(orbit_config_fname, VEQ_sol, orbit_model_struct);
+    % fprintf('%s %.3f \n', 'Time (min):  EQM integration:',toc(to_EQM)/60);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+else
+    Gmatrix = zeros(3,3); 
+    Rmatrix = zeros(3,3);
 end
 
 
@@ -262,11 +303,11 @@ if test == 1
 % Orbit Integration
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Equation of Motion numerical integration solution
-    to_EQM = tic;
+    % to_EQM = tic;
     MODEid = sprintf('%s%d','ESM',0);
     VEQ_sol = 0;
-    [orbc,orbk,orbt,veqZarray_0,veqParray_0] = orbit_integr(orbit_config_fname, VEQ_sol);
-    %fprintf('%s %.3f \n', 'Time (min):  EQM integration:',toc(to_EQM)/60);
+    [orbc,orbk,orbt,veqZarray_0,veqParray_0,forces_accel] = orbit_integr(orbit_config_fname, VEQ_sol, orbit_model_struct);
+    % fprintf('%s %.3f \n', 'Time (min):  EQM integration:',toc(to_EQM)/60);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     veqZarray = veqZarray_0;
     veqParray = veqParray_0;
@@ -287,7 +328,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % External Orbit Comparison
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[rms_orbital,rms_orbc,rms_orbk,rms_orbt,dstn,dorbc,dkepl,dorbt] = orbit_ext(orbc,orbk,orbt,veqZarray,veqParray,MODEid,orbit_config_fname);
+[rms_orbital,rms_orbc,rms_orbk,rms_orbt,dstn,dorbc,dkepl,dorbt,extorb_crf,extorb_trf] = orbit_ext(orbc,orbk,orbt,veqZarray,veqParray,MODEid,orbit_config_fname, orbit_model_struct);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % fprintf('%s \n', 'External Orbit Comparison:');
 % fprintf('%s ', 'Orbit residuals: RMS(RTN): ' );

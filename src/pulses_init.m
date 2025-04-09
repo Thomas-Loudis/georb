@@ -34,18 +34,22 @@ for i1_pulse = 1 : N_pulses_epochs
     if (i1_pulse == 1)        
         offset = pulse_offset;
     elseif (i1_pulse == N_pulses_epochs)
-       %offset = -1.0D0 * pulse_offset;
+       offset = -1.0D0 * pulse_offset;
        %offset = pulse_offset; 
-       %offset = 0.0D0;
-       piecewise_time = 7*60;
-       offset = - 15*60; %-2 * piecewise_time;
     else
        offset = 0.0D0;
        %offset = pulse_offset;
     end
     offset = pulse_offset;    
+    % MJD
     pulses_matrix_init(i1_pulse, 1) = mjd_epoch0 + offset / 86400 + (i1_pulse-1) * (pulse_step / 86400);
     pulses_matrix_init(i1_pulse, 2) = sec_epoch0 + offset + (i1_pulse-1) * pulse_step;
+    % Seconds since start of orbit arc  
+    sec_00_IC = sec_epoch0 + offset + (i1_pulse-1) * pulse_step;
+    % Remove daily periods from Seconds
+    sec_00 = sec_00_IC - fix(sec_00_IC / 86400) * 86400;
+    % Seconds since start of the day
+    pulses_matrix_init(i1_pulse, 2) = sec_00;    
     for i2_pulse = 1 : N_pulses_axes
         pulses_matrix_init(i1_pulse,i2_pulse+2) = 1.0D-12;
     end

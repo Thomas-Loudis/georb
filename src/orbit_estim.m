@@ -16,8 +16,6 @@ function [Xmatrix,Amatrix2,Wmatrix2] = orbit_estim(orbc, veqZarray, veqParray, o
 %             Upgrade: matrix decomposition approaches
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-global Nparam_GLOB 
 i_itr = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -36,17 +34,17 @@ i_itr = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Orbit parameter estimation: Initial State vector and Force related parameters
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if Nparam_GLOB > 0   
-    Texclud = -1;
-    [Xmatrix,Xmatrix2,Wmatrix, Amatrix, Cx_matrix, Cv_matrix] = estimator_orbit (orbc,veqZarray,veqParray,obsorbc,COVobs,Texclud);
-    %Cv_matrix = 0;
-    %Pmatrix = 0;    
-    Xprm_estim(i_itr+1,:) = [i_itr Xmatrix'];
-    %[Wmatrix2] = mjd2mjdtt(Wmatrix,1);
-    %[Amatrix2] = mjd2mjdtt(Amatrix,1);
-    Wmatrix2 = Wmatrix;
-    Amatrix2 = Amatrix;
-end
+% if Nparam_GLOB > 0   
+Texclud = -1;
+[Xmatrix,Xmatrix2,Wmatrix, Amatrix, Cx_matrix, Cv_matrix] = estimator_orbit (orbc,veqZarray,veqParray,obsorbc,COVobs,Texclud);
+%Cv_matrix = 0;
+%Pmatrix = 0;
+Xprm_estim(i_itr+1,:) = [i_itr Xmatrix'];
+%[Wmatrix2] = mjd2mjdtt(Wmatrix,1);
+%[Amatrix2] = mjd2mjdtt(Amatrix,1);
+Wmatrix2 = Wmatrix;
+Amatrix2 = Amatrix;
+% end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if 1<0

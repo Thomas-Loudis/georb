@@ -1,4 +1,4 @@
-function [partials_rpl, partials_xyz] = potential_partials_1st(r,n_max,m_max,GM,ae,Cnm,Snm)
+function [partials_rpl, partials_xyz] = potential_partials_1st(r,n_max,m_max,GM,ae,Cnm,Snm, legendre_functions_struct, n_min)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -31,5 +31,5 @@ function [partials_rpl, partials_xyz] = potential_partials_1st(r,n_max,m_max,GM,
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-[partials_rpl, partials_xyz] = harmonics_partials_1st(r,n_max,m_max,GM,ae,Cnm,Snm);
+[partials_rpl, partials_xyz] = harmonics_partials_1st(r,n_max,m_max,GM,ae,Cnm,Snm, legendre_functions_struct,n_min);
 

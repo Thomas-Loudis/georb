@@ -1,4 +1,4 @@
-function [z_q,e_z,z_int,ez_int] = rkn646fd(zo,RKparam,eop,dpint)
+function [z_q,e_z,z_int,ez_int] = rkn646fd(zo,RKparam,eop,dpint, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -133,7 +133,7 @@ for i = 1 : s
         % Force model is indepedent from velocity vector 
         %[fx,fy,fz] = Acceleration(t(i),r(:,i),vo);
         zmjd = [t(i)/(24*3600) r(:,i)' vo'];
-        [fx,fy,fz] = accel(zmjd,eop,dpint);
+        [fx,fy,fz] = accel(zmjd,eop,dpint, orbit_model_struct);
         k(:,i) = [fx; fy; fz];
         %k(:,i)= [0; 0; 0;];       
     else
@@ -148,7 +148,7 @@ for i = 1 : s
         % Force model is indepedent from velocity vector 
         %[fx,fy,fz] = Acceleration(t(i),r(:,i),vo);
         zmjd = [t(i)/(24*3600) r(:,i)' vo'];
-        [fx,fy,fz] = accel(zmjd,eop,dpint);        
+        [fx,fy,fz] = accel(zmjd,eop,dpint, orbit_model_struct);        
         k(:,i) = [fx; fy; fz];
     end
 end

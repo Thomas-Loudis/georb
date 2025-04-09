@@ -122,9 +122,6 @@ otides_DelaunayNf = delaunay_doodson_multipliers;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Structure array
 shc_struct.status_yn = ocean_tides_yn;
-%shc_struct.GM     = aod_GM;
-%shc_struct.radius = aod_ae;
-%shc_struct.degree_order = [aod_nmax aod_nmax];
 shc_struct.degree_eqm   = [n_max_otides m_max_otides];
 shc_struct.degree_veq   = [n_max_otides_veq m_max_otides_veq];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,4 +1,4 @@
-function [obsorbc, obsorbk, obsorbt, obsorbc_ext, obsorbk_ext, obsorbt_ext, obsorbc_full, obsorbk_full, obsorbt_full, COVmatrix] = prm_pseudobs(cfg_fname,GM,eopdat,dpint)
+function [obsorbc, obsorbk, obsorbt, obsorbc_ext, obsorbk_ext, obsorbt_ext, obsorbc_full, obsorbk_full, obsorbt_full, COVmatrix] = prm_pseudobs(cfg_fname,GM,eopdat,dpint, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -40,7 +40,6 @@ function [obsorbc, obsorbk, obsorbt, obsorbc_ext, obsorbk_ext, obsorbt_ext, obso
 % 30/10/2022  Dr. Thomas Papanikolaou
 %             Read orbit configuration format via structure array or file
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 cfg_mode = 2;
 
@@ -88,12 +87,6 @@ while (~feof(fid))
       Object_SAT_ID = sscanf(line_ith,'%*s %s %*');
     end
 
-%     % Orbit arc length    
-%     test = strcmp(str1,'Orbit_arc_length');
-%     if test == 1
-%       Orbit_arc_length_hours = sscanf(line_ith,'%*s %d %*');
-%     end
-
 % Observations modelling
     % Orbit type (kinematic or dynamic)
     test = strcmp(str1,'pseudo_obs_type');
@@ -123,11 +116,6 @@ end
 fclose(fid);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-% Orbit arc in seconds
-[orbit_arc_sec, IC_MJDo, IC_Zo_vec, EOP_data, EOP_interp_no] = prm_ic(cfg_fname);
-%orbit_arc_sec = Orbit_arc_length_hours;
 
 if GM == 0
     GM = 3.986004415 * 10^14;
@@ -189,8 +177,7 @@ OBS_ORB_Frame = 'trs';
 % GOCE Kinematic / Reduced-Dynamic orbit
 test = strcmp(Object_SAT_ID,'GOCE');
 if test == 1    
-    arc = orbit_arc_sec;
-    tstop = arc + 300;
+    tstop = 0;
     [orbte] = sp3c_orb(obsorb_fname,orbtype,tstop);
     if COVPform > 0
         % - COVPform = 1 >> Diagonal
@@ -228,7 +215,7 @@ if test_grace == 1 || test_gracefo == 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % GRACE GNV1B orbits 
     if test_gnv1b == 1 
-        [gnv1b,COVmatrix] = grace_gnv1b(obsorb_fname,0);   
+        [gnv1b,COVmatrix] = grace_gnv1b(obsorb_fname);   
         [sz1 sz2] = size(gnv1b);
         orbte = zeros(sz1,4);
         for i = 1 : sz1
@@ -258,7 +245,8 @@ if test_grace == 1 || test_gracefo == 1
             mjdgps = orb_xyz(i,1);
             [t,D,M,Y] = MJD_inv(mjdgps);
             tgps = (mjdgps - floor(mjdgps)) * 24 * 3600;
-            [tutc,tTT] = time_scales_GPS(tgps,mjdgps);      
+            % [tutc,tTT] = time_scales_GPS(tgps,mjdgps);
+            tTT = tgps + 51.184;
             mjdTT = mjdgps + (tTT-tgps)/60/60/24;
             orbce(i,:) = [mjdTT orb_xyz(i,2:4)];
         end      
@@ -268,11 +256,38 @@ if test_grace == 1 || test_gracefo == 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% GEORB Orbits    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+test_georb = strcmp(pseudo_obs_type,'georb');
+if test_georb == 1
+    % GEORB Orbit data
+    [orbit_data_matrix] = read_georb_data(obsorb_fname);
+    [sz1, sz2] = size(orbit_data_matrix);
+    % Orbit reference frame
+    OBS_ORB_Frame = 'crs';
+    orbce = zeros(sz1,4);
+    % MJD in TT including fraction of the day
+    orbce(:,1) = orbit_data_matrix(:,1) + orbit_data_matrix(:,2) / 86400;
+    % Orbit X coordinate
+    orbce(:,2) = orbit_data_matrix(:,3);
+    % Orbit Y coordinate
+    orbce(:,3) = orbit_data_matrix(:,4);
+    % Orbit Z coordinate
+    orbce(:,4) = orbit_data_matrix(:,5);    
+    % Covariance matrix is not provided
+    COVmatrix = 0;
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Observations Epochs array within the orbit arc length
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[orbit_arc_length, IC_MJDo, IC_Zo_vec, EOP_data, EOP_interp_no] = prm_ic(cfg_fname);
+% [orbit_arc_length, IC_MJDo, IC_Zo_vec, EOP_data, EOP_interp_no] = prm_ic(cfg_fname);
+% Orbit model matrix 
+IC_MJDo = orbit_model_struct.IC_MJD ;
+orbit_arc_length = orbit_model_struct.orbit_arc_length_sec;
 % Integration Stepsize
 INTGstep = integr_stepsize;
 % Orbit arc length in seconds
@@ -309,11 +324,11 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Orbit transformation from ITRS to GCRS
 if OBS_ORB_Frame == 'trs'
-    [orbce] = orbt2c(orbte,eopdat,dpint);
+    [orbce] = orbt2c(orbte,eopdat,dpint, orbit_model_struct);
     
 % Orbit transformation from ICRS to ITRS
 elseif OBS_ORB_Frame == 'crs'
-    [orbte] = orbc2t(orbce,eopdat,dpint);
+    [orbte] = orbc2t(orbce,eopdat,dpint, orbit_model_struct);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
