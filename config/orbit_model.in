@@ -12,11 +12,13 @@ orbit_mode                orbit_propagation_eqm
 ---------------------------------------------------------------------------
 
 % Comment: 
-% If 'orbit_propagation_eqm' is selected, then ignore the following parameters refer to VEQ (Variational Equations)
+% If 'orbit_propagation_eqm' is selected, then ignore the parameters refer to VEQ (Variational Equations)
 
 ---------------------------------------------------------------------------
-% Orbit arc length in seconds
-Orbit_arc_length           5400
+% Orbit arc length in sec
+Orbit_arc_length           86400
+% Orbit_arc_length           5400
+Orbit_arc_length           300
 ---------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------
@@ -55,7 +57,7 @@ Stepsize                  10
 Multistep methods parameters (in case of Gauss-Jackson and Adams-Bashforth methods) 
 
 % Order of Multistep methods
-integrator_order_multistep    12
+integrator_order_multistep    10
 
 % Start integrator for the initial epochs required by the multistep integrator
 Start_integrator          RKN-768
@@ -64,7 +66,6 @@ RKN6(4)-6FD Runge-Kutta-Nystrom method parameters (optional) ::
 RKN_lamda_coefficient     0.01
 RKN_interpolation_sigma   0.5
 ---------------------------------------------------------------------------
-
 
 Explanatory comment: 
 'y' : included, 'n' : excluded
@@ -89,13 +90,14 @@ Relativity_effects        y
 - 'static'         : Higher terms of geopotential included up to truncated degree/order of the input gravity model
 - 'time-variable'  : Time-variable geopotential coeffcients are considered based on the input gravity model
 
-%Gravity_field_terms       static
+% Gravity_field_terms       static
 Gravity_field_terms       time-variable
 
 
 % Gravity Field model 
 % Model file name in .gfc format (Spherical harmonic coefficients)
 gravity_model_fname       GOCO06s.gfc 
+% gravity_model_fname       EIGEN-6C4.gfc 
 
 % Gravity model's degree and order (truncation value of harmonics series expansion)
 gravity_model_degree      200          
@@ -104,6 +106,13 @@ gravity_model_order       200
 % Variational Equations: Gravity model's degree and order
 veq_gravity_model_degree        30          
 veq_gravity_model_order         30
+---------------------------------------------------------------------------
+% Gravtiy Field parameters estimation
+grav_field_paramestim_yn       n
+
+% Gravity model harmonics coefficients range (to be estimated)
+grav_paramestim_degree_min     2   
+grav_paramestim_degree_max     30
 ---------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------
@@ -126,22 +135,25 @@ solid_earth_tides_1_non_freq    y
 
 % Frequency dependent terms
 solid_earth_tides_2_freq        y   
----------------------------------------------------------------------------
+
 % Ocean Tides
 ocean_tides                     y    
----------------------------------------------------------------------------
+
 % Atmospheric Tides (Based on AOD1B data)
 atm_tides                       n    
----------------------------------------------------------------------------
+
 % Solid Earth Pole Tide
 solid_earth_pole_tide           y    
 
 % Ocean Pole Tide
 ocean_pole_tide                 y    
----------------------------------------------------------------------------
 
+---------------------------------------------------------------------------
 % Ocean Tides model file name (format of spherical harmonic coefficients)
 ocean_tides_model_fname         fes2004_Cnm-Snm.dat
+% ocean_tides_model_fname         fes2014b.v1.Cnm-Snm_Om1+Om2C20_without_S1_wave.POT_format.txt
+% ocean_tides_model_fname         oceanTide_EOT11a.potential.iers.txt
+% ocean_tides_model_fname         oceanTide_FES2014b.potential.iers.txt
 
 % Ocean Tides model degree and order (truncation value)
 % Set to 'model_max' to select the model's maximum degree/order 
@@ -151,8 +163,8 @@ ocean_tides_order               100
 % Variational Equations: Ocean Tides model's degree and order
 veq_ocean_tides_degree          30          
 veq_ocean_tides_order           30                                       
----------------------------------------------------------------------------
 
+---------------------------------------------------------------------------
 % Atmospheric Tides data level name
 atm_tides_data_level            AOD1B
 
@@ -187,7 +199,6 @@ aod_effect_data_type      GLO
 AOD_degree_max            180
 ---------------------------------------------------------------------------
 
-
 ---------------------------------------------------------------------------
 Relativity Effects
 ---------------------------------------------------------------------------
@@ -210,7 +221,7 @@ C_speed_of_light          299792458
 ---------------------------------------------------------------------------
 % Non-Gravitational effects
 ---------------------------------------------------------------------------
-non_gravitational_forces        y                                                
+non_gravitational_forces        n                                                
 
 
 ---------------------------------------------------------------------------
@@ -220,7 +231,7 @@ Accelerometer data and calibration modelling
 acc_data                  n 
 
 % Accelerometer Calibration parameters estimation
-acc_cal_paramestim        n 
+acc_cal_paramestim        y 
 
 ---------------------------------------------------------------------------
 Accelerometer data
@@ -263,9 +274,8 @@ acc_cal_bias_drift_2      n
 - 'semi-full' : 6 parameters
 - 'full'      : 9 parameters
 
-acc_cal_scale             full
+acc_cal_scale             diagonal
 ---------------------------------------------------------------------------
-
 
 % End of Non-Gravitational effects
 
@@ -278,9 +288,9 @@ empirical_forces         n
 % Reference Frame of empirical acceleration
 - 'orbital_frame' :: Orbital reference frame (radial,along-track,cross-track)
 - 'inertial'      :: Inertial reference frame (X,Y,Z)
-- 'srf_frame'     :: Spacecraft reference frame 
+- 'srf_frame'     :: Spacecraft reference frame (Case of missions with star camera data)
 
-empirical_frame           orbital_frame
+empirical_frame           srf_frame
 
 % Bias empirical accelerations per axis
 empirical_bias_axis1      n
@@ -289,8 +299,8 @@ empirical_bias_axis3      n
 
 % Cycle per revolution (CPR) terms: Cosine (C) and Sine (S) coefficients 
 % CPR per axis
-cpr_C_axis1       n
-cpr_S_axis1       n
+cpr_C_axis1       y
+cpr_S_axis1       y
 
 cpr_C_axis2       y
 cpr_S_axis2       y
@@ -301,7 +311,6 @@ cpr_S_axis3       y
 % Number of cycles per revolution (once, twice, n per revolution)
 cpr_freq_number           1
 ---------------------------------------------------------------------------
-
 
 ---------------------------------------------------------------------------
 % Empirical Accelerations :: Piecewise Accelerations and Pulses
@@ -314,21 +323,29 @@ PULSES_estim_yn           n
 - 'stoch_accel_constant'  : Piecewise constant accelerations at predefined epochs 
 stoch_param_type          stoch_accel_constant      
 
-
 % Step interval (seconds)
+%PULSES_interval           3600
 PULSES_interval           5400
+%PULSES_interval           10800
+%PULSES_interval           21600
 
 % Acceleration duration (seconds)
-stoch_time_interval       900
-
+% stoch_time_interval       300
+%stoch_time_interval       1800
+stoch_time_interval       5390
 
 % Time offset (seconds)
+% PULSES_offset             0
+% PULSES_offset             3600
 PULSES_offset             5400
+% PULSES_offset             10800
+% PULSES_offset             21600
+% PULSES_offset             300
 
 % Reference Frame of pulses 
 - 'orbital_frame' :: Orbital reference frame (radial,along-track,cross-track)
 - 'inertial'      :: Inertial reference frame (X,Y,Z)
-- 'srf_frame'     :: Spacecraft reference frame 
+- 'srf_frame'     :: Spacecraft reference frame (Case of missions with star camera data)
 
 PULSES_frame              srf_frame
 
@@ -342,7 +359,6 @@ PULSES_axis_2             1
 % Pulses direction 3 (normal, Z)
 PULSES_axis_3             1
 ---------------------------------------------------------------------------
-
 
 ---------------------------------------------------------------------------
 Observations model 
@@ -360,19 +376,40 @@ pseudo_obs_type           itsg_kin
 obs_outliers_yn           y 
 
 % Pseudo-observations outliers threshold (in cm) 
-pseudo_obs_sigma          2
+pseudo_obs_sigma          30
 
 % Covariance matrix of pseudo-observations orbit data :: "Status: Not supported by current version"
 % 'identity', 'diagonal', 'full' 
 cov_pseudo_obs_data       identity 
 ---------------------------------------------------------------------------
 
-
 ---------------------------------------------------------------------------
 Parameter Estimator                                                               
 ---------------------------------------------------------------------------
 % Number of iterations of parameter estimation algorithm
-estimator_iterations      1                                              
+estimator_iterations      1                                             
+---------------------------------------------------------------------------
+
+---------------------------------------------------------------------------
+Inter-satellite Ranging Observations 
+---------------------------------------------------------------------------
+% Combined Parameter Estimation (observation combination with inter-satellite ranging data)
+% y/n status 
+combined_param_estim_yn   n 
+ 
+% GRACE & GRACE-FO missions 
+% % (In case of GRACE-FO use one of the two intersatellite ranging instruments LRI or KBR)
+% K-Band Ranging instrument data
+% KBR use as observations within orbit parameter estimation 
+KBR_obs_estim             n
+
+% Laser Ranging Instrument data
+% LRI use as observations within orbit parameter estimation
+LRI_obs_estim             y
+
+% Ranging data for observation combination (range-rate only is recommended) 
+intersat_range_obs        n
+intersat_rangerate_obs    y
 ---------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------
@@ -392,34 +429,10 @@ external_orbit_comp            n
 external_orbit_type            gnv1b 
 ---------------------------------------------------------------------------
 
-
----------------------------------------------------------------------------
-
-
----------------------------------------------------------------------------
-Inter-satellite ranging observations :: "Status: in-progress; Not supported by current version"
----------------------------------------------------------------------------
-% GRACE & GRACE-FO missions
-
-% K-Band Ranging instrument data
-% KBR use as observations within orbit parameter estimation 
-KBR_obs_estim             n
-KBR_obs_range             n
-KBR_obs_rangerate         y
-
-% Laser Ranging Instrument data
-% LRI use as observations within orbit parameter estimation
-LRI_obs_estim             n
-LRI_obs_range             n
-LRI_obs_rangerate         y
----------------------------------------------------------------------------
-
-
 ---------------------------------------------------------------------------
 Orbit Design of mission based on intersatellite baseline formation (GRACE-like missions)
 ---------------------------------------------------------------------------
 "Status: in-progress; Not supported by current version"
-
 Set the variables below only in the case of the orbit design mode (if 'georb_mode' is set to 'orbit_design' within the master configuration file)
 
 % Baseline Lenght in Km

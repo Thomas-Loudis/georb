@@ -1,0 +1,51 @@
+---------------------------------------------------------------------------
+Initial Conditions (IC) configuration file                                       
+---------------------------------------------------------------------------
+
+---------------------------------------------------------------------------
+IC data format description
+---------------------------------------------------------------------------
+Data lines format ::  
+Satellite/Object ID  |  Reference_frame  |  Time_scale  |  Date_format  |  Initial_Epoch  | Flag (non-active) |  State_vector (Optional) 
+---------------------------------------------------------------------------
+Satellite/Object ID :: Satellite or Object name ID
+Examples :: GRACE-A, GRACE-B, GRACE-C, GRACE-D
+
+Reference_frame :: Reference frame of the initial state vector
+Options:
+'ITRF'   : Cartesian coordinates in Intertnational Terrestrial Reference Frame
+'ICRF'   : Cartesian coordinates in Intertnational Celestial Reference Frame
+'KEPLER' : Kepler elements in Intertnational Celestial Reference Frame
+
+Time scale of the initial conditions. 
+Options: 
+- 'TT'  : Terrestrial Time
+- 'TAI' : 
+- 'UTC' :
+- 'GPS' : GPS Time Scale
+
+Date_format :: Date format of the Initial Epoch
+Options: 
+- 'calendar' :: Expected format of the Initial_Epoch :: Year, Month, Day, Seconds 
+- 'MJD'      :: Expected format of the Initial_Epoch :: Modified Julian Day number, Seconds since 00h
+
+Initial_Epoch : Initial Epoch
+Examples:
+- Case of calendar date format  ::  2019 07 18 0.0 
+- Case of MJD date format       ::  58682 2021.184 0 0 
+
+State_vector :: Initial State Vector :: Position and Velocity vector in m and m/sec
+Example:   3317114.29453071626  252279.97141062448 -6033407.00916356966 -6639.98945932193874 -227.41515344014149 -3673.76634420864957 
+---------------------------------------------------------------------------
+State_vector :: Optional 
+Apply when Initial Conditions are being obtained from this IC inpout file input file
+Case of 'ic_state_vector_apriori' variable set to 'ic' within the main configuration file 
+---------------------------------------------------------------------------
+
+Data lines format ::  
+Satellite/Object ID  |  Reference_frame  |  Time_scale  |  Date_format  |  Initial_Epoch  | Flag (non-active) |  State_vector (Optional) 
+end_of_header
+
+GRACE-C     ICRF   GPS   calendar   2019 01 01   0.0     0  5.395539916520777e+06        3.046584825057278e+06       -2.974184013170602e+06       -2.931425031101592e+03       -1.476602643103978e+03       -6.873176853543684e+03        2.905500208992380e-07        9.567314878791003e-06        1.853950336175238e-07        9.908322682878438e-01        8.255307893885112e-01        1.188325057278577e+00
+GRACE-D     ICRF   GPS   calendar   2019 01 01   0.0     0  5.468163796079617e+06        3.083274151046171e+06       -2.797739433530267e+06       -2.761223680028985e+03       -1.380691983544336e+03       -6.963662509474754e+03       -3.096184423518485e-07       -9.563093633699548e-06        1.555353277061754e-07        1.058059578354792e+00        8.253037845677871e-01        9.848154864220786e-01
+

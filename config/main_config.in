@@ -9,8 +9,9 @@ GEORB orbit mode
 % Options:
 % - 'orbit_objects'        : Orbit determination/propagation of N objects/satellites (objects are defined below via orbiting_object_name)  
 % - 'orbit_mission'        : Orbit determination/propagation of satellite mission    (mission is defined below via orbiting_object_name)  
-% - 'orbit_mission_design' : Orbit design of GRACE-like missions based on variable intersatellite ranging baseline :: "Status: in-progress; Not supported by current version"
+% - 'orbit_mission_design' : Orbit design of GRACE-like missions :: "Status: in-progress; Not supported by current version"
 
+% georb_mode                orbit_mission
 georb_mode                orbit_objects
 ---------------------------------------------------------------------------
 
@@ -21,27 +22,18 @@ georb_mode                orbit_objects
 % Options:
 % - 'GRACE_FO_mission'                : GRACE-C and GRACE-D satellite orbit determination and KBR & LRI data processing
 % - 'GRACE_mission'                   : GRACE-A and GRACE-B satellite orbit determination and KBR data processing 
-% - 'ALL_OBJECTS'                     : All objects written in the Initial Conditions configuration file (see below ic_config_filename)
-% -  Select an individual satellite/object name : Examples :: 'GRACE-A', 'GRACE-B', 'GRACE-C', 'GRACE-D' (The name must exist in the ic_config_filename)
+% - 'ALL_OBJECTS'                     : Considers all objects written in the Initial Conditions configuration file (see below ic_config_filename)
+% -  Individual satellite/object; Examples :: 'GRACE-A', 'GRACE-B', 'GRACE-C', 'GRACE-D' (The ID name must exist in the ic_config_filename)
 
-orbiting_object_name      GRACE-C
----------------------------------------------------------------------------
-
----------------------------------------------------------------------------
-% Orbit times series :: "Status: in-progress; Not supported by current version"
----------------------------------------------------------------------------
-% 'y' : yes, to be applied 
-% 'n' : not to be applied
-orbit_time_series          n 
-
-% Number of continuous orbit arcs
-orbit_time_series_arcs    7     
+% orbiting_object_name      GRACE_FO_mission
+% orbiting_object_name      GRACE-C
+orbiting_object_name      ALL_OBJECTS
 ---------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------
-% Satellite/Object Names ID and Initial Epochs :: Initial Conditions file
+% Initial Conditions configuration file :: Satellite/Object Names ID and Initial Epochs
 ---------------------------------------------------------------------------
-ic_config_filename        ic_config.in
+ic_config_filename        ic.in
 ---------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------
@@ -52,11 +44,20 @@ ic_config_filename        ic_config.in
 % - 'obs' : Observations based 
 % - 'ext' : External Orbit data file
 
+% ic_state_vector_apriori   obs
 ic_state_vector_apriori   ic
 ---------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------
-Orbit modelling :: Configuration file name
+% Orbit time series
+---------------------------------------------------------------------------
+% Number of sequential orbit arcs to be added to the initial dates written within the Initial Conditions configuration file 
+% Set to "0" if additional orbit arcs are not required
+orbit_time_series_arcs    0     
+---------------------------------------------------------------------------
+
+---------------------------------------------------------------------------
+Orbit modelling :: Configuration file name for setting Models, Methods, Data
 ---------------------------------------------------------------------------
 orb_config_filename       orbit_model.in   
 ---------------------------------------------------------------------------
