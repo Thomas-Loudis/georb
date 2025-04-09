@@ -1,4 +1,4 @@
-function [georb_data_name] = write_georb_data2(orbit_config_fname, data_matrix, data_functional, reference_frame)
+function [georb2gnv_data_name] = write_georb_data3_gnv(orbit_config_fname, data_matrix, data_functional, reference_frame)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -56,13 +56,6 @@ test_data_functional = strcmp(data_functional,data_functional_keyword);
 if test_data_functional == 1
 data_functional_part1 = 'obs_residuals';
 end
-
-% Forces model: Acceleration Vector per epoch
-data_functional_keyword = 'Forces acceleration';
-test_data_functional = strcmp(data_functional,data_functional_keyword);
-if test_data_functional == 1
-data_functional_part1 = 'aceleration';
-end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -96,6 +89,15 @@ end
 % Data functional file name
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 data_functional_filename = sprintf('%s%s%s%s','_',data_functional_part1,'_',data_functional_part2);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Case orbit in itrf
+data_functional_keyword = '_orbit_trf';
+test_data_functional = strcmp(data_functional_filename,data_functional_keyword);
+if test_data_functional == 1
+    data_functional_filename = '';
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -154,19 +156,67 @@ data_functional_filename = '_KBR_range_residuals';
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Estimated Parameters 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-data_functional_keyword = 'Parameters';
-test_data_functional = strcmp(data_functional,data_functional_keyword);
-if test_data_functional == 1
-data_functional_filename = '_parameters';
-end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Data file name
-georb_data_name = sprintf('%s%s%s',georb_dataformat_name,data_functional_filename,georb_dataformat_suffix);
+% Data file name for GNV format
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% georb_data_name = sprintf('%s%s%s',georb_dataformat_name,data_functional_filename,georb_dataformat_suffix);
+
+% GNP1B_2019-01-01_C_00.txt
+
+% GEORB to GNV data format name
+georb2gnv_dataformat_name = sprintf('%s','GNP1B');
+
+% Date
+% mjd_to = data_matrix(1,1);
+% Read cofig file for MJDo
+[orbit_arc_length, IC_MJDo, IC_Zo_vec, EOP_data, EOP_interp_no] = prm_ic(orbit_config_fname);
+% fix(IC_MJDo)
+mjd_to = IC_MJDo;
+[UT,day,month,year] = MJD_inv(mjd_to);
+% param_keyword = 'Date';
+% fprintf(fid,'%-33s %s %d %d %d ',param_keyword, ': ',day,month,year);
+% fprintf(fid,'%s\n','');
+% [orbit_arc_length, IC_MJDo, IC_Zo_vec, EOP_data, EOP_interp_no] = prm_ic(cfg_filename);
+if month < 10
+    month_2d = sprintf('%s%d','0',month);
+else
+    month_2d = sprintf('%d',month);
+end
+if day < 10
+    day_2d = sprintf('%s%d','0',day);
+else
+    day_2d = sprintf('%d',day);
+end
+date_name = sprintf('%d%s%s%s%s',year,'-',month_2d,'-',day_2d);
+
+% GRACE/GRACE-FO satellite id
+% Satellite/Object name
+param_keyword = 'orbiting_object_name';
+[orbiting_object_name] = read_param_cfg(orbit_config_fname,param_keyword);
+test = strcmp(orbiting_object_name,'GRACE-A');
+if test == 1
+    grace_sat_id = "A";
+end
+test = strcmp(orbiting_object_name,'GRACE-B');
+if test == 1
+    grace_sat_id = "B";
+end
+test = strcmp(orbiting_object_name,'GRACE-C');
+if test == 1
+    grace_sat_id = "C";
+end
+test = strcmp(orbiting_object_name,'GRACE-D');
+if test == 1
+    grace_sat_id = "D";
+end
+
+% Data format suffix
+dataformat_suffix = sprintf('%s','.txt');
+% dataformat_suffix = georb_dataformat_suffix;
+
+% Data file name in GNV format
+georb2gnv_data_name = sprintf('%s', georb2gnv_dataformat_name,'_',date_name,'_',grace_sat_id,'_','01',data_functional_filename,dataformat_suffix);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -175,8 +225,14 @@ param_keyword = 'GEORB_version';
 [src_version] = read_param_cfg(orbit_config_fname, param_keyword);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % Write :: data matrix in georb format
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% [fid] = write_georb_format(georb_data_name, orbit_config_fname, data_matrix, data_functional, src_version, reference_frame);
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Write :: data matrix in georb format
+% Write :: data matrix in gnv format (GRACE missions data format)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[fid] = write_georb_format(georb_data_name, orbit_config_fname, data_matrix, data_functional, src_version, reference_frame);
+[fid] = write_georb_format_gnv1b(georb2gnv_data_name, orbit_config_fname, data_matrix, data_functional, src_version, reference_frame);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,4 +1,4 @@
-function [SFpulses, PD_pulses_param, PD_pulses_r, PD_pulses_v] = stoch_accel (rsat, vsat, mjd_t, t_sec, stoch_time_interval, pulses_matrix, pulses_axes_vec_01, N_param_pulses, emp_accel_type)
+function [SFpulses, PD_pulses_param, PD_pulses_r, PD_pulses_v] = stoch_accel (rsat, vsat, mjd_t, t_sec, stoch_time_interval, pulses_matrix, pulses_axes_vec_01, N_param_pulses, emp_accel_type, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -116,7 +116,7 @@ if delta_dirac == 1
         if (pulses_axes_vec_01(i2) == 1) 
             i_dir = i_dir + 1;            
             % Call function for computing the stochastic acceleration and its partial derivatives 
-            [Fpulse, PD_pulse_r, PD_pulse_v, PD_pulse_param_i] = stoch_acc_pdv (rsat, vsat, mjd_t, t_sec, delta_v, dir_pulse);            
+            [Fpulse, PD_pulse_r, PD_pulse_v, PD_pulse_param_i] = stoch_acc_pdv (rsat, vsat, mjd_t, t_sec, delta_v, dir_pulse, orbit_model_struct);            
             % Acceleration sum vector 
             SFpulses = SFpulses + Fpulse;
             % Partial derivatives w.r.t. parameters 

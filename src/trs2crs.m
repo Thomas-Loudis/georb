@@ -1,4 +1,4 @@
-function [EOP,dEOP,EOP_inv,dEOP_inv] = trs2crs(mjd,eop,dpint)
+function [EOP,dEOP,EOP_inv,dEOP_inv] = trs2crs(mjd,eop,dpint, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -52,9 +52,13 @@ function [EOP,dEOP,EOP_inv,dEOP_inv] = trs2crs(mjd,eop,dpint)
 %              Code minor upgrade and rename to trs2crs. The transformation
 %              model has considered the IERS Conventions 2010 and its
 %              updates
+% 07/04/2025  Thomas Loudis Papanikolaou
+%             Source Code minor upgrade 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-global XYs_IAU200A
+
+XYs_IAU200A = orbit_model_struct.IAU_PN_XYs_matrix;
+TAI_UTC_table = orbit_model_struct.TAI_UTC_table;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % eop_mjd:  Array of values of the EOP days refer in seconds (UTC)
@@ -80,7 +84,7 @@ s_CEO = XYs_IAU200A(:,4);
 % Civil date (D,Mh,Yr)
 [TT,Dy,Mh,Yr] = MJD_inv(mjd);
 % computation of UTC time
-[UTC,GPS_time] = time_scales(TT,mjd);
+[UTC,GPS_time] = time_scales(TT,mjd, TAI_UTC_table);
 % MJD in UTC time scale
 [jd,mjd_int] = MJD_date(UTC,Dy,Mh,Yr);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

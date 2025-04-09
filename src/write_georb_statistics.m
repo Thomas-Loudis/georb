@@ -1,4 +1,4 @@
-function [fid] = write_georb_statistics(orbit_config_fname, orbit_config_fname_pair, rms_obs, rms_extorb, rms_kbr, rms_lri)
+function [georb_data_name] = write_georb_statistics(orbit_config_fname, orbit_config_fname_pair, rms_obs, rms_extorb, rms_kbr, rms_lri)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -55,14 +55,14 @@ if test_satpair == 0
 end    
 [georb_dataformat_name, georb_dataformat_suffix] = write_data_name(orbit_config_fname, mission_01);
 georb_dataformat_suffix = sprintf('%s','.out');
-georb_orbit_name = sprintf('%s%s%s',georb_dataformat_name,'_statistics',georb_dataformat_suffix);
+georb_data_name = sprintf('%s%s%s',georb_dataformat_name,'_statistics',georb_dataformat_suffix);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Statistics
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Open file for writing
-out_filename = georb_orbit_name;
+out_filename = georb_data_name;
 fid = fopen(out_filename,'w');
 
 param_keyword = 'GEORB Orbit Statistics';

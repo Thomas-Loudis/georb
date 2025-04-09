@@ -2,7 +2,7 @@ function [config_struct] = write_config2struct(georb_config_fname, orbit_model_f
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Function:  write_orb_config
+% Function:  write_config2struct
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Purpose:
 %  Write all input configurable variables to one configuration structure (file) 
@@ -22,8 +22,10 @@ function [config_struct] = write_config2struct(georb_config_fname, orbit_model_f
 % Last modified:
 % 16/11/2022, Dr. Thomas Loudis Papanikolaou
 %             Modified to remove the satellite data configuration file and
-%             move towards creating the data file names according to the
-%             data format conventions
+%             create the data file names according to the data format
+%             conventions 
+% 07/04/2025  Thomas Loudis Papanikolaou
+%             Source Code minor upgrade 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -36,6 +38,7 @@ param_keyword = 'GEORB_version';
 i_struct = i_struct + 1;
 config_struct(i_struct).names  = param_keyword;
 config_struct(i_struct).values = src_version;
+% fprintf('%s%s \n\n','GEORB ',src_version);
 
 param_keyword = 'georb_mode';
 [param_value,param_line] = read_param_file(georb_config_fname,param_keyword);
@@ -55,11 +58,11 @@ config_struct(i_struct).values = param_line;
 orbiting_object_name = param_line;
 mission_name = param_line;
 
-param_keyword = 'orbit_time_series';
-[param_value,param_line] = read_param_file(georb_config_fname,param_keyword);
-i_struct = i_struct + 1;
-config_struct(i_struct).names  = param_keyword;
-config_struct(i_struct).values = param_line;
+% param_keyword = 'orbit_time_series';
+% [param_value,param_line] = read_param_file(georb_config_fname,param_keyword);
+% i_struct = i_struct + 1;
+% config_struct(i_struct).names  = param_keyword;
+% config_struct(i_struct).values = param_line;
 
 param_keyword = 'orbit_time_series_arcs';
 [param_value,param_line] = read_param_file(georb_config_fname,param_keyword);
@@ -120,6 +123,9 @@ else
        mission_name = 'GRACE_mission'; 
     end    
 end
+% Satellite missions cases :: GRACE missions
+test_mission_grace   = strcmp(mission_name,'GRACE_mission');
+test_mission_gracefo = strcmp(mission_name,'GRACE_FO_mission');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -183,6 +189,7 @@ param_keyword = 'orbit_mode';
 i_struct = i_struct + 1;
 config_struct(i_struct).names  = param_keyword;
 config_struct(i_struct).values = param_value;
+orbit_mode = param_value;
 
 param_keyword = 'Orbit_arc_length';
 [param_value] = read_param_file(orbit_model_filename,param_keyword);
@@ -202,7 +209,7 @@ IC_dataline_c = sscanf(ic_data,'%*s %10000c %*');
 
 % IC parameters line
 param_keyword = 'IC_parameters';
-param_value = sscanf(ic_data,'%*s %*s %*s %*s %*s %*s %*s %*s %*s %10000c %*');
+param_value = sscanf(ic_data,'%*s %*s %*s %*s %*s %*s %*s %*s %*s %100000c %*');
 %fprintf(fid,'%-27s %s ',param_keyword, param_value);
 %fprintf(fid,'%s\n','');
 i_struct = i_struct + 1;
@@ -279,7 +286,7 @@ config_struct(i_struct).values = param_value;
 
 
 param_keyword = 'State_vector';
-param_value = sscanf(IC_dataline_c,'%*s %*s %*s  %*s %*s %*s %*s  %*s  %10000c');
+param_value = sscanf(IC_dataline_c,'%*s %*s %*s  %*s %*s %*s %*s  %*s  %100000c');
 %fprintf(fid,'%-27s %s ',param_keyword, param_value);
 %fprintf(fid,'%s\n','');
 i_struct = i_struct + 1;
@@ -458,6 +465,24 @@ param_keyword = 'veq_gravity_model_order';
 [param_value] = read_param_file(orbit_model_filename,param_keyword);
 %fprintf(fid,'%-27s %s ',param_keyword, param_value);
 %fprintf(fid,'%s\n','');
+i_struct = i_struct + 1;
+config_struct(i_struct).names  = param_keyword;
+config_struct(i_struct).values = param_value;
+
+param_keyword = 'grav_field_paramestim_yn';
+[param_value] = read_param_file(orbit_model_filename,param_keyword);
+i_struct = i_struct + 1;
+config_struct(i_struct).names  = param_keyword;
+config_struct(i_struct).values = param_value;
+
+param_keyword = 'grav_paramestim_degree_min';
+[param_value] = read_param_file(orbit_model_filename,param_keyword);
+i_struct = i_struct + 1;
+config_struct(i_struct).names  = param_keyword;
+config_struct(i_struct).values = param_value;
+
+param_keyword = 'grav_paramestim_degree_max';
+[param_value] = read_param_file(orbit_model_filename,param_keyword);
 i_struct = i_struct + 1;
 config_struct(i_struct).names  = param_keyword;
 config_struct(i_struct).values = param_value;
@@ -709,19 +734,6 @@ i_struct = i_struct + 1;
 config_struct(i_struct).names  = param_keyword;
 config_struct(i_struct).values = param_value;
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Satellite Data
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% GRACE-A   calendar 2009 11 17   GNV1B_2009-11-17_A_01.asc    GNV1B_2009-11-17_A_01.asc      ACC1B_2009-11-17_A_01.asc      SCA1B_2009-11-17_A_01.asc 
-% GRACE-C   calendar 2021 07 12    GRACEFO-1_kinematicOrbit_2021-07-12.txt	GNV1B_2021-07-12_C_04.txt	ACT1B_2021-07-12_C_04.txt   SCA1B_2021-07-12_C_04.txt   KBR1B_2021-07-12_Y_04.txt   LRI1B_2021-07-12_Y_04.txt
-% id1_satellite = orbiting_object_name;
-% id2_MJD = MJD_day;
-% % Satellite Data line for the current MJD day 
-% [satdata_line_mjd] = read_satdata_cfg(sat_data_filename,id1_satellite,id2_MJD);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Accelerometer data 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -730,12 +742,16 @@ param_keyword = 'acc_data';
 i_struct = i_struct + 1;
 config_struct(i_struct).names  = param_keyword;
 config_struct(i_struct).values = param_value;
+acc_data = param_value;
 
 param_keyword = 'acc_cal_paramestim';
 [param_value] = read_param_file(orbit_model_filename,param_keyword);
 i_struct = i_struct + 1;
 config_struct(i_struct).names  = param_keyword;
 config_struct(i_struct).values = param_value;
+
+test_accelerometer = strcmp(acc_data,'y');
+if test_accelerometer == 1  
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Satellite Data :: Accelerometer data
@@ -849,6 +865,9 @@ i_struct = i_struct + 1;
 config_struct(i_struct).names  = param_keyword;
 config_struct(i_struct).values = param_value;
 
+% End of accelerometer data processing configuration parameters
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Empirical Forces modelling
@@ -998,13 +1017,23 @@ config_struct(i_struct).values = param_value;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Observations 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Orbit Determination mode
+% param_keyword = 'orbit_mode';
+% [orbit_mode] = read_param_cfg(orbit_config_struct,param_keyword);
+test_orbit_determination_mode = strcmp(orbit_mode,'orbit_determination');
+
 param_keyword = 'pseudo_obs_type';
+if test_orbit_determination_mode == 1
 [param_value] = read_param_file(orbit_model_filename,param_keyword);
+else
+[param_value] = 'n';
+end    
 i_struct = i_struct + 1;
 config_struct(i_struct).names  = param_keyword;
 config_struct(i_struct).values = param_value;
 pseudo_obs_type = param_value;
 
+if test_orbit_determination_mode == 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Satellite Data :: Pseudo-Observation data
 % GRACE-A   calendar 2009 11 17   GNV1B_2009-11-17_A_01.asc    GNV1B_2009-11-17_A_01.asc   ACC1B_2009-11-17_A_01.asc      SCA1B_2009-11-17_A_01.asc 
@@ -1021,13 +1050,31 @@ test_obs_type = strcmp(pseudo_obs_type, obs_keyword);
 if test_obs_type == 1
 datalevel_name  = 'GNV1B';
 end
-%datarelease_ver = '04';
+test_mission_grace   = strcmp(mission_name,'GRACE_mission');
+if test_mission_grace == 1
+    % datarelease_ver = '02';
+    datarelease_ver = acc_data_release;
+end
+
+obs_keyword = 'georb';
+test_obs_type = strcmp(pseudo_obs_type, obs_keyword);
+if test_obs_type == 1
+datalevel_name  = 'GEORB_orbit';
+end
+
 [data_filename_conv] = data_name_conv(mission_name, orbiting_object_name, datalevel_name, datarelease_ver, MJD_day);
 param_value = data_filename_conv;
 i_struct = i_struct + 1;
 config_struct(i_struct).names  = param_keyword;
 config_struct(i_struct).values = param_value;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+else
+param_keyword = 'pseudo_obs_data';
+param_value = '-';
+i_struct = i_struct + 1;
+config_struct(i_struct).names  = param_keyword;
+config_struct(i_struct).values = param_value;
+end
 
 param_keyword = 'cov_pseudo_obs_data';
 [param_value] = read_param_file(orbit_model_filename,param_keyword);
@@ -1046,32 +1093,47 @@ param_keyword = 'pseudo_obs_sigma';
 i_struct = i_struct + 1;
 config_struct(i_struct).names  = param_keyword;
 config_struct(i_struct).values = param_value;
+
+% Observations end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Inter-Satellite Ranging Observations :: GRACE & GRACE-Follow On missions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+test_georb_mode = strcmp(georb_mode,'orbit_mission');
+if test_georb_mode == 1
+    % Satellite missions cases :: GRACE missions
+    test_mission_grace   = strcmp(mission_name,'GRACE_mission');
+    test_mission_gracefo = strcmp(mission_name,'GRACE_FO_mission');
+    if test_mission_grace == 1 
+    % datarelease_ver = '03';
+    datarelease_ver = sca_data_release;
+    end
+if test_mission_grace == 1 || test_mission_gracefo == 1
 % Satellite Data :: KBR data
 param_keyword = 'KBR_data';
 %param_value = sscanf(satdata_line_mjd,'%*s%*s%*s%*s%*s%*s%*s%*s%*s %s %*');
 datalevel_name  = 'KBR1B';
-datarelease_ver = '04';
+% datarelease_ver = '04';
 [data_filename_conv] = data_name_conv(mission_name, orbiting_object_name, datalevel_name, datarelease_ver, MJD_day);
 param_value = data_filename_conv;
 i_struct = i_struct + 1;
 config_struct(i_struct).names  = param_keyword;
 config_struct(i_struct).values = param_value;
-
+end
+if test_mission_gracefo == 1
 % Satellite Data :: LRI data
 param_keyword = 'LRI_data';
 %param_value = sscanf(satdata_line_mjd,'%*s%*s%*s%*s%*s%*s%*s%*s%*s%*s %s %*');
 datalevel_name  = 'LRI1B';
-datarelease_ver = '04';
+% datarelease_ver = '04';
 [data_filename_conv] = data_name_conv(mission_name, orbiting_object_name, datalevel_name, datarelease_ver, MJD_day);
 param_value = data_filename_conv;
 i_struct = i_struct + 1;
 config_struct(i_struct).names  = param_keyword;
 config_struct(i_struct).values = param_value;
+end
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -1082,17 +1144,50 @@ param_keyword = 'estimator_iterations';
 i_struct = i_struct + 1;
 config_struct(i_struct).names  = param_keyword;
 config_struct(i_struct).values = param_value;
+
+% Combined Parameter Estimation
+param_keyword = 'combined_param_estim_yn';
+[param_value] = read_param_file(orbit_model_filename,param_keyword);
+i_struct = i_struct + 1;
+config_struct(i_struct).names  = param_keyword;
+config_struct(i_struct).values = param_value;
+
+param_keyword = 'KBR_obs_estim';
+[param_value] = read_param_file(orbit_model_filename,param_keyword);
+i_struct = i_struct + 1;
+config_struct(i_struct).names  = param_keyword;
+config_struct(i_struct).values = param_value;
+
+param_keyword = 'LRI_obs_estim';
+[param_value] = read_param_file(orbit_model_filename,param_keyword);
+i_struct = i_struct + 1;
+config_struct(i_struct).names  = param_keyword;
+config_struct(i_struct).values = param_value;
+
+param_keyword = 'intersat_range_obs';
+[param_value] = read_param_file(orbit_model_filename,param_keyword);
+i_struct = i_struct + 1;
+config_struct(i_struct).names  = param_keyword;
+config_struct(i_struct).values = param_value;
+
+param_keyword = 'intersat_rangerate_obs';
+[param_value] = read_param_file(orbit_model_filename,param_keyword);
+i_struct = i_struct + 1;
+config_struct(i_struct).names  = param_keyword;
+config_struct(i_struct).values = param_value;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % External Orbit comparison
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Read configuration file for the option of external orbit comparison
 param_keyword = 'external_orbit_comp';
 [param_value] = read_param_file(orbit_model_filename,param_keyword);
 i_struct = i_struct + 1;
 config_struct(i_struct).names  = param_keyword;
 config_struct(i_struct).values = param_value;
+extorb_test = param_value;
 
 param_keyword = 'external_orbit_type';
 [param_value] = read_param_file(orbit_model_filename,param_keyword);
@@ -1101,6 +1196,7 @@ config_struct(i_struct).names  = param_keyword;
 config_struct(i_struct).values = param_value;
 external_orbit_type = param_value;
 
+if extorb_test == 'y'
 % External Orbit data format ('kinematic' or 'dynamic'):
 % Options:
 % - 'gnv1b'         : GRACE mission GNV1b orbit data format 
@@ -1111,16 +1207,32 @@ external_orbit_type = param_value;
 % Satellite Data file :: External orbit data
 param_keyword = 'external_orbit_data';
 %param_value = sscanf(satdata_line_mjd,'%*s%*s%*s%*s%*s%*s %s %*');
-datalevel_name  = 'GNV1B';
+% GNV1B orbit data
+% datalevel_name  = 'GNV1B';
 extorb_keyword = 'gnv1b';
 test_obs_type = strcmp(external_orbit_type, extorb_keyword);
 if test_obs_type == 1
 datalevel_name  = 'GNV1B';
+% datarelease_ver = '04';
+test_mission_grace   = strcmp(mission_name,'GRACE_mission');
+if test_mission_grace == 1
+    % datarelease_ver = '02';
+    datarelease_ver = acc_data_release;
 end
-%datarelease_ver = '04';
+end
+
+
+% GEORB orbit data
+extorb_keyword = 'georb';
+test_obs_type = strcmp(external_orbit_type, extorb_keyword);
+if test_obs_type == 1
+datalevel_name  = 'GEORB_orbit';
+end
+
 [data_filename_conv] = data_name_conv(mission_name, orbiting_object_name, datalevel_name, datarelease_ver, MJD_day);
 param_value = data_filename_conv;
 i_struct = i_struct + 1;
 config_struct(i_struct).names  = param_keyword;
 config_struct(i_struct).values = param_value;
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

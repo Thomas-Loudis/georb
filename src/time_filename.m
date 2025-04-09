@@ -1,4 +1,4 @@
-function [time_clock] = time_filename()
+function [MJD_clock, calendar_clock] = time_filename()
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -14,7 +14,6 @@ function [time_clock] = time_filename()
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Thomas Loudis Papanikolaou                                    6 July 2022
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 % Current epoch (computer time)
 [clock_time] = clock;
@@ -46,7 +45,7 @@ clock_char = sprintf('%s%s',clock_char,clock_i);
 end    
 
 sec = fix(clock_time(6));
-if clock_time(i) < 10 
+if sec < 10 
     clock_i = sprintf('%s%d','0',sec);
 else
     clock_i = sprintf('%d',sec);
@@ -55,4 +54,5 @@ clock_char = sprintf('%s%s',clock_char,clock_i);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Final output argument for end time
-time_clock = MJD_clock_char;
+MJD_clock = MJD_clock_char;
+calendar_clock = clock_char;

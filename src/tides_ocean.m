@@ -1,4 +1,4 @@
-function [dCnm,dSnm] = tides_ocean(n_max,m_max,mjd,eop,dpint,DelaunayNf,dCnm_plus,dSnm_plus,dCnm_minus,dSnm_minus)
+function [dCnm,dSnm] = tides_ocean(n_max,m_max,mjd,eop,dpint,DelaunayNf,dCnm_plus,dSnm_plus,dCnm_minus,dSnm_minus, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -45,25 +45,23 @@ function [dCnm,dSnm] = tides_ocean(n_max,m_max,mjd,eop,dpint,DelaunayNf,dCnm_plu
 % 01/02/2019  Dr. Thomas Papanikolaou
 %             Correction to the basic Equation of the ocean tides (IERS Conv. 2010 Eq. 6.15)
 %             Correction to the multiplier of the theta_f angle computation 
+% 
+% 15/01/2025  Dr. Thomas Loudis Papanikolaou
+%             Code optimization (CPU time minimization) 
+% 07/04/2025  Thomas Loudis Papanikolaou
+%             Source Code minor upgrade 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-% dCnm = zeros(n_max,n_max,Nfrq);
-% dSnm = zeros(n_max,n_max,Nfrq);
 % Preallocation
-dCnm = zeros(n_max+1,n_max+1);
-dSnm = zeros(n_max+1,n_max+1);
-
-% loop_before = 1
-% [N_dCnm_plus, m_dCnm_plusm, N_freq] = size(dCnm_plus)
-% [N_dCnm, m_dCnm] = size(dCnm)
+% dCnm = zeros(n_max+1,n_max+1);
+% dSnm = zeros(n_max+1,n_max+1);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Delaunay variables (in radians)
 [F1,F2,F3,F4,F5] = delaunay_variables(mjd);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Greenwich Mean Sidereal Time (GMST) in radians
-[thetag] = iers_gmst(mjd,eop,dpint);
+[thetag] = iers_gmst(mjd,eop,dpint, orbit_model_struct);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -73,6 +71,10 @@ dSnm = zeros(n_max+1,n_max+1);
 % DelaunayNf = [Doodson_Number N1 N2 N3 N4 N5 n1 n2 n3 n4 n5 n6]
 [Nfrq sz2] = size(DelaunayNf);
 thetaf_matrix = zeros(Nfrq,1);
+thetaf_vec = zeros(1,Nfrq);
+thetaf_3d = zeros(1,1,Nfrq);
+cos_thetaf_3d = zeros(1,1,Nfrq);
+sin_thetaf_3d = zeros(1,1,Nfrq);
 for ifrq = 1 : Nfrq
     %thetaf = Doodson_n1 * (thetag + pi) - DelaunayNf(ifrq,2:6) * [F1 F2 F3 F4 F5]';
     % thetaf (in radians)
@@ -94,56 +96,29 @@ for ifrq = 1 : Nfrq
         Delaunay_N5 * F5 ;
     thetaf = Doodson_n1 * (thetag + pi) - Delaunay_sum;
     thetaf_matrix(ifrq,1) = thetaf;
+    thetaf_vec(1,ifrq) = thetaf;
+    thetaf_3d(1,1,ifrq) = thetaf;
+    cos_thetaf_3d(1,1,ifrq) = cos(thetaf);
+    sin_thetaf_3d(1,1,ifrq) = sin(thetaf);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[Nfrq sz2] = size(DelaunayNf);
-clear sz2
-for n = 2 : n_max
-    if n > m_max
-        m_limit = m_max;
-    else
-        m_limit = n;
-    end
-    for m = 0 : m_limit
-        dCnm_f = 0;
-        dSnm_f = 0;
-        for ifrq = 1 : Nfrq  
-%             % thetaf (in radians)
-%             %thetaf = Doodson_n1 * (thetag + pi) - DelaunayNf(ifrq,2:6) * [F1 F2 F3 F4 F5]';
-%             % Delaunay_freq = DelaunayNf(ifrq,1);
-%             Delaunay_N1   = DelaunayNf(ifrq,2);
-%             Delaunay_N2   = DelaunayNf(ifrq,3);
-%             Delaunay_N3   = DelaunayNf(ifrq,4);
-%             Delaunay_N4   = DelaunayNf(ifrq,5);
-%             Delaunay_N5   = DelaunayNf(ifrq,6);
-%             Doodson_number = DelaunayNf(ifrq,1); 
-%             Doodson_n1     = DelaunayNf(ifrq,7);            
-%             %DelaunayNf(ifrq,2:6) * [F1 F2 F3 F4 F5]'
-%             Delaunay_sum = Delaunay_N1 * F1 + ... 
-%                            Delaunay_N2 * F2 + ...
-%                            Delaunay_N3 * F3 + ...
-%                            Delaunay_N4 * F4 + ...
-%                            Delaunay_N5 * F5 ;                           
-%             thetaf = Doodson_n1 * (thetag + pi) - Delaunay_sum;             
-            thetaf = thetaf_matrix(ifrq,1);
-            dCnm_fi = (dCnm_plus(n+1,m+1,ifrq) + dCnm_minus(n+1,m+1,ifrq)) * cos(thetaf) + (dSnm_plus(n+1,m+1,ifrq) + dSnm_minus(n+1,m+1,ifrq)) * sin(thetaf);
-            dSnm_fi = (dSnm_plus(n+1,m+1,ifrq) - dSnm_minus(n+1,m+1,ifrq)) * cos(thetaf) - (dCnm_plus(n+1,m+1,ifrq) - dCnm_minus(n+1,m+1,ifrq)) * sin(thetaf);
-            dCnm_f = dCnm_f + dCnm_fi;
-            dSnm_f = dSnm_f + dSnm_fi;
-        end
-        % IERS Conventions update 10/08/2012 Section 6.3.2
-        if m == 0
-          dSnm_f = 0;
-        end
-        dCnm(n+1,m+1) = dCnm_f;
-        dSnm(n+1,m+1) = dSnm_f;
-        dCnm_f = 0;
-        dSnm_f = 0;
-    end
-end
+dCnm_fi = (dCnm_plus + dCnm_minus) .* cos_thetaf_3d + (dSnm_plus + dSnm_minus) .* sin_thetaf_3d;
+dSnm_fi = (dSnm_plus - dSnm_minus) .* cos_thetaf_3d - (dCnm_plus - dCnm_minus) .* sin_thetaf_3d;
+
+dCnm_f = sum(dCnm_fi,3);
+dSnm_f = sum(dSnm_fi,3);
+% IERS Conventions update 10/08/2012 Section 6.3.2
+% m = 0 :: dSnm = 0;
+[d1, d2] = size(dSnm_f);
+dSnm_f(:,0+1) = zeros(d1,1);
+
+% Preallocation
+% dCnm = zeros(n_max+1,n_max+1);
+% dSnm = zeros(n_max+1,n_max+1);
+
+% Final Matrices
+dCnm = dCnm_f(1 : n_max+1 , 1 : n_max+1);
+dSnm = dSnm_f(1 : n_max+1 , 1 : n_max+1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% loop_after = 1
-% [N_dCnm_plus, m_dCnm_plusm, N_freq] = size(dCnm_plus)
-% [N_dCnm, m_dCnm] = size(dCnm)

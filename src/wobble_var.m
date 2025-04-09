@@ -1,4 +1,4 @@
-function [m1, m2] = wobble_var(mjd,eop,dpint)
+function [m1, m2] = wobble_var(mjd,eop,dpint,TAI_UTC_table)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -26,8 +26,14 @@ function [m1, m2] = wobble_var(mjd,eop,dpint)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Pole coordiantes: Mean Pole or Secular Pole
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Mean Pole coordinates at epoch MJD in mas (milli-arcsec)
 [xp_mean_mas, yp_mean_mas] = mean_pole_model(mjd);
+
+% Secular Pole coordinates in mas (milli-arcsec)
+%[xp_mean_mas, yp_mean_mas] = pole_secular(mjd);
+
 xp_mean_arcsec = xp_mean_mas * 10^-3;
 yp_mean_arcsec = yp_mean_mas * 10^-3;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -44,7 +50,7 @@ ypole   = eop(:,3);
 % Civil date (D,Mh,Yr)
 [TT,Dy,Mh,Yr] = MJD_inv(mjd);
 % computation of UTC time
-[UTC,GPS_time] = time_scales(TT,mjd);
+[UTC,GPS_time] = time_scales(TT,mjd,TAI_UTC_table);
 % MJD in UTC time scale
 [jd,mjd_int] = MJD_date(UTC,Dy,Mh,Yr);
 

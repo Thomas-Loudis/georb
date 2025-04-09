@@ -34,12 +34,12 @@ function [Cnm_tides,Snm_tides] = tides_add2(Cnm,Snm,dCnm,dSnm,n_max)
 % Cnm maximum degree
 [n1 n2] = size(Cnm);
 Nmax_Cnm = n1 - 1;
-clear n1 n2
+% clear n1 n2
 
 % dCnm maximum degree
 [n1 n2] = size(dCnm);
 Nmax_dCnm = n1 - 1;
-clear n1 n2
+% clear n1 n2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Maximum Degree comparison between Cnm & dCnm
@@ -59,21 +59,9 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Preallocation
-Cnm_tides = zeros(Nmax+1,Nmax+1);
-Snm_tides = zeros(Nmax+1,Nmax+1);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Cnm_tides = Cnm ;
+Snm_tides = Snm ;
 
+Cnm_tides(1:Nmax,1:Nmax) = Cnm(1:Nmax,1:Nmax) + dCnm(1:Nmax,1:Nmax);
+Snm_tides(1:Nmax,1:Nmax) = Snm(1:Nmax,1:Nmax) + dSnm(1:Nmax,1:Nmax);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% add coefficients corrections
-for n_i = 2 : Nmax
-    for m_i = 0 : n_i
-        Cnm(n_i + 1,m_i + 1) = Cnm(n_i + 1,m_i + 1) + dCnm(n_i + 1,m_i + 1);
-        Snm(n_i + 1,m_i + 1) = Snm(n_i + 1,m_i + 1) + dSnm(n_i + 1,m_i + 1);
-    end
-end
-clear Nmax n_i m_i
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% Final matrices
-Cnm_tides = Cnm;
-Snm_tides = Snm;

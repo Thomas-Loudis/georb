@@ -1,4 +1,4 @@
-function [dCnm,dSnm] = tides_pole_solidearth(mjd,eop,dpint)
+function [dCnm,dSnm] = tides_pole_solidearth(mjd,eop,dpint,orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -26,14 +26,19 @@ function [dCnm,dSnm] = tides_pole_solidearth(mjd,eop,dpint)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Dr. Thomas Loudis Papanikolaou                             8 October 2022
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+% Last modified:
+% 07/04/2025  Thomas Loudis Papanikolaou
+%             Source Code minor upgrade 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 dCnm = zeros(3,3);
 dSnm = zeros(3,3);
 
+TAI_UTC_table = orbit_model_struct.TAI_UTC_table;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Wobble variables (m1, m2) in arcsec 
-[m1, m2] = wobble_var(mjd,eop,dpint);
+[m1, m2] = wobble_var(mjd,eop,dpint,TAI_UTC_table);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

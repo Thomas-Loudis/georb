@@ -1,4 +1,4 @@
-function [UTC,TT] = time_scales_GPS(GPS_time,MJD)
+function [UTC,TT] = time_scales_GPS(GPS_time,MJD,TAI_UTC_table)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Time Scales Transformations II
@@ -20,6 +20,8 @@ function [UTC,TT] = time_scales_GPS(GPS_time,MJD)
 % Last modified
 % 07/06/2022   Thomas Loudis Papanikolaou 
 %              Code upgrade 
+% 07/04/2025  Thomas Loudis Papanikolaou
+%             Source Code minor upgrade 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -43,7 +45,7 @@ TT = TAI + 32.184;
 % UTC (Coordinated Universal Time)
 
 % Leap seconds are announced by the IERS - Bulletin C
-[UTC_TAI] = time_leapseconds(MJD);
+[UTC_TAI] = time_leapseconds(MJD,TAI_UTC_table);
 
 % UTC time scale
 UTC = TAI + UTC_TAI;

@@ -1,4 +1,4 @@
-function [dCnm,dSnm] = tides_solid2(mjd,eop,dpint)
+function [dCnm,dSnm] = tides_solid2(mjd,eop,dpint, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -29,7 +29,10 @@ function [dCnm,dSnm] = tides_solid2(mjd,eop,dpint)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Thomas D. Papanikolaou, AUTH                                   June  2011
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+% Last modified:
+% 07/04/2025  Thomas Loudis Papanikolaou
+%             Source Code minor upgrade 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % dCnm = zeros(5,5);
 % dSnm = zeros(5,5);
@@ -38,7 +41,7 @@ function [dCnm,dSnm] = tides_solid2(mjd,eop,dpint)
 [F1,F2,F3,F4,F5] = delaunay_variables(mjd);
 
 % Greenwich Mean Sidereal Time (GMST) in radians
-[thetag] = iers_gmst(mjd,eop,dpint);
+[thetag] = iers_gmst(mjd,eop,dpint, orbit_model_struct);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % dC20 correction
@@ -68,15 +71,13 @@ table65b  = [
 95.355 -2  0 -2  0 -2   0.1   0.1
  ];         
 % dC20 computation
-[sz1 sz2] = size(table65b);
+[sz1, sz2] = size(table65b);
 dC20 = 0;
 for i = 1 : sz1
     % thetaf (in radians)
     thetaf = - table65b(i,2:6) * [F1 F2 F3 F4 F5]';
     dC20 = dC20 + table65b(i,7) * 10^(-12) * cos(thetaf) -  table65b(i,8) * 10^(-12) * sin(thetaf);
-    clear thetaf
 end
-clear sz1 sz2 i thetaf
 dCnm(2+1,0+1) = dC20;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -137,19 +138,16 @@ table65a  = [
 % dC21 dS21 computations
 dC21 = 0;
 dS21 = 0;
-[sz1 sz2] = size(table65a);                                                 % [sz1 sz2] = size(table65b);
+[sz1, sz2] = size(table65a);                                                 % [sz1 sz2] = size(table65b);
 for i = 1 : sz1
     % thetaf (in radians)
     thetaf = 1 * (thetag + pi) - table65a(i,2:6) * [F1 F2 F3 F4 F5]';       % thetaf = 1 * (thetag + pi) - table65b(i,2:6) * [F1 F2 F3 F4 F5]';
     dC21 = dC21 + table65a(i,7) * 10^(-12) * sin(thetaf) + table65a(i,8) * 10^(-12) * cos(thetaf);
     dS21 = dS21 + table65a(i,7) * 10^(-12) * cos(thetaf) - table65a(i,8) * 10^(-12) * sin(thetaf);
-    clear thetaf
 end
-clear sz1 sz2 i thetaf
 dCnm(2+1,1+1) = dC21;
 dSnm(2+1,1+1) = dS21;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % dC22,dS22 corrections 
@@ -168,11 +166,7 @@ for i = 1 : 2
     thetaf = 2 * (thetag + pi) - table65c(i,2:6) * [F1 F2 F3 F4 F5]';
     dC22 = dC22 + table65c(i,7) * 10^(-12) * cos(thetaf); 
     dS22 = dS22 - table65c(i,7) * 10^(-12) * sin(thetaf); 
-    clear thetaf
 end
-clear i thetaf
 dCnm(2+1,2+1) = dC22;
 dSnm(2+1,2+1) = dS22;
-% dCnm(2+1,2+1) = 0;
-% dSnm(2+1,2+1) = 0;
 

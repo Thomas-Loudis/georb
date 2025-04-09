@@ -1,4 +1,4 @@
-function [Fpulse, PDr, PDv, PD_param] = stoch_acc_pdv (rsat, vsat, mjd_t, t_sec, delta_v, dir)
+function [Fpulse, PDr, PDv, PD_param] = stoch_acc_pdv (rsat, vsat, mjd_t, t_sec, delta_v, dir, orbit_model_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -25,11 +25,11 @@ function [Fpulse, PDr, PDv, PD_param] = stoch_acc_pdv (rsat, vsat, mjd_t, t_sec,
 % Dr. Thomas Loudis Papanikolaou                           1 September 2022
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-global pulses_stoch_accel_glob
-%global SCA_array_glob SCA_dpint_glob
-global accelerometer_data_cal_glob
 
-pulses_accel_struct = pulses_stoch_accel_glob;
+% Forces model matrix 
+accelerometer_data_cal_glob = orbit_model_struct.accelerometer_struct; 
+pulses_accel_struct = orbit_model_struct.empirical_forces_pulses;
+% pulses_accel_struct = pulses_stoch_accel_glob;
 
 % Matrices intialisation preallocation
 PD_param = zeros(3,1);

@@ -1,4 +1,4 @@
-function [ax,ay,az,pdv_acc,pdv_acc_param] = veq_accl(z,eop,dpint)
+function [ax,ay,az,pdv_acc,pdv_acc_param] = veq_accl(z,eop,dpint, orbit_model_struct)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Acceleration of Forces model
@@ -34,5 +34,5 @@ function [ax,ay,az,pdv_acc,pdv_acc_param] = veq_accl(z,eop,dpint)
 
 
 EQ_mode = 'VEQ';
-[ax,ay,az,pdv_acc,pdv_acc_param] = force_eqm_veq(z,eop,dpint, EQ_mode);
+[ax,ay,az,pdv_acc,pdv_acc_param] = force_eqm_veq(z,eop,dpint, EQ_mode, orbit_model_struct);
 

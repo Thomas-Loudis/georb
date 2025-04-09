@@ -38,6 +38,12 @@ dSnm = zeros(5,5);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Knm matrix
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Earth Elasticity model:
+% earth_elasticity = 1;
+earth_elasticity = 2;
+
+if earth_elasticity == 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Elastic Earth
 knm(2+1,0+1) = 0.29525;
 knm(2+1,1+1) = 0.29470;
@@ -50,16 +56,40 @@ knm(3+1,3+1) = 0.094;
 knm_plus(2+1,0+1) = -0.00087;
 knm_plus(2+1,1+1) = -0.00079;
 knm_plus(2+1,2+1) = -0.00057;
+
+knm_RE = knm;
+knm_IM = zeros(4,4);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+elseif earth_elasticity == 2
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Anelastic Earth
-%knm(2+1,0+1) = 0.30190;
-%knm(2+1,1+1) = 0.29830;
-%knm(2+1,2+1) = 0.30102;
+% RE Real part
+knm_RE(2+1,0+1) = 0.30190;
+knm_RE(2+1,1+1) = 0.29830;
+knm_RE(2+1,2+1) = 0.30102;
+% IM Imaginary part
+knm_IM(2+1,0+1) = -0.00000;
+knm_IM(2+1,1+1) = -0.00144;
+knm_IM(2+1,2+1) = -0.00130;
 % Knm(+) matrix
-%knm_plus(2+1,0+1) = -0.00089;
-%knm_plus(2+1,1+1) = -0.00080;
-%knm_plus(2+1,2+1) = -0.00057;
+knm_plus(2+1,0+1) = -0.00089;
+knm_plus(2+1,1+1) = -0.00080;
+knm_plus(2+1,2+1) = -0.00057;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Degree 3
+knm_RE(3+1,0+1) = 0.093;
+knm_RE(3+1,1+1) = 0.093;
+knm_RE(3+1,2+1) = 0.093;
+knm_RE(3+1,3+1) = 0.094;
+
+knm_IM(3+1,0+1) = 0;
+knm_IM(3+1,1+1) = 0;
+knm_IM(3+1,2+1) = 0;
+knm_IM(3+1,3+1) = 0;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % computation of spherical coordinates in radians and distance in meters
@@ -77,13 +107,22 @@ knm_plus(2+1,2+1) = -0.00057;
 for n = 2 : 3
     for m = 0 : n
         % dCnm term
-        dCnm_moon = (GMmoon / GMearth) * (Re / lmoon)^(n+1) * Pnm_norm_moon(n+1,m+1) * cos(m*lamda_moon);
-        dCnm_sun  = (GMsun / GMearth) * (Re / lsun)^(n+1) * Pnm_norm_sun(n+1,m+1) * cos(m*lamda_sun);
-        dCnm(n+1,m+1) = ( knm(n+1,m+1) / (2*n + 1) ) * (dCnm_moon + dCnm_sun);
+        % dCnm_moon = (GMmoon / GMearth) * (Re / lmoon)^(n+1) * Pnm_norm_moon(n+1,m+1) * cos(m*lamda_moon);
+        % dCnm_sun  = (GMsun / GMearth) * (Re / lsun)^(n+1) * Pnm_norm_sun(n+1,m+1) * cos(m*lamda_sun);
+        % dCnm(n+1,m+1) = ( knm(n+1,m+1) / (2*n + 1) ) * (dCnm_moon + dCnm_sun);
         % dSnm term
-        dSnm_moon = (GMmoon / GMearth) * (Re / lmoon)^(n+1) * Pnm_norm_moon(n+1,m+1) * sin(m*lamda_moon);
-        dSnm_sun  = (GMsun / GMearth) * (Re / lsun)^(n+1) * Pnm_norm_sun(n+1,m+1) * sin(m*lamda_sun);
-        dSnm(n+1,m+1) = ( knm(n+1,m+1) / (2*n + 1) ) * (dSnm_moon + dSnm_sun);
+        % dSnm_moon = (GMmoon / GMearth) * (Re / lmoon)^(n+1) * Pnm_norm_moon(n+1,m+1) * sin(m*lamda_moon);
+        % dSnm_sun  = (GMsun / GMearth) * (Re / lsun)^(n+1) * Pnm_norm_sun(n+1,m+1) * sin(m*lamda_sun);
+        % dSnm(n+1,m+1) = ( knm(n+1,m+1) / (2*n + 1) ) * (dSnm_moon + dSnm_sun);
+
+        % dCnm term
+        dCnm_moon = (GMmoon / GMearth) * (Re / lmoon)^(n+1) * Pnm_norm_moon(n+1,m+1) * (knm_RE(n+1,m+1) * cos(m*lamda_moon) + knm_IM(n+1,m+1) * sin(m*lamda_moon) );
+        dCnm_sun  = (GMsun / GMearth) * (Re / lsun)^(n+1) * Pnm_norm_sun(n+1,m+1) * (knm_RE(n+1,m+1) * cos(m*lamda_sun) + knm_IM(n+1,m+1) * sin(m*lamda_sun) );
+        dCnm(n+1,m+1) = ( 1 / (2*n + 1) ) * (dCnm_moon + dCnm_sun);
+        % dSnm term
+        dSnm_moon = (GMmoon / GMearth) * (Re / lmoon)^(n+1) * Pnm_norm_moon(n+1,m+1) * (knm_RE(n+1,m+1) * sin(m*lamda_moon) - knm_IM(n+1,m+1) * cos(m*lamda_moon) );
+        dSnm_sun  = (GMsun / GMearth) * (Re / lsun)^(n+1) * Pnm_norm_sun(n+1,m+1) * (knm_RE(n+1,m+1) * sin(m*lamda_sun) - knm_IM(n+1,m+1) * cos(m*lamda_sun) );
+        dSnm(n+1,m+1) = ( 1 / (2*n + 1) ) * (dSnm_moon + dSnm_sun);
     end
 end
 %clear n m

@@ -1,4 +1,4 @@
-function [fid] = write_georb_format(out_filename, cfg_filename, data_matrix, data_functional, georb_version,reference_frame)
+function [fid] = write_georb_format_gnv1b(out_filename, cfg_filename, data_matrix, data_functional, georb_version,reference_frame)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -48,24 +48,18 @@ fprintf(fid,'%-33s %s %s ',param_keyword, ': ', reference_frame);
 fprintf(fid,'%s\n','');
 
 param_keyword = 'Time scale';
-fprintf(fid,'%-33s %s %s ',param_keyword, ': ', 'Terrestrial Time');
+fprintf(fid,'%-33s %s %s ',param_keyword, ': ', 'GPS Time');
 fprintf(fid,'%s\n','');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Date
-% mjd_to = data_matrix(1,1);
-% [UT,day,month,year] = MJD_inv(mjd_to);
-% param_keyword = 'Date';
-% fprintf(fid,'%-33s %s %d %d %d ',param_keyword, ': ',day,month,year);
-% fprintf(fid,'%s\n','');
-
-[orbit_arc_length, IC_MJDo, IC_Zo_vec, EOP_data, EOP_interp_no] = prm_ic(cfg_filename);
-
-[UT,day,month,year] = MJD_inv(IC_MJDo);
+mjd_to = data_matrix(1,1);
+[UT,day,month,year] = MJD_inv(mjd_to);
 param_keyword = 'Date';
 fprintf(fid,'%-33s %s %d %d %d ',param_keyword, ': ',day,month,year);
 fprintf(fid,'%s\n','');
 
+[orbit_arc_length, IC_MJDo, IC_Zo_vec, EOP_data, EOP_interp_no] = prm_ic(cfg_filename);
 orbit_arc_hours = orbit_arc_length / 3600;
 param_keyword = 'Orbit arc length (hours)';
 fprintf(fid,'%-33s %s %f ',param_keyword, ': ', orbit_arc_hours);
@@ -540,13 +534,24 @@ fprintf(fid,'%s\n','');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % GEORB orbit format to GNV1b format
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% GRACE-FO satellite id
+% GRACE/GRACE-FO satellite id
+test = strcmp(orbiting_object_name,'GRACE-A');
+if test == 1
+    grace_sat_id = "A";
+end
+test = strcmp(orbiting_object_name,'GRACE-B');
+if test == 1
+    grace_sat_id = "B";
+end
 test = strcmp(orbiting_object_name,'GRACE-C');
-if test == 0
-    grace_sat_id = "D";
-elseif test == 1
+if test == 1
     grace_sat_id = "C";
 end
+test = strcmp(orbiting_object_name,'GRACE-D');
+if test == 1
+    grace_sat_id = "D";
+end
+
 % Reference Frame ID
 test = strcmp(reference_frame,'ICRF');
 if test == 0
@@ -555,30 +560,8 @@ elseif test == 1
     ref_frame = "I";
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Data Functional category :: Orbits, Partials, Observations, Residuasl, ..
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% % Orbits
-% test_data_functional = strcmp(data_functional,'Orbit');
-% if test_data_functional == 1
-%     data_functional_category = 1;
-% end
-% 
-% % Partials
-% test_data_functional = strcmp(data_functional,'Partial Derivatives');
-% if test_data_functional == 1
-%     data_functional_category = 2;
-% end
-% 
-% % Other Functional
-% if test_data_functional == 0
-%     data_functional_category = 3;
-% end
+    
 data_functional_category = 0;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Write computed orbit
@@ -597,30 +580,105 @@ Nelements = N2;
 for i_epochs = 1 : Nepochs
     % Write computed orbit of epoch ti
     data_ith = orbit_matrix_2(i_epochs, :)';
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+georb_format = 1;
 % GEORB orbit data format
+if georb_format == 0
     % MJD
     fprintf(fid,'%9d',orbit_matrix_2(i_epochs,1) );
     % Seconds since start of the day  (00h)
     fprintf(fid,'%19.9f',orbit_matrix_2(i_epochs,2) );
     % State Vector: Position Vector
-    % fprintf(fid,'%29.11f',orbit_matrix_2(i_epochs,3:5) );
-    fprintf(fid,'%29.15e',orbit_matrix_2(i_epochs,3:5) );
+    fprintf(fid,'%29.11f',orbit_matrix_2(i_epochs,3:5) );
     if Nelements > 5
     % State Vector: Velocity Vector
-    fprintf(fid,'%29.15e',orbit_matrix_2(i_epochs,6:8) );
+    fprintf(fid,'%29.15f',orbit_matrix_2(i_epochs,6:8) );
     end
     % Chnange line
-    fprintf(fid,'%s\n','');  
+    fprintf(fid,'%s\n','');    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+else
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% GNV1b orbit data format
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % GEORB orbit format to GNV1b format    
+    mjd_TT = (orbit_matrix_2(i_epochs,1));
+    mjd_TT = fix(orbit_matrix_2(i_epochs,1));
+    sec00_TT = orbit_matrix_2(i_epochs,2);
+    % [sec00_UTC,sec00_GPS] = time_scales(sec00_TT,mjd_TT);
+    sec00_GPS = sec00_TT - 51.184;
+    mjd_gps = mjd_TT;
+    % if sec00_GPS < 0
+    %     sec00_GPS = 24*3600 + sec00_GPS;
+    %     mjd_gps = mjd_gps - 1;
+    % end
+    % sec00_GPS;
+    % mjd_gps;
+    % GNV1b orbit data: GPS Time start epoch: 12:00 01-Jan-2000
+    [jd2000,mjd2000] = mjd3(12*3600,1,1,2000);
+    sec00_GPS_round = round(sec00_GPS);
+    time_gnv1b = ( (mjd_gps - mjd2000) * (24*3600) + sec00_GPS_round );
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%if 1 > 0
+    % t_gps2000
+    fprintf(fid,'%9d ',time_gnv1b );
+    % GRACE-FO sat ID
+    fprintf(fid,'%1c ',grace_sat_id );
+    % GRACE-FO Reference Frame ID
+    fprintf(fid,'%1c ',ref_frame );
+    % State Vector: Position Vector
+    % fprintf(fid,'%29.11f',orbit_matrix_2(i_epochs,3:5) );    
+    %orbit_matrix_2(i_epochs,3)
+    fprintf(fid,'%23.11f',orbit_matrix_2(i_epochs,3) );
+    %orbit_matrix_2(i_epochs,4)
+    fprintf(fid,'%23.11f',orbit_matrix_2(i_epochs,4) );
+    %orbit_matrix_2(i_epochs,5)
+    fprintf(fid,'%23.11f',orbit_matrix_2(i_epochs,5) );
+    % State Vector Errors: Position Vector Errors
+    fprintf(fid,'%15.11f', 0,0,0);
+    if Nelements > 5
+    % State Vector: Velocity Vector
+    fprintf(fid,'%25.15f',orbit_matrix_2(i_epochs,6:8) );
+    % State Vector Errors: Velocity Vector Errors
+    fprintf(fid,'%15.11f', 0,0,0);
+    end
+    % Flag 10000000
+    flag_endline = 10000000;
+    fprintf(fid,'% 8d', flag_endline);
+    % Chnange line
+    fprintf(fid,'%s\n','');    
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Write partials
+% Write Estimated Parameters matrix
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-test_data_functional = strcmp(data_functional,'Partial Derivatives');
+test_data_functional = strcmp(data_functional,'Parameters');
 if test_data_functional == 1
-data_functional_category = 1;
+data_functional_category = 1;    
+    % Data
+    fprintf(fid,'%29.15e',data_matrix);
+    % Change line
+    fprintf(fid,'%s\n','');    
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Write data matrix e.g. Partials, Gravity Gradient, Earth Rotation matrix
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% test_data_functional = strcmp(data_functional,'Partial Derivatives');
+% if test_data_functional == 1
+% test_data_functional = strcmp(data_functional,'Orbit');
+% if test_data_functional == 0  
+if data_functional_category == 0
+georb_format = 1;
+% GEORB orbit data format
+if georb_format == 0
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Epoch conversion (1st column) : "MJD" to "MJD and t (sec)"
 fixmjd = 1;
 [orbit_matrix_2] = mjd2mjdtt(data_matrix,fixmjd);
@@ -640,58 +698,48 @@ for i_epochs = 1 : Nepochs
     % Chnange line
     fprintf(fid,'%s\n','');    
 end
-end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Write Estimated Parameters matrix
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-test_data_functional = strcmp(data_functional,'Parameters');
-if test_data_functional == 1
-data_functional_category = 1;    
-% param_data_matrix = data_matrix
-% [N1, N2] = size(data_matrix)
-% Nepochs = N1;
-% Nelements = N2;
-% for i_param = 1 : Nelements
-%     % Data
-%     i_param
-%     data_matrix(1,i_param)
-%     fprintf(fid,'%29.15e',data_matrix(1,i_param) );
-% end
-    % Data
-    fprintf(fid,'%29.15e',data_matrix);
-    % Change line
-    fprintf(fid,'%s\n','');    
-end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Write data matrix
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Other Functional written based on general georb format
-if data_functional_category == 0
-% Epoch conversion (1st column) : "MJD" to "MJD and t (sec)"
-fixmjd = 1;
-[orbit_matrix_2] = mjd2mjdtt(data_matrix,fixmjd);
+else
+% GNV1b orbit data format
+orbit_matrix_2 = data_matrix;
 [N1, N2] = size(orbit_matrix_2);
-Nepochs = N1;
+Nepochs   = N1;
 Nelements = N2;
-%format_i = ['%' num2str(wno) '.' num2str(prno(i,1)) 'f'];
 for i_epochs = 1 : Nepochs
-    % Write computed orbit of epoch ti
-    data_ith = orbit_matrix_2(i_epochs, :)';
-    % MJD
-    fprintf(fid,'%9d',orbit_matrix_2(i_epochs,1) );
-    % Seconds since start of the day  (00h)
-    fprintf(fid,'%19.9f',orbit_matrix_2(i_epochs,2) );
-    % Data
-    %fprintf(fid,'%29.15f',orbit_matrix_2(i_epochs,3:Nelements) );
-    fprintf(fid,'%29.15e',orbit_matrix_2(i_epochs,3:Nelements) );
+    mjd_TT = (orbit_matrix_2(i_epochs,1));
+    mjd_TT = fix(orbit_matrix_2(i_epochs,1));
+    sec00_TT = orbit_matrix_2(i_epochs,2);
+    % [sec00_UTC,sec00_GPS] = time_scales(sec00_TT,mjd_TT);
+    sec00_GPS = sec00_TT - 51.184;
+    mjd_gps = mjd_TT;
+    % if sec00_GPS < 0
+    %     sec00_GPS = 24*3600 + sec00_GPS;
+    %     mjd_gps = mjd_gps - 1;
+    % end
+    % sec00_GPS;
+    % mjd_gps;
+    % GNV1b orbit data: GPS Time start epoch: 12:00 01-Jan-2000
+    [jd2000,mjd2000] = mjd3(12*3600,1,1,2000);
+    sec00_GPS_round = round(sec00_GPS);
+    time_gnv1b = ( (mjd_gps - mjd2000) * (24*3600) + sec00_GPS_round );
+    % t_gps2000
+    fprintf(fid,'%9d ',time_gnv1b );
+    % GRACE-FO sat ID
+    fprintf(fid,'%1c ',grace_sat_id );
+    % GRACE-FO Reference Frame ID
+    fprintf(fid,'%1c ',ref_frame );
+    % Partial Derivatives
+    fprintf(fid,'%29.15e',orbit_matrix_2(i_epochs,3:Nelements) );   
+    % % Flag 10000000
+    % flag_endline = 10000000;
+    % fprintf(fid,'% 8d', flag_endline);
     % Chnange line
-    fprintf(fid,'%s\n','');    
+    fprintf(fid,'%s\n',''); 
 end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 fclose(fid);

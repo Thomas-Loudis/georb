@@ -1,4 +1,4 @@
-function [UTC_TAI] = time_leapseconds(MJD)
+function [UTC_TAI] = time_leapseconds(MJD,TAI_UTC_table)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -24,13 +24,14 @@ function [UTC_TAI] = time_leapseconds(MJD)
 %             Code upgrade to read the Leap_Second.dat file provided by
 %             IERS as part of the Bulletin C announcements
 % 19/12/2022, Dr. Thomas Loudis Papanikolaou
-%             Code upgrade: global appraoch to the TAI-UTC table obtained
-%             from the Leap_Second.dat file provided by IERS as part of the
+%             Code upgrade regarding the TAI-UTC table obtained from the 
+%             Leap_Second.dat file provided by IERS as part of the
 %             Bulletin C announcements 
+% 07/04/2025  Thomas Loudis Papanikolaou
+%             Source Code minor upgrade 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-global TAI_UTC_table_glob 
+TAI_UTC_table_glob = TAI_UTC_table;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % UTC (Coordinated Universal Time)
