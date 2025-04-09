@@ -22,16 +22,9 @@ fclose('all');
 % Folders path for input data (models)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 pwd_path = pwd;
-georb_path = fullfile(pwd_path,'/../');
 data_path_fname = '../data/';
-data_path = fullfile(pwd_path,data_path_fname);
-cd(georb_path);
-data_foldername = 'data';
-test_data = isfolder(data_foldername);
-if test_data == 0
-mkdir('data');
-end
-cd(data_path)
+data_path = fullfile(pwd_path,'..','data');
+cd(data_path);
 data_path = pwd;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -54,21 +47,6 @@ fprintf('%s', 'Gravity Field model :: EIGEN-6S4 :: ');
 url_read   = 'http://icgem.gfz-potsdam.de/getmodel/gfc/4cc119d62d3f83adce857914bcabdfa7ca2f91677ed2905934cf52698584b4c9/EIGEN-6S4%20(v2).gfc';
 save_fname = 'EIGEN-6S4.gfc';
 outpath = websave(save_fname , url_read);
-fprintf('%s \n\n', 'downloaded');
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Planetary and Lunar ephemeris by JPL/NASA
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-fprintf('%s', 'Planetary/Lunar ephemeris :: DE423 :: ');
-url_read   = 'https://ssd.jpl.nasa.gov/ftp/eph/planets/ascii/de423/ascp2000.423';
-save_fname = 'ascp2000.423';
-outpath = websave(save_fname , url_read);
-
-url_read   = 'https://ssd.jpl.nasa.gov/ftp/eph/planets/ascii/de423/header.423';
-save_fname = 'header.423';
-outpath = websave(save_fname , url_read);
-
 fprintf('%s \n\n', 'downloaded');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -98,8 +76,23 @@ outpath = websave(save_fname , url_read);
 fprintf('%s \n\n', 'downloaded');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Planetary and Lunar ephemeris by JPL/NASA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+fprintf('%s', 'Planetary/Lunar ephemeris :: DE423 :: ');
+url_read   = 'https://ssd.jpl.nasa.gov/ftp/eph/planets/ascii/de423/ascp2000.423';
+save_fname = 'ascp2000.423';
+outpath = websave(save_fname , url_read);
+
+url_read   = 'https://ssd.jpl.nasa.gov/ftp/eph/planets/ascii/de423/header.423';
+save_fname = 'header.423';
+outpath = websave(save_fname , url_read);
+
+fprintf('%s \n\n', 'downloaded');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 fprintf('%s%s \n\n', 'Data have been downloaded and saved in :: ', data_path);
 
 % Direct to the central path of the package
-georb_path = fullfile(pwd_path,'/../');
+georb_path = fullfile(pwd_path,'..');
 cd(georb_path);
