@@ -171,6 +171,9 @@ rms_orbitalGB = sat2_orbit_rms(2,1:3);
 % Intersatellite Ranging KBR/LRI data residuals 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 LRI_obs_analysis_01 = COMBESTIM_intersat_obs_LRI;
+if test_mission_grace == 1
+    LRI_obs_analysis_01 = 0;
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % K-Band Ranging (KBR) data residuals 
     intersat_obs = 'intersat_KBR';
@@ -275,8 +278,10 @@ reference_frame = 'ICRF';
     rms_kbr = zeros(1,3);
     rms_lri = zeros(1,3);
     rms_kbr(1,2) = KBR_rms_resrangerate;
+if LRI_obs_analysis_01 == 1
     rms_lri(1,2) = LRI_rms_resrangerate;
-    [georb_data_name] = write_georb_statistics(orbit_config_G1, orbit_config_G2, rms_obs, rms_extorb, rms_kbr, rms_lri);
+end
+[georb_data_name] = write_georb_statistics(orbit_config_G1, orbit_config_G2, rms_obs, rms_extorb, rms_kbr, rms_lri);
 [status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -954,11 +959,11 @@ reference_frame = 'ICRF';
     rms_obs(1,1:3)    = rms_obs_GA;
     rms_obs(2,1:3)    = rms_obs_GB;
     rms_kbr = zeros(1,3);
-if LRI_obs_analysis_01 == 1
     rms_lri = zeros(1,3);
-end
     rms_kbr(1,2) = KBR_rms_resrangerate;
+if LRI_obs_analysis_01 == 1
     rms_lri(1,2) = LRI_rms_resrangerate;
+end
     [georb_data_name] = write_georb_statistics(orbit_config_G1, orbit_config_G2, rms_obs, rms_extorb, rms_kbr, rms_lri);
     [status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
