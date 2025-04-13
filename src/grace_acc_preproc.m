@@ -67,7 +67,7 @@ for i = 1 : sz1
 % Convert time scale from GPS time to Terrestrial Time scale
     tgps = sca1b_array(i,2);
     dt_TT_GPS_sec = 51.184;
-    mjdTT = acc1b_array(i,1) + dt_TT_GPS_sec / (24*3600);
+    mjdTT = sca1b_array(i,1) + dt_TT_GPS_sec / (24*3600);
     tTT = tgps + dt_TT_GPS_sec;
     %[JD,MJD] = MJD_date(t,D,M,Y)
     sca1b_array_TT(i,:) = [mjdTT tTT sca1b_array(i,3) sca1b_array(i,4) sca1b_array(i,5) sca1b_array(i,6)];
