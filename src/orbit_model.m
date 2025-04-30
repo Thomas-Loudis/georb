@@ -228,60 +228,11 @@ N_param_pulses_stoch = pulses_accel_struct.parameters_number;
 orbit_model_struct.empirical_forces_pulses = pulses_accel_struct;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Force models/effects with parameters to be estimated
+% Number of parameters to be estimated in addition to the initial state vector
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Nmodel_PARAM_ESTIM_glob(1) = 0;
-Nmodel_PARAM_ESTIM_glob(2) = 0;
-Nmodel_PARAM_ESTIM_glob(3) = 0;
-Nmodel_PARAM_ESTIM_glob(4) = 0;
-
-% Empirical Forces CPR terms
-Nmodel_PARAM_ESTIM_glob(1) = emp_cpr_effect_01;
-
-% Accelerometer calibration parameters
-acc_cal_paramestim_yn = accelerometer_data_cal_glob.param_estim_yn;
-test_acc_cal_paramestim = strcmp(acc_cal_paramestim_yn,'y');
-if test_acc_cal_paramestim == 1    
-    Nmodel_PARAM_ESTIM_glob(2) = 1;
-end
-
-% Empirical Accelerations (Piecewise accelerations or Pulses)
-PULSES_estim_yn = pulses_stoch_accel_glob.effect_01;
-test_empaccel_paramestim = strcmp(PULSES_estim_yn,'y');
-if test_empaccel_paramestim == 1    
-    Nmodel_PARAM_ESTIM_glob(3) = 1;
-end
-
-% Gravity Field parameters estimation
-GRAV_estim_yn = gfm_struct_glob.param_estim_yn;
-test_GRAV_paramestim = strcmp(GRAV_estim_yn,'y');
-if test_GRAV_paramestim == 1    
-    Nmodel_PARAM_ESTIM_glob(4) = 1;
-end
-
-orbit_model_struct.forces_param_estim_yn = Nmodel_PARAM_ESTIM_glob;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Number of unknown parameters to be estimated in addition to the initial
-% state vector
-Nparam_GLOB = 0;
-% Empirical Forces
-if Nmodel_PARAM_ESTIM_glob(1) == 1
-    Nparam_GLOB = Nparam_GLOB + Nparam_EMP_FORCE_CPR;    
-end
-% Accelerometer calibration parameters
-if Nmodel_PARAM_ESTIM_glob(2) == 1
-    Nparam_GLOB = Nparam_GLOB + Nparam_ACC_CAL;
-end
-% Stochastic Pulses parameters
-if Nmodel_PARAM_ESTIM_glob(3) == 1
-    Nparam_GLOB = Nparam_GLOB + N_param_pulses_stoch;
-end
-% Gravitational parameters
-if Nmodel_PARAM_ESTIM_glob(4) == 1
-    Nparam_GLOB = Nparam_GLOB + N_param_GRAV;
-end
-orbit_model_struct.forces_param_estim_no = Nparam_GLOB;
+% Update orbit_model_struct :: Forces effects and Number of parameters to be estimated 
+[orbit_model_struct] = orbit_model_force_parameters (orbit_model_struct);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

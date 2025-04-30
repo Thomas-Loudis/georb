@@ -23,6 +23,8 @@ function [Zo_estim, Xaposteriori, orbit_model_struct] = param_aposteriori_aprior
 %             Code modified to be compatible with structure matrix variables
 % 07/04/2025  Thomas Loudis Papanikolaou
 %             Source Code minor upgrade 
+% 29/04/2025  Thomas Loudis Papanikolaou
+%             Source Code minor upgrade 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -30,13 +32,13 @@ function [Zo_estim, Xaposteriori, orbit_model_struct] = param_aposteriori_aprior
 % Forces model structure matrix
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % IC_MJDo = orbit_model_struct.IC_MJD; % = IC_MJDo;
-Zo_ICRF_glb = orbit_model_struct.IC_CRF; % = [IC_MJDo IC_Zo_vec'];
-Nparam_GLOB = orbit_model_struct.forces_param_estim_no;
-Nmodel_PARAM_ESTIM_glob = orbit_model_struct.forces_param_estim_yn;
-emp_cpr_glob = orbit_model_struct.empirical_forces_cpr; 
+Zo_ICRF_glb                 = orbit_model_struct.IC_CRF;  % = [IC_MJDo IC_Zo_vec'];
+Nparam_GLOB                 = orbit_model_struct.forces_param_estim_no;
+Nmodel_PARAM_ESTIM_glob     = orbit_model_struct.forces_param_estim_yn;
+emp_cpr_glob                = orbit_model_struct.empirical_forces_cpr; 
 accelerometer_data_cal_glob = orbit_model_struct.accelerometer_struct; 
-pulses_stoch_accel_glob = orbit_model_struct.empirical_forces_pulses;
-gfm_struct_glob = orbit_model_struct.gravity_field;
+pulses_stoch_accel_glob     = orbit_model_struct.empirical_forces_pulses;
+gfm_struct_glob             = orbit_model_struct.gravity_field;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -74,13 +76,14 @@ Zo_aposteriori = Zo_apriori + Xmatrix_Zo;
 Xaposteriori_Z = Zo_aposteriori;
 Zo_estim = [Zo_ICRF_glb(1,1) Zo_aposteriori'];
 Zo_ICRF_glb = Zo_estim;
-% Update Forces model matrix 
+% Update Forces model matrix :: All IC parameters update at the end of function
 orbit_model_struct.IC_CRF = Zo_ICRF_glb;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%       
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Unknown parameters: Force related parameters
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if Nparam_GLOB > 0
 Nparam = 0;
 
@@ -269,6 +272,7 @@ if Nmodel_PARAM_ESTIM_glob(3) == 1
             pulses_matrix(i,j) = pulses_param_aposteriori(k,1);  
         end
     end
+    
     pulses_stoch_accel_glob.acceleration_matrix = pulses_matrix;
     % Update Forces model matrix 
     orbit_model_struct.empirical_forces_pulses = pulses_stoch_accel_glob;
@@ -279,60 +283,22 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Gravity Field parameters
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if Nmodel_PARAM_ESTIM_glob(4) == 1    
-% if Nmodel_PARAM_ESTIM_glob(4) == 1  && ic_apriori_01 > 0
-if ic_apriori_01 > 0
-    
-% Gravity Field Parameters matrix
-dC_matrix_apriori = gfm_struct_glob.Cnm_estim;
-dS_matrix_apriori = gfm_struct_glob.Snm_estim;
+% Gravity solution update is managed individually via function gravity_param_aposteriori 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-C_degree_order = gfm_struct_glob.C_degree_order_estim;
-S_degree_order = gfm_struct_glob.S_degree_order_estim;
-N_param_GRAV = gfm_struct_glob.parameters_number;
-Xmatrix_grav_param = Xmatrix_P(Nparam + 1 : Nparam + N_param_GRAV);
-[dC_matrix_aposteriori, dS_matrix_aposteriori, Xaposteriori_grav] = gravity_param_cor(dC_matrix_apriori, dS_matrix_apriori, C_degree_order, S_degree_order, Xmatrix_grav_param);
-Xaposteriori_P(Nparam + 1 : Nparam + N_param_GRAV,1) = Xaposteriori_grav(:,1);
-Nparam = Nparam + N_param_GRAV;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% TEMP
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Update parameters
-approach_no = 2;
-% 1.
-if approach_no == 1
-gfm_struct_glob.Cnm_estim  = dC_matrix_aposteriori; 
-gfm_struct_glob.Snm_estim  = dS_matrix_aposteriori; 
-% 2. temp approach (update of the gravity field model matrices)
-elseif approach_no == 2
-Cnm_apriori = gfm_struct_glob.Cnm ;
-Snm_apriori = gfm_struct_glob.Snm ;
-[Cmatrix_aposteriori, Smatrix_aposteriori] = harmonics_sum(Cnm_apriori,Snm_apriori, dC_matrix_aposteriori,dS_matrix_aposteriori,-1);
-gfm_struct_glob.Cnm = Cmatrix_aposteriori;
-gfm_struct_glob.Snm = Smatrix_aposteriori;
-% Update Forces model matrix 
-orbit_model_struct.gravity_field = gfm_struct_glob;
-end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-elseif ic_apriori_01 == 0
-dC_matrix_aposteriori = gfm_struct_glob.Cnm_estim; 
-dS_matrix_aposteriori = gfm_struct_glob.Snm_estim; 
-
-end
-end 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Aposteriori matrix
 Xaposteriori = [Xaposteriori_Z ; Xaposteriori_P];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-else    
-% Aposteriori matrix
-Xaposteriori = Xaposteriori_Z;
-
+else 
+    % Aposteriori matrix
+    Xaposteriori = Xaposteriori_Z;
 end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% Update all IC parameters within orbit_model structure array
+orbit_model_struct.IC_CRF = [Zo_ICRF_glb(1,1) Xaposteriori'];

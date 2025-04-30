@@ -27,6 +27,7 @@ for ic_i = 1 : ic_n
     for constellation_id = 1 : ic_struct_d2
         ic_data_struct_run(constellation_id).ic_data = ic_data_struct(constellation_id).ic_data(ic_i,:);
     end
+    % Call main georb_function
     [out_dir_name] = georb_function(orbit_model_struct, ic_data_struct_run);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

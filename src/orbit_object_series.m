@@ -63,14 +63,18 @@ for ic_i = 1 : ic_n
     % Orbit Data reading and preprocessing per satellite per date
     [orbit_model_struct] = orbit_data_longarc (main_config_fname, orbit_model_filename, config_struct, src_version, orbit_model_struct);
 
+    orbit_model_struct.orbit_config = config_struct;  
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Orbit Determination of satellite/object i
-    [orbit_config_fname, orbit_matrix, orbit_rms, veqZ_matrix, veqP_matrix, OBS_matrix, Xparam_aposteriori, OBS_residuals, extorb] = orbit_object(config_struct, write_data, orbit_model_struct);    
+    % [orbit_config_fname, orbit_matrix, orbit_rms, veqZ_matrix, veqP_matrix, OBS_matrix, Xparam_aposteriori, OBS_residuals, extorb] = orbit_object(config_struct, write_data, orbit_model_struct);    
+    [orbit_config_fname, orbit_model_struct, orbit_matrices, OUT_data_foldername] = orbit_object(config_struct, write_data, orbit_model_struct);        
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Move output data files to the object output data directory
-    [OUT_fname_object_mjd, OUT_fname_mission_mjd] = write_results_dir(orbit_config_fname,orbit_model_struct);
+    % [OUT_fname_object_mjd, OUT_fname_mission_mjd] = write_results_dir(orbit_config_fname,orbit_model_struct)
+    OUT_fname_object_mjd = OUT_data_foldername;
     [status,message,messageid] = movefile('*.out',OUT_fname_object_mjd);
     [status,message,messageid] = movefile('*.orb',OUT_fname_object_mjd);
 

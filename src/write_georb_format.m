@@ -558,24 +558,7 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Data Functional category :: Orbits, Partials, Observations, Residuasl, ..
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% % Orbits
-% test_data_functional = strcmp(data_functional,'Orbit');
-% if test_data_functional == 1
-%     data_functional_category = 1;
-% end
-% 
-% % Partials
-% test_data_functional = strcmp(data_functional,'Partial Derivatives');
-% if test_data_functional == 1
-%     data_functional_category = 2;
-% end
-% 
-% % Other Functional
-% if test_data_functional == 0
-%     data_functional_category = 3;
-% end
+% Data Functional category :: Orbits, Partials, Observations, Residuals, ..
 data_functional_category = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -667,6 +650,27 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Write NEQ matrices
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+data_functional_keyword = sscanf(data_functional,'%3c%*');
+test_data_functional = strcmp(data_functional_keyword,'NEQ');
+if test_data_functional == 1
+data_functional_category = 1;
+[N1, N2] = size(data_matrix);
+Nepochs = N1;
+Nelements = N2;
+for i_epochs = 1 : Nepochs
+    % Write computed orbit of epoch ti
+    data_ith = data_matrix(i_epochs, :)';    
+    % NEQ row values 
+    fprintf(fid,'%29.15e',data_matrix(i_epochs,1:Nelements) );
+    % Chnange line
+    fprintf(fid,'%s\n','');    
+end
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Write data matrix
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other Functional written based on general georb format
@@ -686,7 +690,6 @@ for i_epochs = 1 : Nepochs
     % Seconds since start of the day  (00h)
     fprintf(fid,'%19.9f',orbit_matrix_2(i_epochs,2) );
     % Data
-    %fprintf(fid,'%29.15f',orbit_matrix_2(i_epochs,3:Nelements) );
     fprintf(fid,'%29.15e',orbit_matrix_2(i_epochs,3:Nelements) );
     % Chnange line
     fprintf(fid,'%s\n','');    

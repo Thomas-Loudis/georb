@@ -70,7 +70,11 @@ if cfg_mode == 2
     IC_Zo(3,1) = sscanf(param_line,'%*s %*s %e %*');
     IC_Zo(4,1) = sscanf(param_line,'%*s %*s %*s %e %*');
     IC_Zo(5,1) = sscanf(param_line,'%*s %*s %*s %*s %e %*');
-    IC_Zo(6,1) = sscanf(param_line,'%*s %*s %*s %*s %*s %e %*');    
+    IC_Zo(6,1) = sscanf(param_line,'%*s %*s %*s %*s %*s %e %*'); 
+    % IC parameters (all)
+    IC_apriori_rowmatrix = str2num(param_line);
+    IC_apriori_vecmatrix = IC_apriori_rowmatrix';
+    IC_Zo = IC_apriori_vecmatrix;    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -144,6 +148,10 @@ while (~feof(fid))
       IC_Zo(4,1) = sscanf(line_ith,'%*s %*s %*s %*s %f %*');
       IC_Zo(5,1) = sscanf(line_ith,'%*s %*s %*s %*s %*s %f %*');
       IC_Zo(6,1) = sscanf(line_ith,'%*s %*s %*s %*s %*s %*s %f %*');
+      % IC parameters (all)
+      IC_apriori_rowmatrix = str2num(line_ith);
+      IC_apriori_vecmatrix = IC_apriori_rowmatrix';
+      IC_Zo = IC_apriori_vecmatrix;    
     end    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

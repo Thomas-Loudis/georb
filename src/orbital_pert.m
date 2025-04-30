@@ -50,6 +50,21 @@ end
 % Orbit differences are computed at common epochs of the two orbits
 [j k] = size(z_det);
 [m n] = size(z_ref);
+
+Nepochs_max = j;
+if m < j
+Nepochs_max = m;
+end 
+tcommon = zeros(Nepochs_max,1);
+d_radial = zeros(Nepochs_max,1);
+d_along = zeros(Nepochs_max,1);
+d_cross = zeros(Nepochs_max,1);
+d_Vradial = zeros(Nepochs_max,1);
+d_Valong = zeros(Nepochs_max,1);
+d_Vcross = zeros(Nepochs_max,1);
+delta_kepler = zeros(Nepochs_max,6);
+dz = zeros(Nepochs_max,7);
+
 epoch = 0;
 wo = 1;
 for i = 1 : j
@@ -98,7 +113,7 @@ for i = 1 : j
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Orbit differences of Keplerian elements (in degrees)
             delta_kepler(epoch,:) = kepler_det - kepler_ref;
-            clear kepler_det kepler_ref
+            % clear kepler_det kepler_ref
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
             % Orbit differences in Orbital frame
@@ -136,13 +151,15 @@ for i = 1 : j
             d_Valong(epoch,1)  = delta_orbital_v(2);
             d_Vcross(epoch,1)  = delta_orbital_v(3);            
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        end
+            end
             tcommon(epoch,1) = t_ref;
             break
         end        
     end    
 end
-clear j k m n i w 
+% clear j k m n i w 
+
+Nepochs_common = epoch;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Orbit differences/peturbations matrices
@@ -150,6 +167,17 @@ dstn = [tcommon d_radial d_along d_cross];
 dz = [tcommon dz(:,2:7)];
 delta_kepler = [tcommon delta_kepler];
 delta_Vstn = [tcommon d_Vradial d_Valong d_Vcross];
+
+% Clear empty data entries
+dstn_2 = dstn(1:Nepochs_common,:);
+dz_2 = dz(1:Nepochs_common,:);
+delta_kepler_2 = delta_kepler(1:Nepochs_common,:);
+delta_Vstn_2 = delta_Vstn(1:Nepochs_common,:);
+clear dstn dz delta_kepler delta_Vstn
+dstn = dstn_2;
+dz = dz_2;
+delta_kepler = delta_kepler_2;
+delta_Vstn = delta_Vstn_2;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

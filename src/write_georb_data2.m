@@ -25,12 +25,6 @@ function [georb_data_name] = write_georb_data2(orbit_config_fname, data_matrix, 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Output data file name conventions
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[georb_dataformat_name, georb_dataformat_suffix] = write_data_name(orbit_config_fname, 0);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Data functional name part1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % data_functional_part1 = 'orbit';
@@ -164,8 +158,34 @@ data_functional_filename = '_parameters';
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Data file name
+% Output Data file name to be written
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+mission_01 = 0;
+data_functional_keyword = sscanf(data_functional,'%3c%*');
+test_data_functional = strcmp(data_functional_keyword,'LRI');
+if test_data_functional == 1
+mission_01 = 1;
+end
+data_functional_keyword = sscanf(data_functional,'%3c%*');
+test_data_functional = strcmp(data_functional_keyword,'KBR');
+if test_data_functional == 1
+mission_01 = 1;
+end
+data_functional_keyword = sscanf(data_functional,'%8c%*');
+test_data_functional = strcmp(data_functional_keyword,'intersat');
+if test_data_functional == 1
+mission_01 = 1;
+end
+data_functional_keyword = sscanf(data_functional,'%3c%*');
+test_data_functional = strcmp(data_functional_keyword,'NEQ');
+if test_data_functional == 1
+mission_01 = 1;
+end
+% Output data file name conventions
+[georb_dataformat_name, georb_dataformat_suffix] = write_data_name(orbit_config_fname,mission_01);
+% Output Data file name
 georb_data_name = sprintf('%s%s%s',georb_dataformat_name,data_functional_filename,georb_dataformat_suffix);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

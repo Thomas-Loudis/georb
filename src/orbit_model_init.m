@@ -40,13 +40,13 @@ ic_data_orbiter1_epoch0 = ic_data_orbiter1(1,:);
 [orbit_config_struct] = write_config2struct(main_config_fname, orbit_model_filename, ic_data_orbiter1_epoch0, src_version);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Orbit modelling : common models
+% Main structure array for Orbit modelling : orbit_model_struct
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % to_pod = tic;
 % Orbit Model structure matrix: Forces model, methods, data, parameters
 orbit_model_struct.src_version = src_version;
 [orbit_model_struct] = orbit_model (orbit_config_struct,orbit_model_struct);
-orbit_model_struct.orbit_config_struct = orbit_config_struct;
+orbit_model_struct.orbit_config = orbit_config_struct;
 orbit_model_struct.georb_config_fname = main_config_fname;
 % fprintf('%s %.3f \n', 'Time (min):  call orbit_model :',toc(to_pod)/60);
 fprintf('%s \n', 'Orbit Model initialisation :: Force model, Methods settings, Data preprocessing');

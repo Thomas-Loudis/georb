@@ -222,7 +222,11 @@ gfm_struct.Snm_sigma  = sSnm;
 gfm_struct.tide_system = tide_system;
 
 % Gravity Field parameters estimation y/n 
-gfm_struct.param_estim_yn = grav_paramestim_yn;
+gfm_struct.gravity_solution_yn = grav_paramestim_yn;
+% TEMP 
+gfm_struct.gravity_solution_yn = 'n';
+% Set param_estim_yn to 'n' for the initial step of orbit determination only
+gfm_struct.param_estim_yn = 'n';
 gfm_struct.param_estim_degree = grav_paramestim_degree_range;
 gfm_struct.Cnm_estim  = Cnm_paramestim; 
 gfm_struct.Snm_estim  = Snm_paramestim;
