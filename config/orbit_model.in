@@ -16,9 +16,8 @@ orbit_mode                orbit_propagation_eqm
 
 ---------------------------------------------------------------------------
 % Orbit arc length in sec
-Orbit_arc_length           86400
-% Orbit_arc_length           5400
-Orbit_arc_length           300
+% Orbit_arc_length           86400
+Orbit_arc_length           5400
 ---------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------
@@ -100,14 +99,21 @@ gravity_model_fname       GOCO06s.gfc
 % gravity_model_fname       EIGEN-6C4.gfc 
 
 % Gravity model's degree and order (truncation value of harmonics series expansion)
-gravity_model_degree      200          
-gravity_model_order       200
+gravity_model_degree      180          
+gravity_model_order       180
 
 % Variational Equations: Gravity model's degree and order
 veq_gravity_model_degree        30          
 veq_gravity_model_order         30
 ---------------------------------------------------------------------------
-% Gravtiy Field parameters estimation
+
+---------------------------------------------------------------------------
+% Gravity Field Solution  |  Status: Not fully supported by current version
+---------------------------------------------------------------------------
+% Gravity solution is supported by seting the following variable 'grav_field_paramestim_yn' to 'y' 
+% Data Output provides the Normal Equations' reduced matrices w.r.t. gravity field parameters (harmonics coefficients)
+
+% Gravity Field parameters estimation 
 grav_field_paramestim_yn       n
 
 % Gravity model harmonics coefficients range (to be estimated)
@@ -324,23 +330,14 @@ PULSES_estim_yn           n
 stoch_param_type          stoch_accel_constant      
 
 % Step interval (seconds)
-%PULSES_interval           3600
 PULSES_interval           5400
-%PULSES_interval           10800
-%PULSES_interval           21600
 
 % Acceleration duration (seconds)
-% stoch_time_interval       300
-%stoch_time_interval       1800
-stoch_time_interval       5390
+stoch_time_interval       300
 
 % Time offset (seconds)
 % PULSES_offset             0
-% PULSES_offset             3600
 PULSES_offset             5400
-% PULSES_offset             10800
-% PULSES_offset             21600
-% PULSES_offset             300
 
 % Reference Frame of pulses 
 - 'orbital_frame' :: Orbital reference frame (radial,along-track,cross-track)
@@ -370,13 +367,13 @@ Pseudo-Observations based on kinematic orbit data
 - 'georb'         : Internal orbit data format of GEORB software
 - 'kepler'        : Kepler orbit :: "Status: Not supported by current version"
 
-pseudo_obs_type           itsg_kin  
+pseudo_obs_type           georb  
 
 % Pseudo-observations outliers filter y/n: 
-obs_outliers_yn           y 
+obs_outliers_yn           n 
 
 % Pseudo-observations outliers threshold (in cm) 
-pseudo_obs_sigma          30
+pseudo_obs_sigma          50
 
 % Covariance matrix of pseudo-observations orbit data :: "Status: Not supported by current version"
 % 'identity', 'diagonal', 'full' 
