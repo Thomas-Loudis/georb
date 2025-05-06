@@ -360,7 +360,7 @@ PULSES_axis_3             1
 ---------------------------------------------------------------------------
 Observations model 
 ---------------------------------------------------------------------------
-Pseudo-Observations based on kinematic orbit data
+Pseudo-Observations based on kinematic orbit data in ITRF (Terrestrial Reference Frame)
 % Options:
 - 'gnv1b'         : GRACE mission GNV1b orbit data format 
 - 'itsg_kin'      : Kinematic Orbit data products format by ITSG at TU Graz  
@@ -390,6 +390,7 @@ estimator_iterations      1
 ---------------------------------------------------------------------------
 Inter-satellite Ranging Observations 
 ---------------------------------------------------------------------------
+% Case of GRACE missions :: Inter-satellite ranging data are applied as external validation (set combined_param_estim_yn to n) or as observations (set combined_param_estim_yn to y)
 % Combined Parameter Estimation (observation combination with inter-satellite ranging data)
 % y/n status 
 combined_param_estim_yn   n 
@@ -404,6 +405,9 @@ KBR_obs_estim             n
 % LRI use as observations within orbit parameter estimation
 LRI_obs_estim             y
 
+% Simulated Intersatellite Ranging data (in georb format); Selecting this option, only the simulated data will be used
+intersat_ranging_data_simul     n
+
 % Ranging data for observation combination (range-rate only is recommended) 
 intersat_range_obs        n
 intersat_rangerate_obs    y
@@ -412,7 +416,7 @@ intersat_rangerate_obs    y
 ---------------------------------------------------------------------------
 External Orbit Comparison
 ---------------------------------------------------------------------------
-% External orbit data file name (Data file names via satellite data list file)
+% External orbit data file name in ITRF (Terrestrial Reference Frame)
 
 % Condition of applying or not the external orbit comparison ('y' or 'n')
 external_orbit_comp            n
