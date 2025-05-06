@@ -18,15 +18,14 @@ function [grace_pod_struct, grace1_pod, grace2_pod, intersat_pod, out_dir_name] 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-% Wirte data to output folder in georb format
-write_data = write_data_01;
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % POD of GRACE satellites
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Orbit configuration strucutre arrays
 orbit_config_struct_GRACE1 = orbit_model_GRACE1.orbit_config;
 orbit_config_struct_GRACE2 = orbit_model_GRACE2.orbit_config;
+
+write_data = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Orbit Determination of GRACE-A/-C
@@ -76,7 +75,8 @@ end
 intersat_obs = 'intersat_KBR';
 [biasrange, rangerate, rangeaccl, KBRbias, nonbiasrange, ...
  resrange, resrangerate, dresrange, dresrangerate, ...
- rms_resrange, KBR_rms_resrangerate, rms_dresrange, rms_dresrangerate]...
+ rms_resrange, KBR_rms_resrangerate, rms_dresrange, rms_dresrangerate, ...
+ intersat_ranging_functionals] ...
  = grace_kbr_analysis(orbcGA, orbcGB, intersat_obs, orbit_model_GRACE1);
 KBR_rms_res_rangerate           = KBR_rms_resrangerate;
 KBR_rms_res_range               = rms_resrange;
@@ -91,7 +91,8 @@ if LRI_obs_analysis_01 == 1
     intersat_obs = 'intersat_LRI';
     [biasrange, rangerate, rangeaccl, KBRbias, nonbiasrange, ...
      resrange, resrangerate, dresrange, dresrangerate, ...
-     rms_resrange, LRI_rms_resrangerate, rms_dresrange, rms_dresrangerate]...
+     rms_resrange, LRI_rms_resrangerate, rms_dresrange, rms_dresrangerate, ...
+     intersat_ranging_functionals] ...
      = grace_kbr_analysis(orbcGA, orbcGB, intersat_obs, orbit_model_GRACE1);      
     LRI_rms_res_rangerate           = LRI_rms_resrangerate;
     LRI_rms_res_range               = rms_resrange;
@@ -150,67 +151,117 @@ intersat_pod.LRI_rms_range_residuals      = LRI_rms_res_range;
 grace_pod_struct.grace1_pod   = grace1_pod;
 grace_pod_struct.grace2_pod   = grace2_pod;
 grace_pod_struct.intersat_pod = intersat_pod;
+grace_pod_struct.intersat_ranging_functionals = intersat_ranging_functionals;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Write Intersatellite Observation residuals
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Mission Directory: GRACE folder for output files/folders of orbits and instersatellite-ranging data analysis
-[OUT_fname_object_mjd, OUT_fname_mission_mjd] = write_results_dir(orbit_config_G1,orbit_model_GRACE1);
-[status, message, messageid] = rmdir(OUT_fname_mission_mjd,'s');
-[status, message, messageid] = mkdir(OUT_fname_mission_mjd);
 
-if LRI_obs_analysis_01 == 1
-data_matrix = LRI_rangerate_residuals;
-data_functional = 'LRI range-rate residuals';
-reference_frame = 'ICRF';
-[georb_data_name] = write_georb_data2(orbit_config_struct_GRACE1, data_matrix, data_functional, reference_frame);
-[status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
-
-data_matrix = LRI_range_residuals;
-data_functional = 'LRI range residuals';
-reference_frame = 'ICRF';
-[georb_data_name] = write_georb_data2(orbit_config_struct_GRACE1, data_matrix, data_functional, reference_frame);
-[status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Write computed GRACE data to directory
+% Wirte data to output folder in georb format
+write_data = write_data_01;
+if write_data == 1
+neq_flag = 0;
+[OUT_fname_mission_mjd,OUT_data_foldername_G1,OUT_data_foldername_G2, grace_pod_struct] = grace_writedata(grace_pod_struct, intersat_obs_flag, neq_flag);
+out_dir_name = OUT_fname_mission_mjd;
+else
+out_dir_name = '';   
 end
-
-data_matrix = KBR_rangerate_residuals;
-data_functional = 'KBR range-rate residuals';
-reference_frame = 'ICRF';
-[georb_data_name] = write_georb_data2(orbit_config_struct_GRACE1, data_matrix, data_functional, reference_frame);
-[status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
-
-data_matrix = KBR_range_residuals;
-data_functional = 'KBR range residuals';
-reference_frame = 'ICRF';
-[georb_data_name] = write_georb_data2(orbit_config_struct_GRACE1, data_matrix, data_functional, reference_frame);
-[status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Write Statistics
-    rms_extorb(1,1:3) = rms_orbitalGA;
-    rms_extorb(2,1:3) = rms_orbitalGB;
-    rms_obs(1,1:3)    = rms_obs_GA;
-    rms_obs(2,1:3)    = rms_obs_GB;
-    rms_kbr = zeros(1,3);
-    rms_lri = zeros(1,3);
-    rms_kbr(1,2) = KBR_rms_resrangerate;
-if LRI_obs_analysis_01 == 1
-    rms_lri(1,2) = LRI_rms_resrangerate;
-end
-[georb_data_name] = write_georb_statistics(orbit_config_G1, orbit_config_G2, rms_obs, rms_extorb, rms_kbr, rms_lri);
-[status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-[OUT_fname_G1, OUT_fname_mission_mjd] = write_results_dir(orbit_config_G1,orbit_model_GRACE1);
-[OUT_fname_G2, OUT_fname_mission_mjd] = write_results_dir(orbit_config_G2,orbit_model_GRACE2);
-   
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Move GRACE/GRACE-FO mission data files to one directory
-    [status,message,messageid] = movefile('*.out',OUT_fname_mission_mjd);
-    [status,message,messageid] = movefile('*.orb',OUT_fname_mission_mjd);
-    [status,message,messageid] = movefile(OUT_fname_G1,OUT_fname_mission_mjd);
-    [status,message,messageid] = movefile(OUT_fname_G2,OUT_fname_mission_mjd);
-    out_dir_name = OUT_fname_mission_mjd;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % Write Intersatellite Observation residuals
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % Mission Directory: GRACE folder for output files/folders of orbits and instersatellite-ranging data analysis
+% [OUT_fname_object_mjd, OUT_fname_mission_mjd] = write_results_dir(orbit_config_G1,orbit_model_GRACE1);
+% [status, message, messageid] = rmdir(OUT_fname_mission_mjd,'s');
+% [status, message, messageid] = mkdir(OUT_fname_mission_mjd);
+% 
+% if LRI_obs_analysis_01 == 1
+% data_matrix = LRI_rangerate_residuals;
+% data_functional = 'LRI range-rate residuals';
+% reference_frame = 'ICRF';
+% [georb_data_name] = write_georb_data2(orbit_config_struct_GRACE1, data_matrix, data_functional, reference_frame);
+% [status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
+% 
+% data_matrix = LRI_range_residuals;
+% data_functional = 'LRI range residuals';
+% reference_frame = 'ICRF';
+% [georb_data_name] = write_georb_data2(orbit_config_struct_GRACE1, data_matrix, data_functional, reference_frame);
+% [status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
+% end
+% 
+% data_matrix = KBR_rangerate_residuals;
+% data_functional = 'KBR range-rate residuals';
+% reference_frame = 'ICRF';
+% [georb_data_name] = write_georb_data2(orbit_config_struct_GRACE1, data_matrix, data_functional, reference_frame);
+% [status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
+% 
+% data_matrix = KBR_range_residuals;
+% data_functional = 'KBR range residuals';
+% reference_frame = 'ICRF';
+% [georb_data_name] = write_georb_data2(orbit_config_struct_GRACE1, data_matrix, data_functional, reference_frame);
+% [status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % Write Inter-Satellite Ranging functionals
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % intersat_ranging_functionals
+% % intersat_range_functionals = intersat_ranging_functionals.range ;
+% % intersat_rangerate_functionals = intersat_ranging_functionals.rangerate ;
+% % 
+% % data_matrix = intersat_rangerate_functionals;
+% % data_functional = 'Intersatellite range-rate functionals';
+% % reference_frame = 'ICRF';
+% % [georb_data_name] = write_georb_data2(orbit_config_struct_GRACE1, data_matrix, data_functional, reference_frame);
+% % [status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
+% % % GNP format
+% % [georb2gnv_data_name] = write_georb_data3_gnv(orbit_config_struct_GRACE1, data_matrix, data_functional, reference_frame);
+% % [status,message,messageid] = movefile(georb2gnv_data_name, OUT_fname_mission_mjd);
+% % 
+% % data_matrix = intersat_range_functionals;
+% % data_functional = 'Intersatellite range functionals';
+% % reference_frame = 'ICRF';
+% % [georb_data_name] = write_georb_data2(orbit_config_struct_GRACE1, data_matrix, data_functional, reference_frame);
+% % [status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
+% % % GNP format
+% % [georb2gnv_data_name] = write_georb_data3_gnv(orbit_config_struct_GRACE1, data_matrix, data_functional, reference_frame);
+% % [status,message,messageid] = movefile(georb2gnv_data_name, OUT_fname_mission_mjd);
+% 
+% intersat_ranging_functionals = intersat_ranging_functionals.rangingdata ;
+% data_matrix = intersat_ranging_functionals;
+% data_functional = 'Intersatellite ranging functionals';
+% reference_frame = 'ICRF';
+% [georb_data_name] = write_georb_data2(orbit_config_struct_GRACE1, data_matrix, data_functional, reference_frame);
+% [status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % Write Statistics
+%     rms_extorb(1,1:3) = rms_orbitalGA;
+%     rms_extorb(2,1:3) = rms_orbitalGB;
+%     rms_obs(1,1:3)    = rms_obs_GA;
+%     rms_obs(2,1:3)    = rms_obs_GB;
+%     rms_kbr = zeros(1,3);
+%     rms_lri = zeros(1,3);
+%     rms_kbr(1,2) = KBR_rms_resrangerate;
+% if LRI_obs_analysis_01 == 1
+%     rms_lri(1,2) = LRI_rms_resrangerate;
+% end
+% [georb_data_name] = write_georb_statistics(orbit_config_G1, orbit_config_G2, rms_obs, rms_extorb, rms_kbr, rms_lri);
+% [status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% [OUT_fname_G1, OUT_fname_mission_mjd] = write_results_dir(orbit_config_G1,orbit_model_GRACE1);
+% [OUT_fname_G2, OUT_fname_mission_mjd] = write_results_dir(orbit_config_G2,orbit_model_GRACE2);
+% 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     % Move GRACE/GRACE-FO mission data files to one directory
+%     [status,message,messageid] = movefile('*.out',OUT_fname_mission_mjd);
+%     [status,message,messageid] = movefile('*.orb',OUT_fname_mission_mjd);
+%     [status,message,messageid] = movefile(OUT_fname_G1,OUT_fname_mission_mjd);
+%     [status,message,messageid] = movefile(OUT_fname_G2,OUT_fname_mission_mjd);
+%     out_dir_name = OUT_fname_mission_mjd;
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

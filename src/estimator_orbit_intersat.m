@@ -1,4 +1,4 @@
-function [Xmatrix, Amatrix_rangerate, Wmatrix_rangerate, Amatrix_range, Wmatrix_range, NEQ_range, NEQ_rangerate] = estimator_orbit_intersat(orb1,orb2, veqZarray1,veqParray1, veqZarray2,veqParray2, intersat_obs, sigma_obs) 
+function [Xmatrix, Amatrix_rangerate_out, Wmatrix_rangerate_out, Amatrix_range_out, Wmatrix_range_out, NEQ_range, NEQ_rangerate] = estimator_orbit_intersat(orb1,orb2, veqZarray1,veqParray1, veqZarray2,veqParray2, intersat_obs, sigma_obs) 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -58,9 +58,9 @@ orbref = orb1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Orbit differences: XYZ
-%[dstn,rms_stn,dorb,rms_orb,delta_kepler,rms_kepler,delta_Vstn rms_Vstn] = orbital_pert(orb1,orb2,0);
-[dorb,rms_orb,sr] = compstat(orb1,orb2);
-%[sz1 sz2] = size(dorb);
+% [dstn,rms_stn,dorb,rms_orb,delta_kepler,rms_kepler,delta_Vstn rms_Vstn] = orbital_pert(orb1,orb2,0);
+% [dorb,rms_orb,sr] = compstat(orb1,orb2);
+% [sz1 sz2] = size(dorb);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -76,12 +76,27 @@ Nepochs_orbit = d1;
 Nepochs_obs   = d3;
 Nparam_veqP   = d6 - Ntime_col;
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Matrices preallocation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % dr_matrix        = zeros(Nepochs,2);
 % rangerate_matrix = zeros(Nepochs,2);
 % range_matrix     = zeros(Nepochs,3);
 % dRTN_matrix      = zeros(Nepochs,4);
 
+if size(veqParray2,1) > 1 
+Nparam = Nparam_veqP;
+else
+Nparam = 0;
+end
+Amatrix_range       = zeros(Nepochs_orbit,6+Nparam);
+Amatrix_rangerate   = zeros(Nepochs_orbit,6+Nparam);
+Wmatrix_range       = zeros(Nepochs_orbit,1);
+Wmatrix_rangerate   = zeros(Nepochs_orbit,1);  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 iobs0   = 1;
 Nepochs = 0;
 i_epochs_common = 0;
@@ -96,7 +111,7 @@ for iref = 1 : Nepochs_orbit
         % Common Epochs
         if abs(tiref - tiobs) < 10^-8
             i_epochs_common = i_epochs_common + 1;
-            ObsEpochs(i_epochs_common,1) = orbref(iref,1);
+            % ObsEpochs(i_epochs_common,1) = orbref(iref,1);
             
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % y observations (measurements)  at common epoch
@@ -220,7 +235,7 @@ Wmatrix_range(i_epochs_common, 1) = y_meas_range - f_obs_range;
 % Range-rate
 Wmatrix_rangerate(i_epochs_common, 1) = y_meas_rangerate - f_obs_rangerate;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-       
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Design Matrix : Amatrix_range and Amatrix_rangerate
@@ -229,7 +244,11 @@ Wmatrix_rangerate(i_epochs_common, 1) = y_meas_rangerate - f_obs_rangerate;
 VEQ_Z_ti = veqZarray( (iref-1)*6 + 1 : (iref-1)*6 + Nobsset , (Ntime_col + 1) : (Ntime_col + 6) );
 
 % veqParray for epoch ti (Force parameters)
+if size(veqParray,1) > 1 
 VEQ_P_ti = veqParray( (iref-1)*6 + 1 : (iref-1)*6 + Nobsset , (Ntime_col + 1) : (Ntime_col + Nparam_veqP) );
+else
+VEQ_P_ti = 0;
+end
 
 % Partials of intersat observations w.r.t. state vector at ti (Zti)
 
@@ -244,7 +263,11 @@ pdv_range_IC_Zo = pdv_range_Z_t * VEQ_Z_ti;
 pdv_range_IC_P  = pdv_range_Z_t * VEQ_P_ti;
 
 % Design matrix for epoch ti 
+if size(veqParray,1) > 1 
 Amatrix_range_ti = [pdv_range_IC_Zo pdv_range_IC_P];
+else
+Amatrix_range_ti = pdv_range_IC_Zo;
+end    
 Amatrix_range(i_epochs_common,:) = Amatrix_range_ti;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -257,104 +280,13 @@ pdv_rangerate_IC_Zo = pdv_rangerate_Z_t * VEQ_Z_ti;
 pdv_rangerate_IC_P  = pdv_rangerate_Z_t * VEQ_P_ti;
 
 % Design matrix for epoch ti 
+if size(veqParray,1) > 1 
 Amatrix_rangerate_ti = [pdv_rangerate_IC_Zo pdv_rangerate_IC_P];
+else
+Amatrix_rangerate_ti = pdv_rangerate_IC_Zo;
+end
 Amatrix_rangerate(i_epochs_common,:) = Amatrix_rangerate_ti;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% OLD Code
-if 1 < 0
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Design Matrix :: range
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-     % values at current epoch (tiref) 
-     Amatrix_ti_Xo = pdv_dr_xB * veqZmatrix2(1,1) + ... 
-                     pdv_dr_yB * veqZmatrix2(2,1) + ...
-                     pdv_dr_zB * veqZmatrix2(3,1); 
-     Amatrix_ti_Yo = pdv_dr_xB * veqZmatrix2(1,2) + ... 
-                     pdv_dr_yB * veqZmatrix2(2,2) + ... 
-                     pdv_dr_zB * veqZmatrix2(3,2);  
-     Amatrix_ti_Zo = pdv_dr_xB * veqZmatrix2(1,3) + ... 
-                     pdv_dr_yB * veqZmatrix2(2,3) + ... 
-                     pdv_dr_zB * veqZmatrix2(3,3); 
-     Amatrix_ti_Vxo= pdv_dr_xB * veqZmatrix2(1,4) + ... 
-                     pdv_dr_yB * veqZmatrix2(2,4) + ... 
-                     pdv_dr_zB * veqZmatrix2(3,4); 
-     Amatrix_ti_Vyo= pdv_dr_xB * veqZmatrix2(1,5) + ... 
-                     pdv_dr_yB * veqZmatrix2(2,5) + ... 
-                     pdv_dr_zB * veqZmatrix2(3,5); 
-     Amatrix_ti_Vzo= pdv_dr_xB * veqZmatrix2(1,6) + ... 
-                     pdv_dr_yB * veqZmatrix2(2,6) + ... 
-                     pdv_dr_zB * veqZmatrix2(3,6); 
-
-     Amatrix_ti =   [Amatrix_ti_Xo Amatrix_ti_Yo Amatrix_ti_Zo Amatrix_ti_Vxo Amatrix_ti_Vyo Amatrix_ti_Vzo];                                   
-     Amatrix(iepoch,:) = Amatrix_ti;
-     Amatrix_time(iepoch,:) = [tiref Amatrix_ti];
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-     % Normal Equations (NEQ)
-     %Amatrix_ti_transpose = Amatrix_ti'
-     %Amatrix_multiply = Amatrix_ti' * Amatrix_ti
-
-     %NEQn = Amatrix_ti' * Amatrix_ti + NEQn;
-     %NEQu = Amatrix_ti' * Wmatrix_ti + NEQu;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-     % Design Matrix :: range-rate
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-     % values at current epoch (tiref) 
-     Amatrix_ti_Xo = pdv_rangerate_xB * veqZmatrix2(1,1) + ... 
-                     pdv_rangerate_yB * veqZmatrix2(2,1) + ...
-                     pdv_rangerate_zB * veqZmatrix2(3,1) + ...
-                     pdv_rangerate_VxB * veqZmatrix2(4,1) + ... 
-                     pdv_rangerate_VyB * veqZmatrix2(5,1) + ... 
-                     pdv_rangerate_VzB * veqZmatrix2(6,1) ; 
-
-     Amatrix_ti_Yo = pdv_rangerate_xB * veqZmatrix2(1,2) + ... 
-                     pdv_rangerate_yB * veqZmatrix2(2,2) + ...
-                     pdv_rangerate_zB * veqZmatrix2(3,2) + ...
-                     pdv_rangerate_VxB * veqZmatrix2(4,2) + ... 
-                     pdv_rangerate_VyB * veqZmatrix2(5,2) + ... 
-                     pdv_rangerate_VzB * veqZmatrix2(6,2) ; 
-
-     Amatrix_ti_Zo = pdv_rangerate_xB * veqZmatrix2(1,3) + ... 
-                     pdv_rangerate_yB * veqZmatrix2(2,3) + ...
-                     pdv_rangerate_zB * veqZmatrix2(3,3) + ...
-                     pdv_rangerate_VxB * veqZmatrix2(4,3) + ... 
-                     pdv_rangerate_VyB * veqZmatrix2(5,3) + ... 
-                     pdv_rangerate_VzB * veqZmatrix2(6,3) ; 
-                 
-     Amatrix_ti_Vxo= pdv_rangerate_xB * veqZmatrix2(1,4) + ... 
-                     pdv_rangerate_yB * veqZmatrix2(2,4) + ...
-                     pdv_rangerate_zB * veqZmatrix2(3,4) + ...
-                     pdv_rangerate_VxB * veqZmatrix2(4,4) + ... 
-                     pdv_rangerate_VyB * veqZmatrix2(5,4) + ... 
-                     pdv_rangerate_VzB * veqZmatrix2(6,4) ; 
-
-     Amatrix_ti_Vyo= pdv_rangerate_xB * veqZmatrix2(1,5) + ... 
-                     pdv_rangerate_yB * veqZmatrix2(2,5) + ...
-                     pdv_rangerate_zB * veqZmatrix2(3,5) + ...
-                     pdv_rangerate_VxB * veqZmatrix2(4,5) + ... 
-                     pdv_rangerate_VyB * veqZmatrix2(5,5) + ... 
-                     pdv_rangerate_VzB * veqZmatrix2(6,5) ; 
-                 
-     Amatrix_ti_Vzo= pdv_rangerate_xB * veqZmatrix2(1,6) + ... 
-                     pdv_rangerate_yB * veqZmatrix2(2,6) + ...
-                     pdv_rangerate_zB * veqZmatrix2(3,6) + ...
-                     pdv_rangerate_VxB * veqZmatrix2(4,6) + ... 
-                     pdv_rangerate_VyB * veqZmatrix2(5,6) + ... 
-                     pdv_rangerate_VzB * veqZmatrix2(6,6) ;                  
-                                 
-     Amatrix_ti =   [Amatrix_ti_Xo Amatrix_ti_Yo Amatrix_ti_Zo Amatrix_ti_Vxo Amatrix_ti_Vyo Amatrix_ti_Vzo];                                   
-     Amatrix_rangerate(iepoch,:) = Amatrix_ti;
-     %Amatrix_time_rangerate(iepoch,:) = [tiref Amatrix_ti];
-end
-% End of OLD Code
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
             iobs0 = iobs + 1;
             clear tiref tiobs            
             break
@@ -364,15 +296,30 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Clear empty values
+N_epochs_common = i_epochs_common; 
+% Amatrix_range       = zeros(Nepochs_orbit,6+Nparam);
+% Amatrix_rangerate   = zeros(Nepochs_orbit,6+Nparam);
+% Wmatrix_range       = zeros(Nepochs_orbit,1);
+% Wmatrix_rangerate   = zeros(Nepochs_orbit,1);  
+
+Amatrix_range_out       = Amatrix_range(1:N_epochs_common,:);
+Amatrix_rangerate_out   = Amatrix_rangerate(1:N_epochs_common,:);
+Wmatrix_range_out       = Wmatrix_range(1:N_epochs_common,:);
+Wmatrix_rangerate_out   = Wmatrix_rangerate(1:N_epochs_common,:);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Least-Squares solution & NEQ matrices :: Range
 sigma_obs_range = sigma_obs(:,1);
-[Xmatrix_range, NEQn_range, NEQu_range] = estimator_neq_sol(Amatrix_range, Wmatrix_range, sigma_obs_range);
+[Xmatrix_range, NEQn_range, NEQu_range] = estimator_neq_sol(Amatrix_range_out, Wmatrix_range_out, sigma_obs_range);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Least-Squares solution & NEQ matrices :: Range rate
 sigma_obs_rangerate = sigma_obs(:,2);
-[Xmatrix_rangerate, NEQn_rangerate, NEQu_rangerate] = estimator_neq_sol(Amatrix_rangerate, Wmatrix_rangerate, sigma_obs_rangerate);
+[Xmatrix_rangerate, NEQn_rangerate, NEQu_rangerate] = estimator_neq_sol(Amatrix_rangerate_out, Wmatrix_rangerate_out, sigma_obs_rangerate);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 dXmatrix = Xmatrix_rangerate - Xmatrix_range;
@@ -389,8 +336,8 @@ NEQ_rangerate(:,:,1) = NEQn_rangerate;
 NEQ_rangerate(:,1,2) = NEQu_rangerate;
 
 % A, b matrices
-Amatrix = [Amatrix_range; Amatrix_rangerate];
-bmatrix = [Wmatrix_range; Wmatrix_rangerate];
+Amatrix = [Amatrix_range_out; Amatrix_rangerate_out];
+bmatrix = [Wmatrix_range_out; Wmatrix_rangerate_out];
 
 % Cv matrix
 [n_sigma d2] = size(sigma_obs);

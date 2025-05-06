@@ -23,11 +23,19 @@ Nparam_EMP_FORCE_CPR = empirical_forces_cpr.parameters_number;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Accelerometer structure array
 accelerometer_data_cal_glob = orbit_model_struct.accelerometer_struct;
+acc_cal_paramestim_yn = accelerometer_data_cal_glob.param_estim_yn;
+test_acc_cal_paramestim = strcmp(acc_cal_paramestim_yn,'y');
+if test_acc_cal_paramestim == 1    
 % Accelerometer Calibration Parameters matrix
 acc_cal_param = accelerometer_data_cal_glob.cal_parameters;
 [d1, d2] = size(acc_cal_param);
 % Number of Accelerometer calbration model parameters
 Nparam_ACC_CAL = d1;
+else
+Nparam_ACC_CAL = 0;
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Empirical Forces (stochstic) Pulses / Piecewise accelerations 

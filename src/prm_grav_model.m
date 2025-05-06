@@ -128,26 +128,6 @@ sigma_shc = 0;
 test = strcmp(gravity_field_terms,'static');
 if test == 1
     [GM,ae,Cnm,Snm,sCnm,sSnm,nmax,tide_system] = gfc(gravity_model_fname, n_max_gfm, sigma_shc); 
-mission_simulation = ' '
-test_mission_simulation = strcmp(mission_simulation,'MAGIC');
-if test_mission_simulation == 1 
-    % Time Variable gravity solution 
-    timevar_gravity_model = gravity_model_fname
-    n_max_timevar = -1
-    [GM,ae,Cnm_timevar,Snm_timevar,sCnm_timevar,sSnm_timevar,nmax,tide_system] = gfc(gravity_model_fname, n_max_timevar, sigma_shc); 
-    Nmax_TVGmodel = nmax
-    % C20 SLR-like
-    C20_SLR = 5.753616245118756e-11;
-    Cnm_timevar(2+1,0+1) = C20_SLR;
-    % Background model 
-    % gravity_model_fname = 'GOCO06s_aodReduced.gfc';
-    gravity_model_fname = 'EIGEN-6C4.gfc';
-    Background_gravity_model = gravity_model_fname
-    [GM,ae,Cnm_background,Snm_background,sCnm,sSnm,nmax,tide_system] = gfc(gravity_model_fname, n_max_gfm, sigma_shc); 
-    % [GM_background,ae_background,Cnm_background,Snm_background,sCnm_background,sSnm_background,nmax_background,tide_system_background] = gfc(gravity_model_fname, n_max_gfm, sigma_shc);
-    [Cnm, Snm] = harmonics_sum(Cnm_background,Snm_background, Cnm_timevar, Snm_timevar, -1);
-    C20_final = Cnm(2+1,0+1); 
-end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -223,8 +203,6 @@ gfm_struct.tide_system = tide_system;
 
 % Gravity Field parameters estimation y/n 
 gfm_struct.gravity_solution_yn = grav_paramestim_yn;
-% TEMP 
-gfm_struct.gravity_solution_yn = 'n';
 % Set param_estim_yn to 'n' for the initial step of orbit determination only
 gfm_struct.param_estim_yn = 'n';
 gfm_struct.param_estim_degree = grav_paramestim_degree_range;

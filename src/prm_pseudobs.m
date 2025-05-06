@@ -222,7 +222,8 @@ if test_grace == 1 || test_gracefo == 1
             mjdgps = gnv1b(i,1);
             [t,D,M,Y] = MJD_inv(mjdgps);
             tgps = gnv1b(i,2);
-            [tutc,tTT] = time_scales_GPS(tgps,mjdgps);      
+            % [tutc,tTT] = time_scales_GPS(tgps,mjdgps);
+            tTT = tgps + 51.184;
             mjdTT = mjdgps + (tTT-tgps)/60/60/24;
             orbte(i,:) = [mjdTT gnv1b(i,3:5)];
             if COVPform > 0
@@ -265,16 +266,16 @@ if test_georb == 1
     [orbit_data_matrix] = read_georb_data(obsorb_fname);
     [sz1, sz2] = size(orbit_data_matrix);
     % Orbit reference frame
-    OBS_ORB_Frame = 'crs';
-    orbce = zeros(sz1,4);
+    OBS_ORB_Frame = 'trs';
+    orbte = zeros(sz1,4);
     % MJD in TT including fraction of the day
-    orbce(:,1) = orbit_data_matrix(:,1) + orbit_data_matrix(:,2) / 86400;
+    orbte(:,1) = orbit_data_matrix(:,1) + orbit_data_matrix(:,2) / 86400;
     % Orbit X coordinate
-    orbce(:,2) = orbit_data_matrix(:,3);
+    orbte(:,2) = orbit_data_matrix(:,3);
     % Orbit Y coordinate
-    orbce(:,3) = orbit_data_matrix(:,4);
+    orbte(:,3) = orbit_data_matrix(:,4);
     % Orbit Z coordinate
-    orbce(:,4) = orbit_data_matrix(:,5);    
+    orbte(:,4) = orbit_data_matrix(:,5);    
     % Covariance matrix is not provided
     COVmatrix = 0;
 end

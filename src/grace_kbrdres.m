@@ -1,4 +1,4 @@
-function [resrange,rms_resrange,resrangerate,rms_resrangerate,dresrange,dresrangerate,rms_dresrange,rms_dresrangerate] = grace_kbrdres(orbA,orbB,range,rangerate)
+function [resrange,rms_resrange,resrangerate,rms_resrangerate,dresrange,dresrangerate,rms_dresrange,rms_dresrangerate, intersat_ranging_orbits] = grace_kbrdres(orbA,orbB,range,rangerate)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -31,6 +31,8 @@ function [resrange,rms_resrange,resrangerate,rms_resrangerate,dresrange,dresrang
 % Last modified
 % 19/07/2012   computation of range-rate residuals has been revised
 %              dv array has been modified 
+% 01/05/2025  Dr. Thomas Papanikolaou
+%             Code minor modifications 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -40,8 +42,9 @@ function [resrange,rms_resrange,resrangerate,rms_resrangerate,dresrange,dresrang
 %[dorb,rms_orb] = compstat(orbA,orbB);
 
 % Satellites distance via orbit differences XYZ
-[sz1 sz2] = size(dorb);
-dr = zeros(sz1,2);
+[sz1, sz2] = size(dorb);
+dr = zeros(sz1,2); 
+dv = zeros(sz1,2);
 for i = 1 : sz1
     dr(i,:) = [dorb(i,1) sqrt(dorb(i,2)^2 + dorb(i,3)^2 + dorb(i,4)^2)];
     rab_vec = [dorb(i,2) dorb(i,3) dorb(i,4)]';
@@ -50,10 +53,17 @@ for i = 1 : sz1
     eab_vec = (1 / rab_magn) * rab_vec;
     vab_vec = [dorb(i,5) dorb(i,6) dorb(i,7)]';
     % range-rate
-    %rangerate_orbits = vab_vec' * eab_vec;
+    % rangerate_orbits = vab_vec' * eab_vec;
     dv(i,:) = [ dorb(i,1)  (vab_vec' * eab_vec) ];
 end
 clear sz1 sz2 i
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Inter-satellite ranging computed based on orbits :: intersat_ranging_orbits
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+intersat_ranging_orbits.range       = dr;
+intersat_ranging_orbits.rangerate   = dv;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -70,6 +80,8 @@ clear sz1 sz2 i
 % dResidual = residual(i) - residual(i-1)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [sz1 sz2] = size(range_common);
+% dresrange = zeros(sz1-1,2);
+% dresrangerate = zeros(sz1-1,2);
 j = 1;
 for i = 1 : sz1
     if i > 1

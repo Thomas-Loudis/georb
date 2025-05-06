@@ -98,10 +98,6 @@ ic_data_satellite2 = ic_data_matrix(2).ic_data;
 [ic_n, ic_m] = size(ic_data_satellite1);
 % IC loop start
 for ic_i = 1 : ic_n
-    write_data = 1;
-    if COMBESTIM_combparamestim_01 == 0
-        write_data = 1;        
-    end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % GRACE-A / GRACE-C
@@ -109,7 +105,7 @@ for ic_i = 1 : ic_n
     % Current IC data
     ic_data_object_i = ic_data_satellite1(ic_i,:);  
     % Orbit configuration structure
-    [orbit_config_struct_GRACE1] = write_config2struct(main_config_fname, orbit_model_filename, ic_data_object_i, src_version); 
+    [orbit_config_struct_GRACE1] = write_config2struct(main_config_fname, orbit_model_filename, ic_data_object_i, src_version);    
     % Orbit Model 
     [orbit_model_struct] = orbit_model (orbit_config_struct_GRACE1,orbit_model_struct);
     % Orbit Data reading and preprocessing per satellite per date
@@ -133,8 +129,14 @@ for ic_i = 1 : ic_n
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % POD (step 1 :: individually; non-combined estimation)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+write_data = 0;
 [grace_pod_struct, grace1_pod, grace2_pod, intersat_pod, out_dir_name] = grace_pod(orbit_model_matrix_GRACE1, orbit_model_matrix_GRACE2, intersat_obs_flag, write_data);
 grace_pod_struct_step1 = grace_pod_struct;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Write computed GRACE data to directory   
+neq_flag = 0;
+[OUT_fname_mission_mjd,OUT_data_foldername_G1,OUT_data_foldername_G2, grace_pod_struct] = grace_writedata(grace_pod_struct, intersat_obs_flag, neq_flag);
+out_dir_name = OUT_fname_mission_mjd;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -201,9 +203,6 @@ Xmatrix_flag = -1;
 % GRACE Partials / orbit propagation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 write_data = 0;
-% if COMBESTIM_Nestim_comb < 1
-% write_data = 1;
-% end
 [grace_pod_struct, grace1_pod, grace2_pod, intersat_pod, out_dir_name] = grace_pod(orbit_model_matrix_GRACE1, orbit_model_matrix_GRACE2, intersat_obs_flag, write_data); 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -266,20 +265,17 @@ Xmatrix_flag = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% OUT_foldername_ESTIM = sprintf('%s%d','neq_matrices_', i_iter_estim);
-% [status, message, messageid] = mkdir(OUT_foldername_ESTIM);
-% [status,message,messageid] = movefile('*.est',OUT_foldername_ESTIM);
-% [status,message,messageid] = movefile('*.gfc',OUT_foldername_ESTIM);
-% [status,message,messageid] = movefile('*.neq',OUT_foldername_ESTIM);
+OUT_foldername_ESTIM = sprintf('%s%d','neq_matrices_', i_iter_estim);
+[status, message, messageid] = mkdir(OUT_foldername_ESTIM);
+[status,message,messageid] = movefile('*.est',OUT_foldername_ESTIM);
+[status,message,messageid] = movefile('*.gfc',OUT_foldername_ESTIM);
+[status,message,messageid] = movefile('*.neq',OUT_foldername_ESTIM);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % GRACE orbit propagation and partials
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 write_data = 0;
-% if COMBESTIM_Nestim_comb < 1
-% write_data = 1;
-% end
 [grace_pod_struct, grace1_pod, grace2_pod, intersat_pod, out_dir_name] = grace_pod(orbit_model_matrix_GRACE1, orbit_model_matrix_GRACE2, intersat_obs_flag, write_data);  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -301,14 +297,13 @@ grace_pod_struct.normal_equations_umatrix = NEQ_u;
 grace_pod_struct.normal_equations_Nmatrix_reduced = NEQ_N_reduced;
 grace_pod_struct.normal_equations_umatrix_reduced = NEQ_u_reduced;
 
-% Write computed GRACE data to directory in georb format  
-[OUT_fname_mission_mjd,OUT_data_foldername_G1,OUT_data_foldername_G2, grace_pod_struct] = grace_writedata(grace_pod_struct, intersat_obs_flag);
-
+% Write computed GRACE data to directory in georb format
+neq_flag = 1;
+[OUT_fname_mission_mjd,OUT_data_foldername_G1,OUT_data_foldername_G2, grace_pod_struct] = grace_writedata(grace_pod_struct, intersat_obs_flag, neq_flag);
 if COMBESTIM_combparamestim_01 == 1
 [status,message,messageid] = movefile(POD_apriori_orbits_folder,OUT_fname_mission_mjd);
 [status,message,messageid] = movefile('neq_matrices_*',OUT_fname_mission_mjd);
 end
-
 out_dir_name = OUT_fname_mission_mjd;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

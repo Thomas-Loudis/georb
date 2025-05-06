@@ -119,12 +119,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 test_ic_apriori = strcmp(ic_state_vector_apriori,'ic');
 if test_ic_apriori == 1
-% % IC parameters line
-% param_keyword = 'IC_parameters';
-% [param_value, param_line] = read_param_cfg(orbit_config_fname,param_keyword);
-% IC_apriori_rowmatrix = str2num(param_line);
-% IC_apriori_vecmatrix = IC_apriori_rowmatrix;
-
 % IC apriori via orbit_model structure array
 IC_apriori = orbit_model_struct.IC_CRF ;  %  IC_apriori = [IC_MJD IC_parameters];
 Xmatrix = IC_apriori(1,2:end)'; % Transpose IC_apriori and exclude MJD time element

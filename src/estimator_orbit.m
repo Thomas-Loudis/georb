@@ -1,4 +1,4 @@
-function [Xmatrix,Xmatrix_alt, bmatrix, Amatrix, Cx, Cv, NEQn, NEQu] = estimator_orbit (orbref,veqZarray,veqParray,orbobs,sigma_obs,obstype)
+function [Xmatrix, Xmatrix_alt, bmatrix, Amatrix_out, Cx, Cv, NEQn, NEQu] = estimator_orbit (orbref,veqZarray,veqParray,orbobs,sigma_obs,obstype)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -51,7 +51,7 @@ for iref = 1 : sz3
         % Common Epochs
         if abs(tiref - tiobs) < 10^-8
             Nepochs = Nepochs + 1;
-            ObsEpochs(Nepochs,1) = orbref(iref,1);
+            % ObsEpochs(Nepochs,1) = orbref(iref,1);
             % obstype  :  1/2  [r/v]
             obstype = 1;
             if obstype == 1
@@ -71,8 +71,10 @@ for iref = 1 : sz3
             Amatrix((Nepochs-1)*Nobsset+1 : Nepochs*Nobsset,:) = Amatrix_ti;
             Amatrix_time((Nepochs-1)*Nobsset+1 : Nepochs*Nobsset,:) = [timearray Amatrix_ti];
             % veqParray
+            if size(veqParray,1) > 1 
             AmatrixP_ti = veqParray( (iref-1)*6+1 : (iref-1)*6+Nobsset , 2:end);
             AmatrixP((Nepochs-1)*Nobsset+1 : Nepochs*Nobsset,:) = AmatrixP_ti;
+            end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             iobs0 = iobs + 1';
             clear tiref tiobs            
@@ -85,51 +87,35 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Design Matrix: Final Amatrix 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if size(veqParray,1) > 1 
 Amatrix_ZP = [Amatrix AmatrixP];
+else
+Amatrix_ZP = Amatrix;
+end
 [d1,d2] = size(Amatrix_ZP);
 Nobs = d1;
 Nparam = d2;
-Amatrix_all   = Amatrix_ZP;
-Wmatrix_final = Wmatrix;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-bmatrix = Wmatrix_final;
-Amatrix = Amatrix_all;
+bmatrix = Wmatrix;
+Amatrix_out = Amatrix_ZP;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parameters Estimation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Least-Squares solution
-[Xmatrix, NEQn, NEQu] = estimator_neq_sol(Amatrix, bmatrix, sigma_obs);
+% Weighted Least-Squares method solution
+[Xmatrix, NEQn, NEQu, error_matrix, sigma0, Cx, Cv] = estimator_neq_sol(Amatrix_out, bmatrix, sigma_obs);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Errors matrix
-error_matrix = bmatrix - Amatrix * Xmatrix;
+% error_matrix = bmatrix - Amatrix_out * Xmatrix;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Covariance matrix of estimated parameters
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Number of Observations
-[dim1 dim2] = size(bmatrix);
-n_obs = dim1;
 
-% Number of Parameters 
-[dim1 dim2] = size(Xmatrix);
-m_param = dim1;
-
-% Reference Variance
-sigma = sqrt(error_matrix' * error_matrix / (n_obs - m_param) );
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Covariance matrix of parameters
-% Cx = sigma^2 * inv(NEQn);
-
-% Covariance matrix of errors
-% Cv = sigma^2 * (inv(P_matrix) - Amatrix * inv(NEQn) * Amatrix');
-% Cv = sigma^2 * ( - Amatrix * inv(NEQn) * Amatrix');
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Cx = 0;
-Cv = 0;
 
 Xmatrix_alt = Xmatrix;

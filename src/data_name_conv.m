@@ -318,3 +318,19 @@ if test_keyword == 1
     data_filename = sprintf('%s%1c%d%1c%s%s', satellite_name_data,'_',fix(MJD_day),'_','orbit_trf',format_ext);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% GEORB: Intersatellite Ranging Data
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% GRACE-C_59412_orbit_crf.orb
+data_keyword = 'GEORB_intersat_ranging';
+test_keyword = strcmp(datalevel_name,data_keyword);
+if test_keyword == 1
+    satellite_name_data = orbiting_object_name;
+    dataformat_suffix = '.orb';
+    format_ext  = dataformat_suffix;
+    % Data file name considering format name conventions
+    % data_filename = sprintf('%s%1c%d%1c%s%s', satellite_name_data,'_',fix(MJD_day),'_','intersatellite_ranging',format_ext);
+    data_filename = sprintf('%s%1c%d%1c%s%s', mission_name,'_',fix(MJD_day),'_','intersatellite_ranging',format_ext);
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

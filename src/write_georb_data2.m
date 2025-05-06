@@ -146,6 +146,12 @@ test_data_functional = strcmp(data_functional,data_functional_keyword);
 if test_data_functional == 1
 data_functional_filename = '_KBR_range_residuals';
 end
+
+data_functional_keyword = sscanf(data_functional,'%s%*');
+test_data_functional = strcmp(data_functional_keyword,'Intersatellite');
+if test_data_functional == 1
+data_functional_filename = '_intersatellite_ranging';
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -178,6 +184,18 @@ test_data_functional = strcmp(data_functional_keyword,'intersat');
 if test_data_functional == 1
 mission_01 = 1;
 end
+
+data_functional_keyword = sscanf(data_functional,'%s%*');
+test_data_functional = strcmp(data_functional_keyword,'Intersatellite');
+if test_data_functional == 1
+mission_01 = 1;
+end
+data_functional_keyword = sscanf(data_functional,'%s%*');
+test_data_functional = strcmp(data_functional_keyword,'intersatellite');
+if test_data_functional == 1
+mission_01 = 1;
+end
+
 data_functional_keyword = sscanf(data_functional,'%3c%*');
 test_data_functional = strcmp(data_functional_keyword,'NEQ');
 if test_data_functional == 1

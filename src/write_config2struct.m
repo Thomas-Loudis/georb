@@ -89,14 +89,6 @@ i_struct = i_struct + 1;
 config_struct(i_struct).names  = param_keyword;
 config_struct(i_struct).values = param_line;
 orbit_model_filename = param_value;
-
-% % Satellite Data configuration file
-% param_keyword = 'sat_data_filename';
-% [param_value,param_line] = read_param_file(georb_config_fname,param_keyword);
-% i_struct = i_struct + 1;
-% config_struct(i_struct).names  = param_keyword;
-% config_struct(i_struct).values = param_line;
-% sat_data_filename = param_value;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1052,8 +1044,8 @@ datalevel_name  = 'GNV1B';
 end
 test_mission_grace   = strcmp(mission_name,'GRACE_mission');
 if test_mission_grace == 1
-    % datarelease_ver = '02';
-    datarelease_ver = acc_data_release;
+    datarelease_ver = '02';
+    % datarelease_ver = acc_data_release;
 end
 
 obs_keyword = 'georb';
@@ -1100,21 +1092,31 @@ config_struct(i_struct).values = param_value;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Inter-Satellite Ranging Observations :: GRACE & GRACE-Follow On missions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Case of Simulated Ranging Data (in georb format)
+param_keyword = 'intersat_ranging_data_simul';
+[intersat_ranging_data_simul] = read_param_file(orbit_model_filename,param_keyword);
+test_intersat_ranging_georb = strcmp(intersat_ranging_data_simul,'y');
+
 test_georb_mode = strcmp(georb_mode,'orbit_mission');
 if test_georb_mode == 1
     % Satellite missions cases :: GRACE missions
     test_mission_grace   = strcmp(mission_name,'GRACE_mission');
     test_mission_gracefo = strcmp(mission_name,'GRACE_FO_mission');
     if test_mission_grace == 1 
-    % datarelease_ver = '03';
-    datarelease_ver = sca_data_release;
+    datarelease_ver = '03';
+    % datarelease_ver = sca_data_release;
     end
 if test_mission_grace == 1 || test_mission_gracefo == 1
 % Satellite Data :: KBR data
 param_keyword = 'KBR_data';
 %param_value = sscanf(satdata_line_mjd,'%*s%*s%*s%*s%*s%*s%*s%*s%*s %s %*');
+
+if test_intersat_ranging_georb == 0
 datalevel_name  = 'KBR1B';
 % datarelease_ver = '04';
+else 
+datalevel_name = 'GEORB_intersat_ranging';
+end    
 [data_filename_conv] = data_name_conv(mission_name, orbiting_object_name, datalevel_name, datarelease_ver, MJD_day);
 param_value = data_filename_conv;
 i_struct = i_struct + 1;
@@ -1125,14 +1127,19 @@ if test_mission_gracefo == 1
 % Satellite Data :: LRI data
 param_keyword = 'LRI_data';
 %param_value = sscanf(satdata_line_mjd,'%*s%*s%*s%*s%*s%*s%*s%*s%*s%*s %s %*');
+if test_intersat_ranging_georb == 0
 datalevel_name  = 'LRI1B';
 % datarelease_ver = '04';
+else
+datalevel_name = 'GEORB_intersat_ranging';
+end        
 [data_filename_conv] = data_name_conv(mission_name, orbiting_object_name, datalevel_name, datarelease_ver, MJD_day);
 param_value = data_filename_conv;
 i_struct = i_struct + 1;
 config_struct(i_struct).names  = param_keyword;
 config_struct(i_struct).values = param_value;
 end
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1159,6 +1166,12 @@ config_struct(i_struct).names  = param_keyword;
 config_struct(i_struct).values = param_value;
 
 param_keyword = 'LRI_obs_estim';
+[param_value] = read_param_file(orbit_model_filename,param_keyword);
+i_struct = i_struct + 1;
+config_struct(i_struct).names  = param_keyword;
+config_struct(i_struct).values = param_value;
+
+param_keyword = 'intersat_ranging_data_simul';
 [param_value] = read_param_file(orbit_model_filename,param_keyword);
 i_struct = i_struct + 1;
 config_struct(i_struct).names  = param_keyword;
@@ -1216,11 +1229,10 @@ datalevel_name  = 'GNV1B';
 % datarelease_ver = '04';
 test_mission_grace   = strcmp(mission_name,'GRACE_mission');
 if test_mission_grace == 1
-    % datarelease_ver = '02';
-    datarelease_ver = acc_data_release;
+    datarelease_ver = '02';
+    % datarelease_ver = acc_data_release;
 end
 end
-
 
 % GEORB orbit data
 extorb_keyword = 'georb';

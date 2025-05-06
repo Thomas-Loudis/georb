@@ -12,23 +12,11 @@ function [orbit_model_struct] = orbit_model_init (main_config_fname,ic_data_matr
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% GEORB main settings :: Read main config file
+% Read main configuration file
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% GEORB mode 
-param_keyword = 'georb_mode';
-[georb_mode] = read_param_file(main_config_fname,param_keyword);
-
-% Name ID of "satellite mission", "satellite" or "orbiting object"  
-param_keyword = 'orbiting_object_name';
-[orbiting_object_name] = read_param_file(main_config_fname,param_keyword);
-
-% Orbit modelling configuration files
+% Orbit modelling configuration file
 param_keyword = 'orb_config_filename';
 [orbit_model_filename] = read_param_file(main_config_fname,param_keyword);
-
-% IC configuration file
-param_keyword = 'ic_config_filename';
-[ic_config_filename] = read_param_file(main_config_fname,param_keyword);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

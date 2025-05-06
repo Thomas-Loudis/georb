@@ -292,11 +292,15 @@ NEQ_N = NEQ_N_orbit1 + NEQ_N_orbit2 + NEQ_N_rangerate;
 NEQ_u = NEQ_u_orbit1 + NEQ_u_orbit2 + NEQ_u_rangerate;
 end
 
-% Weighted Least Squares method solution
+[NEQn_d1 NEQn_d2] = size(NEQ_N);
+[NEQu_d1 NEQu_d2] = size(NEQ_u);
+
+% Least Squares solution
 tol2 = 30;
 Xmatrix3 = lsqminnorm(NEQ_N, NEQ_u, tol2);
 Xmatrix = Xmatrix3;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Reduced NEQ matrices :: pre-elimination of orbit arc-related parameters
@@ -306,6 +310,7 @@ n_gravparam = Nparam_common;
 [Xmatrix_NEQ_reduced, NEQ_N_reduced, NEQ_u_reduced] = neq_reduced(NEQ_N, NEQ_u, n_orbparam, n_gravparam);
 Xmatrix_GRAV_NEQ_reduced = Xmatrix_NEQ_reduced;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Orbit and Gravity Field parameters estimated corrections

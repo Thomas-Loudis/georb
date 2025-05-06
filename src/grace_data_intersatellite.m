@@ -9,15 +9,20 @@ function [intersat_struct] = grace_data_intersatellite (cfg_fname, intersat_type
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Thomas Loudis Papanikolaou                                  27 April 2023
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Last modified
+% 03/05/2025  Thomas Loudis Papanikolaou
+%             Code minor modifications
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% GRACE Intersatellite ranging data :: KBR & LRI data 
+% Intersatellite ranging data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+param_keyword = 'intersat_ranging_data_simul';
+[param_value] = read_param_cfg(cfg_fname,param_keyword);
+intersat_ranging_data_simul = param_value;
+test_intersat_ranging_data_simul = strcmp(intersat_ranging_data_simul,'y');
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% KBR/LRI reading and preprocessing
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % % Case: KBR
 % test_intersat_obs_type = strcmp(intersat_obs,'intersat_KBR');
 % if test_intersat_obs_type == 1
@@ -33,17 +38,45 @@ function [intersat_struct] = grace_data_intersatellite (cfg_fname, intersat_type
 % intersat_type = KBR_data;
 % param_keyword = 'KBR_data';
 
+% KBR or LRI data file name (GNV format) or Simulated Ranging Data file name (georb format)
 param_keyword = intersat_type;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+[param_value] = read_param_cfg(cfg_fname,param_keyword);
+intersat_ranging_data_filename = param_value;
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% KBR or LRI data file name
-[param_value] = read_param_cfg(cfg_fname,param_keyword);
-kbr_data_fname = param_value;
+% Simulated Intersatellite Ranging data (in georb format)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if test_intersat_ranging_data_simul == 1
+    % GEORB Intersatellite ranging data
+    [intersat_data_matrix, header_data_matrix] = read_georb_data(intersat_ranging_data_filename);
+
+    [sz1, sz2] = size(intersat_data_matrix);    
+    intersat_ranging = zeros(sz1,4);
+
+    % MJD in TT including fraction of the day
+    intersat_ranging(:,1) = intersat_data_matrix(:,1) + intersat_data_matrix(:,2) / 86400;
+    % Range
+    intersat_ranging(:,2) = intersat_data_matrix(:,3);
+    % Range-Rate
+    intersat_ranging(:,3) = intersat_data_matrix(:,4);
+    % Range-acceleration 
+    intersat_ranging(:,4) = intersat_data_matrix(:,5);
+
+    biasrange = [intersat_ranging(:,1) intersat_ranging(:,2)];
+    rangerate = [intersat_ranging(:,1) intersat_ranging(:,3)];
+    rangeaccl = [intersat_ranging(:,1) intersat_ranging(:,4)];
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+else
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% GRACE missions KBR/LRI reading and preprocessing
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+kbr_data_fname = intersat_ranging_data_filename;
 
 % Read intersatellite ranging data (corrections are added during reading via function grace_kbr1b.m)
 [kbr1b,biasrange,rangerate,rangeaccl] = grace_kbr1b(kbr_data_fname);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Format modification :: remove parameter t(TT) sec since 0h (2nd column)
@@ -67,6 +100,8 @@ for i = 1 : sz1
     rangeaccl(i,1) = mjdTT;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end    
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Structure array

@@ -1,4 +1,4 @@
-function [OUT_fname_mission_mjd,OUT_data_foldername_G1,OUT_data_foldername_G2, grace_pod_struct] = grace_writedata(grace_pod_struct, intersat_obs_flag)
+function [OUT_fname_mission_mjd,OUT_data_foldername_G1,OUT_data_foldername_G2, grace_pod_struct] = grace_writedata(grace_pod_struct, intersat_obs_flag, neq_flag)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Function: orbit_mission_grace
@@ -40,6 +40,7 @@ orbit_matrices_G2           = grace_pod_struct.grace2_pod.orbit_matrices;
 
 % Inter-Satellite Ranging data matrices
 intersat_pod = grace_pod_struct.intersat_pod;
+intersat_ranging_functionals = grace_pod_struct.intersat_ranging_functionals;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -89,8 +90,6 @@ if test_intersat_obs_flag == 1
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-orbit_config_struct_GRACE1 = orbit_config_G1;
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Write Orbit Observation residuals
@@ -132,40 +131,52 @@ grace_pod_struct.grace2_pod.orbit_matrices.observation_residuals = OBS_residuals
 [OUT_data_foldername_G2] = write_georb_data_products(orbit_config_G2, orbit_model_matrix_GRACE2, orbit_matrices_G2); 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Write Intersatellite Observation residuals
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Mission Directory: GRACE folder for output files/folders of orbits and instersatellite-ranging data analysis
+% Mission Directory: GRACE folder for output files/folders of orbits and instersatellite-ranging data results
 [OUT_fname_G1, OUT_fname_mission_mjd] = write_results_dir(orbit_config_G1,orbit_model_matrix_GRACE1);
 [OUT_fname_G2, OUT_fname_mission_mjd] = write_results_dir(orbit_config_G2,orbit_model_matrix_GRACE2);
 [status, message, messageid] = rmdir(OUT_fname_mission_mjd,'s');
 [status, message, messageid] = mkdir(OUT_fname_mission_mjd);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Write Intersatellite Observation residuals
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if LRI_obs_analysis_01 == 1
 data_matrix = LRI_rangerate_residuals;
 data_functional = 'LRI range-rate residuals';
 reference_frame = 'ICRF';
-[georb_data_name] = write_georb_data2(orbit_config_struct_GRACE1, data_matrix, data_functional, reference_frame);
+[georb_data_name] = write_georb_data2(orbit_config_G1, data_matrix, data_functional, reference_frame);
 [status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
 
 data_matrix = LRI_range_residuals;
 data_functional = 'LRI range residuals';
 reference_frame = 'ICRF';
-[georb_data_name] = write_georb_data2(orbit_config_struct_GRACE1, data_matrix, data_functional, reference_frame);
+[georb_data_name] = write_georb_data2(orbit_config_G1, data_matrix, data_functional, reference_frame);
 [status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
 end
 
 data_matrix = KBR_rangerate_residuals;
 data_functional = 'KBR range-rate residuals';
 reference_frame = 'ICRF';
-[georb_data_name] = write_georb_data2(orbit_config_struct_GRACE1, data_matrix, data_functional, reference_frame);
+[georb_data_name] = write_georb_data2(orbit_config_G1, data_matrix, data_functional, reference_frame);
 [status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
 
 data_matrix = KBR_range_residuals;
 data_functional = 'KBR range residuals';
 reference_frame = 'ICRF';
-[georb_data_name] = write_georb_data2(orbit_config_struct_GRACE1, data_matrix, data_functional, reference_frame);
+[georb_data_name] = write_georb_data2(orbit_config_G1, data_matrix, data_functional, reference_frame);
+[status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Write Inter-Satellite Ranging functionals
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+intersat_ranging_functionals = intersat_ranging_functionals.rangingdata ;
+data_matrix = intersat_ranging_functionals;
+data_functional = 'Intersatellite ranging functionals';
+reference_frame = 'ICRF';
+[georb_data_name] = write_georb_data2(orbit_config_G1, data_matrix, data_functional, reference_frame);
 [status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -189,6 +200,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Normal Equations matrices
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if neq_flag == 1
 % Normal Equations matrices
 NEQ_N = grace_pod_struct.normal_equations_Nmatrix;
 NEQ_u = grace_pod_struct.normal_equations_umatrix;
@@ -198,27 +210,27 @@ NEQ_u_reduced = grace_pod_struct.normal_equations_umatrix_reduced;
 data_matrix = NEQ_N;
 data_functional = 'NEQ_N_matrix';
 reference_frame = 'ICRF';
-[georb_data_name] = write_georb_data2(orbit_config_struct_GRACE1, data_matrix, data_functional, reference_frame);
+[georb_data_name] = write_georb_data2(orbit_config_G1, data_matrix, data_functional, reference_frame);
 [status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
 
 data_matrix = NEQ_u;
 data_functional = 'NEQ_u_matrix';
 reference_frame = 'ICRF';
-[georb_data_name] = write_georb_data2(orbit_config_struct_GRACE1, data_matrix, data_functional, reference_frame);
+[georb_data_name] = write_georb_data2(orbit_config_G1, data_matrix, data_functional, reference_frame);
 [status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
 
-if 1 < 0
+
 % NEQ_N_reduced, NEQ_u_reduced
 data_matrix = NEQ_N_reduced;
 data_functional = 'NEQ_N_reduced_matrix';
 reference_frame = 'ICRF';
-[georb_data_name] = write_georb_data2(orbit_config_struct_GRACE1, data_matrix, data_functional, reference_frame);
+[georb_data_name] = write_georb_data2(orbit_config_G1, data_matrix, data_functional, reference_frame);
 [status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
 
 data_matrix = NEQ_u_reduced;
 data_functional = 'NEQ_u_reduced_matrix';
 reference_frame = 'ICRF';
-[georb_data_name] = write_georb_data2(orbit_config_struct_GRACE1, data_matrix, data_functional, reference_frame);
+[georb_data_name] = write_georb_data2(orbit_config_G1, data_matrix, data_functional, reference_frame);
 [status,message,messageid] = movefile(georb_data_name, OUT_fname_mission_mjd);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

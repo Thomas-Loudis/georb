@@ -47,7 +47,7 @@ param_value = grav_field_paramestim_yn;
 [config_struct] = write_configstruct_cor(config_struct, param_keyword, param_value);
 
 % Update orbit model structure array
-[orbit_model_struct] = orbit_model_gravity (config_struct,orbit_model_struct);
+[orbit_model_struct] = orbit_model_gravity (grav_field_paramestim_yn,orbit_model_struct);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

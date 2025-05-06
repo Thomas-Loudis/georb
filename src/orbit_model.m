@@ -67,8 +67,6 @@ orbit_model_struct.IAU_PN_XYs_matrix = IAU_PN_matrix;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Gravity model data file (spherical harmonic coefficients)
 [GM,ae,Cnm,Snm,sCnm,sSnm, n_max_eqm, m_max_eqm, n_max_veq, m_max_veq, tide_system, gfm_struct] = prm_grav_model(cfg_fname);
-gfm_struct_glob = gfm_struct;
-% GM_glob = GM;
 N_param_GRAV = gfm_struct.parameters_number;
 orbit_model_struct.gravity_field = gfm_struct;
 orbit_model_struct.GM_Earth = GM;
@@ -190,7 +188,6 @@ orbit_model_struct.relativistic_effects = relativistic_effects_struct;
 % Empirical Forces based on Cycle-Per-Revolution terms 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [emp_cpr_struct] = prm_empirical_cpr(cfg_fname);
-% emp_cpr_glob = emp_cpr_struct;
 emp_cpr_effect_01 = emp_cpr_struct.effect_01;
 % Number of parameters of empirical forces
 Nparam_EMP_FORCE_CPR = emp_cpr_struct.parameters_number;
@@ -216,14 +213,12 @@ else
     accelerometer_struct.param_estim_yn = 'n'; 
     Nparam_ACC_CAL = 0;
 end
-accelerometer_data_cal_glob = accelerometer_struct;
 orbit_model_struct.accelerometer_struct = accelerometer_struct;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Empirical Accelerations :: Pulses or Piecewise constant accelerations
 [pulses_accel_struct] = prm_pulses_stoch(cfg_fname);
-pulses_stoch_accel_glob = pulses_accel_struct;
 N_param_pulses_stoch = pulses_accel_struct.parameters_number;
 orbit_model_struct.empirical_forces_pulses = pulses_accel_struct;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

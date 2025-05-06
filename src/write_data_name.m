@@ -48,9 +48,9 @@ param_keyword = 'orbiting_object_name';
 if mission_01 == 1
 % Case of satellite mission
     if test_grace == 1
-        georb_dataformat_name = sprintf('%s%s%d', 'grace','_',fix(IC_MJDo));
+        georb_dataformat_name = sprintf('%s%s%d', 'GRACE','_',fix(IC_MJDo));
     elseif test_gracefo == 1
-        georb_dataformat_name = sprintf('%s%s%d', 'grace-fo','_',fix(IC_MJDo));
+        georb_dataformat_name = sprintf('%s%s%d', 'GRACE-FO','_',fix(IC_MJDo));
     end
 
 else

@@ -1,6 +1,7 @@
 function [biasrange, rangerate, rangeaccl, KBRbias, nonbiasrange, ...
           resrange, resrangerate, dresrange, dresrangerate, ...
-          rms_resrange, rms_resrangerate, rms_dresrange, rms_dresrangerate]...
+          rms_resrange, rms_resrangerate, rms_dresrange, rms_dresrangerate, ... 
+          intersat_ranging_functionals]...
           = grace_kbr_analysis(orbcA,orbcB,intersat_obs, orbit_model_struct)
 
 
@@ -54,13 +55,19 @@ rangeaccl = intersat_struct.rangeacceleration;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % KBR bias estimation
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [KBRbias,nonbiasrange,resrangeGNV1B,rms_resrangeGNV1B,resrangerateGNV1B,rms_resrangerateGNV1B] = grace_kbrbias(orbcA,orbcB,biasrange,rangerate);
 KBRbias_orbc  = KBRbias;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % KBR residuals
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [resrange,rms_resrange,resrangerate,rms_resrangerate,dresrange,dresrangerate,rms_dresrange,rms_dresrangerate] = grace_kbrdres(orbcA,orbcB,nonbiasrange,rangerate);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Intersatellite Ranging functionals computed based on provided orbits 
+[intersat_range, intersat_rangerate, intersat_ranging_functionals] = intersat_ranging(orbcA, orbcB);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Update orbit_model_struct
+orbit_model_struct.intersat_ranging_functionals = intersat_ranging_functionals;
