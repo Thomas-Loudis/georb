@@ -265,11 +265,11 @@ Xmatrix_flag = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-OUT_foldername_ESTIM = sprintf('%s%d','neq_matrices_', i_iter_estim);
-[status, message, messageid] = mkdir(OUT_foldername_ESTIM);
-[status,message,messageid] = movefile('*.est',OUT_foldername_ESTIM);
-[status,message,messageid] = movefile('*.gfc',OUT_foldername_ESTIM);
-[status,message,messageid] = movefile('*.neq',OUT_foldername_ESTIM);
+% OUT_foldername_ESTIM = sprintf('%s%d','neq_matrices_', i_iter_estim);
+% [status, message, messageid] = mkdir(OUT_foldername_ESTIM);
+% [status,message,messageid] = movefile('*.est',OUT_foldername_ESTIM);
+% [status,message,messageid] = movefile('*.gfc',OUT_foldername_ESTIM);
+% [status,message,messageid] = movefile('*.neq',OUT_foldername_ESTIM);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -302,7 +302,7 @@ neq_flag = 1;
 [OUT_fname_mission_mjd,OUT_data_foldername_G1,OUT_data_foldername_G2, grace_pod_struct] = grace_writedata(grace_pod_struct, intersat_obs_flag, neq_flag);
 if COMBESTIM_combparamestim_01 == 1
 [status,message,messageid] = movefile(POD_apriori_orbits_folder,OUT_fname_mission_mjd);
-[status,message,messageid] = movefile('neq_matrices_*',OUT_fname_mission_mjd);
+% [status,message,messageid] = movefile('neq_matrices_*',OUT_fname_mission_mjd);
 end
 out_dir_name = OUT_fname_mission_mjd;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
