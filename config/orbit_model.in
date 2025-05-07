@@ -110,7 +110,8 @@ veq_gravity_model_order         30
 ---------------------------------------------------------------------------
 % Gravity Field Solution  |  Status: Not fully supported by current version
 ---------------------------------------------------------------------------
-% Gravity solution is supported by seting the following variable 'grav_field_paramestim_yn' to 'y' 
+% Gravity Field Solution is based on the Variational Equations method 
+% Gravity solution is configured by seting variable 'grav_field_paramestim_yn' to 'y' 
 % Data Output provides the Normal Equations' reduced matrices w.r.t. gravity field parameters (harmonics coefficients)
 
 % Gravity Field parameters estimation 
