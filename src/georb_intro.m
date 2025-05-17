@@ -15,7 +15,7 @@ function georb_intro(main_config_fname)
 % Dr. Thomas Loudis Papanikolaou                            21 January 2025
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-src_version = 'v.1.9.3.9.5';
+src_version = 'v.1.9.4.6';
 fprintf('%s%s \n\n','GEORB ',src_version);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

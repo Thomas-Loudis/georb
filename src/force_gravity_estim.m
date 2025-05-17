@@ -1,4 +1,4 @@
-function [partials_p] = force_gravity_estim(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config, gfm_struct_glob)
+function [partials_p, accel_vec] = force_gravity_estim(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config, gfm_struct_glob, legendre_functions_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -72,15 +72,16 @@ end
 % Gravity Field parameters estimation y/n 
 grav_paramestim_yn = struct_array.param_estim_yn;
 test_grav_paramestim_10 = strcmp(grav_paramestim_yn,'y');
-if test_grav_paramestim_10 == 1    
-    % Cnm_paramestim = struct_array.Cnm_estim; 
-    % Snm_paramestim = struct_array.Snm_estim; 
+if test_grav_paramestim_10 == 1
+    % Gravity signal' C,S harmonics coefficients matrices to be estimated as corrections to the apriori gravity model Cnm, Snm
+    delta_Cnm = struct_array.Cnm_estim; 
+    delta_Snm = struct_array.Snm_estim; 
 
     % Gravity Field parameters to be estimated :: Maximum degree of coefficients
-    Nrange = struct_array.param_estim_degree;
+    Nrange          = struct_array.param_estim_degree;
     Nparam_grav_min = Nrange(1,1);
     Nparam_grav_max = Nrange(1,2);
-    Nparam_grav = struct_array.parameters_number;
+    Nparam_grav     = struct_array.parameters_number;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -92,7 +93,9 @@ if test_grav_paramestim_10 == 1
         partials_p_coef = zeros(3,Nparam_grav);       
     elseif VEQ_mode_test == 1        
         % Partials w.r.t. gravity field parameters
-        [partials_p_coef, partials_c, partials_s] = potential_partials_coef(rITRS,Nparam_grav_max,Nparam_grav_min,GM_Earth,radius_Earth,gfm_struct_glob);        
+        [partials_p_coef_TRS, partials_c_TRS, partials_s_TRS] = potential_partials_coef(rITRS,Nparam_grav_max,Nparam_grav_min,GM_Earth,radius_Earth,gfm_struct_glob);        
+        % Transformation from Terrestrial (ITRS) to Celestial (ICRS) Reference frame
+        partials_p_coef = eopmatrix * partials_p_coef_TRS;        
     end    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 else
@@ -101,3 +104,40 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 partials_p = partials_p_coef;
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Acceleration of the (time variable) gravity signal (estimable) 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if test_grav_paramestim_10 == 1    
+    % Spherical Harmonic Synthesis start degree
+    degree_min = Nparam_grav_min;
+    % Degree and Order truncated values
+    degree_trunc = Nparam_grav_max;
+    order_trunc  = Nparam_grav_max;
+
+    % Acceleration in ITRS
+    [partials_rpl, partials_xyz] = potential_partials_1st(rITRS,degree_trunc,order_trunc,GM_Earth,radius_Earth, delta_Cnm, delta_Snm, legendre_functions_struct, degree_min);
+    ax = partials_xyz(1,1);
+    ay = partials_xyz(2,1);
+    az = partials_xyz(3,1);
+
+    % Transformation of acceleration from ITRS to the GCRS
+    aGCRS = eopmatrix * [ax; ay; az];
+    a_grav_x = aGCRS(1,1);
+    a_grav_y = aGCRS(2,1);
+    a_grav_z = aGCRS(3,1);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+else
+    a_grav_x = 0;
+    a_grav_y = 0;
+    a_grav_z = 0;
+    % Uearth = zeros(3,3);
+end
+accel_grav_signal =  [a_grav_x; a_grav_y; a_grav_z];
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+accel_vec = accel_grav_signal;
+% partials_r = Uearth;
+
