@@ -51,7 +51,7 @@ for i1_pulse = 1 : N_pulses_epochs
     % Seconds since start of the day
     pulses_matrix_init(i1_pulse, 2) = sec_00;    
     for i2_pulse = 1 : N_pulses_axes
-        pulses_matrix_init(i1_pulse,i2_pulse+2) = 1.0D-12;
+        pulses_matrix_init(i1_pulse,i2_pulse+2) = 1.0D-17; % 1.0D-12;
     end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

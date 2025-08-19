@@ -26,6 +26,7 @@ function [dC_matrix_aposteriori, dS_matrix_aposteriori, Xaposteriori_P] = gravit
 [Nparam_C, k] = size(C_degree_order);
 [Nparam_S, k] = size(S_degree_order);
 degree_max = C_degree_order(Nparam_C,1);
+Function_gravity_param_cor_degree_max = degree_max
 
 dC_estim = zeros(degree_max+1, degree_max+1);
 dS_estim = zeros(degree_max+1, degree_max+1);
@@ -56,3 +57,15 @@ end
 
 % Aposteriori matrices of C,S corrections (time variable gravity)
 [dC_matrix_aposteriori, dS_matrix_aposteriori] = harmonics_sum(dC_matrix_apriori,dS_matrix_apriori, dC_estim,dS_estim,-1);
+
+
+save Fgravityparamcor_dC_estim.neq  dC_estim -ASCII -double
+save Fgravityparamcor_dS_estim.neq  dS_estim -ASCII -double
+
+save Fgravityparamcor_Xaposteriori_P.neq  Xaposteriori_P -ASCII -double
+
+save Fgravityparamcor_dC_matrix_apriori.neq  dC_matrix_apriori -ASCII -double
+save Fgravityparamcor_dS_matrix_apriori.neq  dS_matrix_apriori -ASCII -double
+
+save Fgravityparamcor_dC_matrix_aposteriori.neq  dC_matrix_aposteriori -ASCII -double
+save Fgravityparamcor_dS_matrix_aposteriori.neq  dS_matrix_aposteriori -ASCII -double

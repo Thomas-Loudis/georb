@@ -71,14 +71,26 @@ test_orbit_mission = strcmp(georb_mode,'orbit_mission');
 % Satellite missions cases :: 
 test_mission_grace   = strcmp(orbiting_object_name,'GRACE_mission');
 test_mission_gracefo = strcmp(orbiting_object_name,'GRACE_FO_mission');
+test_mission_GRACEC  = strcmp(orbiting_object_name,'GRACE_C_mission');
+test_mission_NGGM    = strcmp(orbiting_object_name,'NGGM_mission');
+test_mission_grav = test_mission_grace + test_mission_gracefo + test_mission_GRACEC + test_mission_NGGM;
 
-if test_orbit_mission == 1 && ( test_mission_grace == 1 || test_mission_gracefo == 1 )
+
+% Intersatellite Observations :: Laser (LRI) or K-band (KBR)
+observation_model_matrix = orbit_model_struct.observation_model_matrix;
+COMBESTIM_intersat_obs = observation_model_matrix.COMBESTIM_intersat_obs;
+
+
+% if test_orbit_mission == 1 && ( test_mission_grace == 1 || test_mission_gracefo == 1 )
+if test_orbit_mission == 1 && ( test_mission_grav > 0 )
 % KBR data reading 
 intersat_type = 'KBR_data';
 [KBR_intersat_struct] = grace_data_intersatellite (cfg_fname, intersat_type);
 
 % LRI data read
-if test_mission_gracefo == 1
+% if test_mission_gracefo == 1
+test_status_yn = strcmp(COMBESTIM_intersat_obs,'LRI');   
+if test_status_yn == 1     
 intersat_type = 'LRI_data';
 [LRI_intersat_struct] = grace_data_intersatellite (cfg_fname, intersat_type);
 else

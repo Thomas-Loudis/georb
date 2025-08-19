@@ -1,4 +1,4 @@
-function [Xmatrix, NEQ_N_reduced, NEQ_u_reduced] = neq_reduced(NEQ_N, NEQ_u, n_orbparam, n_gravparam) 
+function [Xmatrix, NEQ_N_reduced, NEQ_u_reduced, Nzz, Nzg, Ngg, u_z, u_g] = neq_reduced(NEQ_N, NEQ_u, n_orbparam, n_gravparam) 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -20,7 +20,7 @@ function [Xmatrix, NEQ_N_reduced, NEQ_u_reduced] = neq_reduced(NEQ_N, NEQ_u, n_o
 % Dr. Thomas Loudis Papanikolaou                              17 April 2025
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+ 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Reduced NEQ matrices :: pre-elimination of orbit arc-related parameters
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -32,11 +32,14 @@ Ngg = NEQ_N(1+n_orbparam:n_orbparam+n_gravparam,n_orbparam+1:n_orbparam+n_gravpa
 u_z = NEQ_u(1:n_orbparam,1);
 u_g = NEQ_u(1+n_orbparam:n_orbparam+n_gravparam,1);
 
-NEQ_N_orbelim = (Ngg - Ngz * pinv(Nzz) * Nzg);
-NEQ_u_orbelim =  u_g - Ngz * pinv(Nzz) * u_z;
+inv_mat_id = 5; 
+[Nzz_inv] = inv_mat(Nzz, inv_mat_id);
 
-tol2 = 30;
-Xmatrix_grav = lsqminnorm(NEQ_N_orbelim, NEQ_u_orbelim, tol2);
+NEQ_N_orbelim = (Ngg - Ngz * Nzz_inv * Nzg);
+NEQ_u_orbelim =  u_g - Ngz * Nzz_inv * u_z;
+
+inv_id = 6;
+[Xmatrix_grav] = inv_ls(NEQ_N_orbelim, NEQ_u_orbelim, inv_id);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 NEQ_N_reduced = NEQ_N_orbelim;

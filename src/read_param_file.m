@@ -27,6 +27,8 @@ config_mode = 1;
 
 % Orbit configuration based on file
 if config_mode == 1
+param_value = '';
+param_line = '';
 fid = fopen(config_name,'r');
 while (~feof(fid))
     lineith = fgetl(fid);    

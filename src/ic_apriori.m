@@ -109,6 +109,80 @@ if test_ic_apriori_ext == 1
 Zo_ICRF_glb(1,1)   = orbce(i_epoch_to,1);
 Zo_ICRF_glb(1,2:4) = orbce(i_epoch_to,2:4);
 Zo_ICRF_glb(1,5:7) = orbce(i_epoch_to,5:7);
+
+MJD_to_IC = Zo_ICRF_glb(1,1)
+% Zo_ICRF_glb
+
+dpint    = 4;
+mjd_int  = IC_MJDo
+% Lagrange Interpolation for computing Position vector 
+[X_int]  = interp_Lagrange(orbce(:,1),orbce(:,2),mjd_int,dpint);
+[Y_int]  = interp_Lagrange(orbce(:,1),orbce(:,3),mjd_int,dpint);
+[Z_int]  = interp_Lagrange(orbce(:,1),orbce(:,4),mjd_int,dpint);
+r_int    = [X_int Y_int Z_int];
+% Lagrange Interpolation for computing Velocity vector 
+[VX_int]  = interp_Lagrange(orbce(:,1),orbce(:,5),mjd_int,dpint);
+[VY_int]  = interp_Lagrange(orbce(:,1),orbce(:,6),mjd_int,dpint);
+[VZ_int]  = interp_Lagrange(orbce(:,1),orbce(:,7),mjd_int,dpint);
+v_int    = [VX_int VY_int VZ_int];
+
+% Initial State Vector apriori values
+Zo_ICRF_glb(1,1)   = mjd_int;
+Zo_ICRF_glb(1,2:4) = r_int;
+Zo_ICRF_glb(1,5:7) = v_int;
+
+IC_CRF_ext_int = Zo_ICRF_glb;
+
+
+if 1 < 0
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TEMP :: GRAVsimul9 Iter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Satellite ID name 
+param_keyword = 'orbiting_object_name';
+[Object_SAT_ID] = read_param_cfg(orbit_config_fname,param_keyword);
+
+test_gracefo = 0;
+test = strcmp(Object_SAT_ID,'GRACE-E');
+if test == 1    
+Xmatrix_state_vectors_fname = 'dX_G1.txt';
+IC_fname = 'GRACE-1_IC_data.in'
+end
+test = strcmp(Object_SAT_ID,'GRACE-F');
+if test == 1    
+Xmatrix_state_vectors_fname = 'dX_G2.txt';    
+IC_fname = 'GRACE-2_IC_data.in'
+end
+
+Xmatrix_state_vectors_corr = load(Xmatrix_state_vectors_fname);
+
+i_day = fix(IC_MJDo) - (53360-1)
+delta_Xmatrix_Zvector = Xmatrix_state_vectors_corr(i_day,:);
+Zo_ICRF_glb(1,2:7) = Zo_ICRF_glb(1,2:7) + delta_Xmatrix_Zvector;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Open file for writing
+fid = fopen(IC_fname,'a');
+
+sec_00h = (IC_MJDo - fix(IC_MJDo)) * 86400;
+% Satellite Object ID
+fprintf(fid,'%-s %s %d ',Object_SAT_ID, ' ICRF   TT   MJD ')
+% MJD
+fprintf(fid,'%9d ',fix(IC_MJDo))
+% Seconds since start of the day  (00h)
+fprintf(fid,'%19.9f ',sec_00h)
+fprintf(fid,'%s ','0 0     0')
+% Data
+fprintf(fid,'%29.15e ',Zo_ICRF_glb(1,2:7))
+% Change line
+fprintf(fid,'%s\n','');    
+
+fclose(fid);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % Update orbit_model matrix
 orbit_model_struct.IC_CRF = Zo_ICRF_glb ; 
 end

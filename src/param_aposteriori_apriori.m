@@ -302,3 +302,4 @@ end
 
 % Update all IC parameters within orbit_model structure array
 orbit_model_struct.IC_CRF = [Zo_ICRF_glb(1,1) Xaposteriori'];
+orbit_model_struct.param_aposteriori = Xaposteriori;

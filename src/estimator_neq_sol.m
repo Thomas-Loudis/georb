@@ -25,6 +25,7 @@ function [Xmatrix, NEQn, NEQu, error_matrix, sigma0, Cx, Cv] = estimator_neq_sol
 %             Upgrade according to the function estimator_orbit_intersat.m  
 % 17/02/2023  Dr. Thomas Loudis Papanikolaou
 %             Upgrade to the weigthts of the NEQ solution  
+% 18/08/2025  TLP, Code modification
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -46,6 +47,10 @@ for i_sigma = 1 : n_sigma
 end
 %save Pmatrix.out Pmatrix -ASCII -double
 end
+
+if n_sigma == 1
+weight_sigma = 1 / (sigma_obs(1,1) )^2;
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -61,15 +66,15 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Solution 0
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%if n_sigma == 1
+if n_sigma == 1
 % Weighting matrix :: Identiry matrix    
-NEQn = Amatrix' * Amatrix;
-NEQu = Amatrix' * Wmatrix;
+NEQn = weight_sigma * (Amatrix' * Amatrix);
+NEQu = weight_sigma * (Amatrix' * Wmatrix);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Weighted solution
-if n_sigma > 1
+elseif n_sigma > 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Solution 1
@@ -97,13 +102,9 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parameters Estimation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Normal Equations matrix inverstion 
-% NEQ_matrix_inv = 5;
-% Matrix decomposition/factorisation
-% 5th approach :: lsqminnorm
-tol2 = 30;
-Xmatrix5 = lsqminnorm(NEQn,NEQu,tol2);
-Xmatrix = Xmatrix5;
+% Normal Equations matrix inversion 
+inv_id = 6;
+[Xmatrix] = inv_ls(NEQn, NEQu, inv_id);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 bmatrix = Wmatrix;
@@ -128,18 +129,19 @@ m_param = dim1;
 sigma = sqrt(error_matrix' * error_matrix / (n_obs - m_param) );
 sigma0 = sigma;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if 1 < 0
-Ntol = rcond(NEQn);
-
+if 1 > 0
 % Covariance matrix of parameters
-Cx = sigma^2 * pinv(NEQn, Ntol);
+inv_mat_id = 6; 
+[Nmatrix_inv] = inv_mat(NEQn, inv_mat_id);
+Cx = sigma^2 * Nmatrix_inv;
 
 % Covariance matrix of errors
-if n_sigma > 1
-Cv  = sigma^2 * (pinv(Pmatrix,Ntol) - Amatrix * pinv(NEQn,Ntol) * Amatrix');
-else
-Cv  = sigma^2 * ( - Amatrix * pinv(NEQn,Ntol) * Amatrix');
-end 
+% if n_sigma > 1
+% Cv  = sigma^2 * (pinv(Pmatrix,Ntol) - Amatrix * pinv(NEQn,Ntol) * Amatrix');
+% else
+% Cv  = sigma^2 * ( - Amatrix * pinv(NEQn,Ntol) * Amatrix');
+% end 
+Cv = 0;
 
 else
 Cx = 0;

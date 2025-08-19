@@ -61,7 +61,7 @@ if test == 1
     emp_cpr_effect_01 = emp_cpr_struct.effect_01;
     cpr_freq_number = emp_cpr_struct.cpr_frequency_number;
 % if emp_cpr_effect_01 == 1
-    [a_emp,PD_emp_Z,PD_accemp_P] = pdv_acclempirical(mjd,rGCRS,vGCRS,cpr_freq_number,GM_Earth);
+    [a_emp,PD_emp_Z,PD_accemp_P] = pdv_acclempirical(mjd,rGCRS,vGCRS,cpr_freq_number,GM_Earth, orbit_model_struct);
 else
     a_emp = [0 0 0]';
     PD_emp_Z = zeros(3,3);

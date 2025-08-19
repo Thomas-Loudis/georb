@@ -70,7 +70,7 @@ if cfg_mode == 2
     IC_Zo(3,1) = sscanf(param_line,'%*s %*s %e %*');
     IC_Zo(4,1) = sscanf(param_line,'%*s %*s %*s %e %*');
     IC_Zo(5,1) = sscanf(param_line,'%*s %*s %*s %*s %e %*');
-    IC_Zo(6,1) = sscanf(param_line,'%*s %*s %*s %*s %*s %e %*'); 
+    IC_Zo(6,1) = sscanf(param_line,'%*s %*s %*s %*s %*s %e %*');
     % IC parameters (all)
     IC_apriori_rowmatrix = str2num(param_line);
     IC_apriori_vecmatrix = IC_apriori_rowmatrix';
@@ -232,8 +232,15 @@ IC_Sec_00 = Sec_00;
 % Earth Orientation Parameters data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Read EOP data file by IERS C04 Solution
+if orbit_arc_length > 31 * 86400
 time_period = orbit_arc_length;  % Seconds
+else
+time_period = 31 * 86400;  % Seconds
+end
+% time_period = orbit_arc_length;  % Seconds
 [EOP_data, IAU_PN_XYs_matrix] = prm_eop(EOP_filename, EOP_interp_no, time_period, MJDo, precession_nutation_model, TAI_UTC_table);
+earth_rotation_model.IAU_PN_XYs_matrix = IAU_PN_XYs_matrix; 
+earth_rotation_model.TAI_UTC_table = TAI_UTC_table;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -241,7 +248,7 @@ time_period = orbit_arc_length;  % Seconds
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 test = strcmp(IC_reference_frame,'KEPLER');    
 if test == 1
-    kepler_0        = IC_Zo;
+    kepler_0        = IC_Zo';
     M_anomaly_deg   = kepler_0(1,6);
     eccentr         = kepler_0(1,2);
     % Call function kepler_eq for computing Eccentric anomaly
@@ -257,7 +264,7 @@ end
 % Tranformation from ITRF to ICRF
 test = strcmp(IC_reference_frame,'ITRF');    
 if test == 1
-    [eop,deop] = trs2crs(MJDo, EOP_data, EOP_interp_no);
+    [eop,deop] = trs2crs(MJDo, EOP_data, EOP_interp_no, earth_rotation_model);
     ro_itrf = [IC_Zo_vec(1,1) IC_Zo_vec(2,1) IC_Zo_vec(3,1)]';
     vo_itrf = [IC_Zo_vec(4,1) IC_Zo_vec(5,1) IC_Zo_vec(6,1)]';
     ro_icrf = eop * ro_itrf;

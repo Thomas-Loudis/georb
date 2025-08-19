@@ -1,4 +1,4 @@
-function georb_series(orbit_model_struct, ic_data_struct)
+function georb_series(orbit_model_struct, ic_satellites)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Function: georb_series
@@ -8,8 +8,8 @@ function georb_series(orbit_model_struct, ic_data_struct)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Input arguments:
 % - orbit_model_struct  : Orbit model structure array 
-% - ic_data_struct      : Initial Conditions structure array 
-%
+% - ic_satellites       : Initial Conditions for all satellites for all days in structure array
+%                       Structure Format: ic_satellites.epochs.ic_data
 % Output arguments:
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -20,16 +20,74 @@ function georb_series(orbit_model_struct, ic_data_struct)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Series of georb_function computations
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[ic_struct_d1, ic_struct_d2] = size(ic_data_struct);
-[ic_n, ic_m] = size(ic_data_struct(1).ic_data);
+[ic_struct_d1, ic_struct_d2] = size(ic_satellites);
+No_satellites = ic_struct_d2;
 
+ic_epochs = ic_satellites.epochs;
+[ic_epochs_d1, ic_epochs_d2] = size(ic_epochs);
+No_ic_epochs = ic_epochs_d2;
+ic_n = No_ic_epochs;
+
+georb_par_mode = 0;
+
+if georb_par_mode == 0 
+
+ic_satellites_run = struct('ic_data',{});
+
+if 1 < 0
 for ic_i = 1 : ic_n
-    for constellation_id = 1 : ic_struct_d2
-        ic_data_struct_run(constellation_id).ic_data = ic_data_struct(constellation_id).ic_data(ic_i,:);
+    for constellation_id = 1 : No_satellites
+        % ic_satellites_run(constellation_id).ic_data = ic_satellites(constellation_id).ic_data(ic_i,:);
+        ic_satellites_run(constellation_id).ic_data = ic_satellites(constellation_id).epochs(ic_i).ic_data;
     end
     % Call main georb_function
-    [out_dir_name] = georb_function(orbit_model_struct, ic_data_struct_run);
+    [out_dir_name] = georb_function(orbit_model_struct, ic_satellites_run);
 end
+end
+
+for ic_i = 1 : ic_n
+% Call georb_par for serial/parallel call of the main function georb_function    
+ic_index = ic_i;
+[out_dir_name] = georb_par(orbit_model_struct, ic_satellites, ic_index);
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif georb_par_mode == 1
+
+Ncpus_cores = 4; 
+parpool("Processes", Ncpus_cores)
+
+% parfor ic_i = 1 : ic_n    
+parfor (ic_i = 1 : ic_n, Ncpus_cores)    
+% Call georb_par for serial/parallel call of the main function georb_function    
+ic_index = ic_i;
+[out_dir_name] = georb_par(orbit_model_struct, ic_satellites, ic_index);
+% georb_par(orbit_model_struct, ic_satellites, ic_index);
+end
+out_dir_name = 'results_in-progress';
+
+end
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% elseif georb_par_mode == 2
+% 
+% 
+% % id_parcluster = parcluster()
+% % for ic_i = 1 : ic_n
+% %     for constellation_id = 1 : ic_struct_d2
+% %         % ic_satellites_run(constellation_id).ic_data = ic_satellites(constellation_id).ic_data(ic_i,:);
+% %         ic_satellites_run(constellation_id).ic_data = ic_satellites(constellation_id).epochs(ic_i).ic_data;
+% %     end
+% %     % Call main georb_function
+% %     % [out_dir_name] = georb_function(orbit_model_struct, ic_satellites_run);
+% %     job = batch(id_parcluster,@georb_function,0,{orbit_model_struct, ic_satellites_run});
+% % end
+% % wait(job);
+% % results_dir_name = 'results_in-progress';
+% % out_dir_name = results_dir_name;
+% 
+% 
+% end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

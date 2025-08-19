@@ -1,4 +1,4 @@
-function [RMS] = rms(dx)
+function [RMS, sigma] = rms(dx)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RMS - root mean square
@@ -7,10 +7,21 @@ function [RMS] = rms(dx)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-[size_dx size2] = size(dx);
+[size_dx, size2] = size(dx);
 sum_dx2 = 0;
 for i = 1 : size_dx
     sum_dx2 = sum_dx2 + dx(i,1)^2 ;
 end
 
 RMS = sqrt(sum_dx2 / size_dx) ;
+
+Xmean = sum_dx2 / size_dx;
+
+sum_dx2 = 0;
+for i = 1 : size_dx
+    sum_dx2 = sum_dx2 + (dx(i,1) - Xmean)^2 ;
+end
+
+sigma = sqrt(sum_dx2 / size_dx);
+
+

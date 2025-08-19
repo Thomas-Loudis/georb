@@ -33,7 +33,8 @@ for ic_i = 1 : ic_n
         ic_k = ic_k + 1;
         % ic_time_series (ic_k , :) = ic_data_object_Narcs;
         Nc = length(ic_data_object_Narcs);
-        ic_time_series.ic_data(ic_k , 1:Nc) = ic_data_object_Narcs;
+        % ic_time_series.ic_data(ic_k , 1:Nc) = ic_data_object_Narcs;
+        ic_time_series(ic_k).ic_data = ic_data_object_Narcs;        
     end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

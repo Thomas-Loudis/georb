@@ -35,6 +35,18 @@ if test_mission_keyword == 1
     mission_name = 'GRACE';
 end
 
+mission_test = 'GRACE_C_mission';
+test_mission_keyword = strcmp(mission_name_config, mission_test);
+if test_mission_keyword == 1
+    mission_name = 'GRACE-C0';
+end
+
+mission_test = 'NGGM_mission';
+test_mission_keyword = strcmp(mission_name_config, mission_test);
+if test_mission_keyword == 1
+    mission_name = 'NGGM';
+end
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Date
@@ -162,9 +174,20 @@ end
 % GRACE/GRACE-FO missions :: Orbit GNV1b data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % GNV1B Data GRACE Level 1b data (GNV1B_2009-11-17_A_01.asc)
-data_keyword = 'GNV1B';
-test_keyword = strcmp(datalevel_name,data_keyword);
-if test_keyword == 1
+data_keyword_GNV = 'GNV1B';
+test_keyword_GNV = strcmp(datalevel_name,data_keyword_GNV);
+if test_keyword_GNV == 1 
+data_keyword = data_keyword_GNV;
+end
+
+data_keyword_GNI = 'GNI1B';
+test_keyword_GNI = strcmp(datalevel_name,data_keyword_GNI);
+if test_keyword_GNI == 1
+data_keyword = data_keyword_GNI;
+end
+
+% if test_keyword == 1
+if test_keyword_GNV == 1 || test_keyword_GNI == 1
     mission_test = 'GRACE-FO';
     test_mission_keyword = strcmp(mission_name, mission_test);
     if test_mission_keyword == 1

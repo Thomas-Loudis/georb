@@ -535,6 +535,8 @@ fprintf(fid,'%s\n','');
 % GEORB orbit format to GNV1b format
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % GRACE/GRACE-FO satellite id
+% Initialisation to the full satellite ID name
+grace_sat_id = orbiting_object_name;
 test = strcmp(orbiting_object_name,'GRACE-A');
 if test == 1
     grace_sat_id = "A";
@@ -550,6 +552,22 @@ end
 test = strcmp(orbiting_object_name,'GRACE-D');
 if test == 1
     grace_sat_id = "D";
+end
+test = strcmp(orbiting_object_name,'GRACE-E');
+if test == 1
+    grace_sat_id = "E";
+end
+test = strcmp(orbiting_object_name,'GRACE-F');
+if test == 1
+    grace_sat_id = "F";
+end
+test = strcmp(orbiting_object_name,'NGGM-1');
+if test == 1
+    grace_sat_id = "G";
+end
+test = strcmp(orbiting_object_name,'NGGM-2');
+if test == 1
+    grace_sat_id = "H";
 end
 
 % Reference Frame ID

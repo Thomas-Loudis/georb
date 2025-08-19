@@ -44,33 +44,31 @@ while (~feof(fid))
 
     test = strcmp(str1,'earth_gravity_constant');
     if test == 1
-%       GM = sscanf(line_ith,'%*s %e %*');
-      GM = str2num( sscanf(line_ith,'%*s %s %*') );
+      GM = sscanf(line_ith,'%*s %e %*');
     end
-    clear test
 
     test = strcmp(str1,'radius');
     if test == 1
-%       ae = sscanf(line_ith,'%*s %f %*')
-      ae = str2num( sscanf(line_ith,'%*s %s %*') );
+      ae = sscanf(line_ith,'%*s %e %*');
     end
-    clear test
 
     test = strcmp(str1,'max_degree');
     if test == 1
       Nmax_egm = sscanf(line_ith,'%*s %d %*');
     end
-    clear test
     
     tide_system = 'tide_free';
     test = strcmp(str1,'tide_system');
     if test == 1
       tide_system = sscanf(line_ith,'%*s %s %*');
     end
-    clear test    
+
+    test = strcmp(str1,'end_of_head');
+    if test == 1
+      header_status = 0;
+    end        
 end
 fclose(fid);
-clear fid line_ith str1 test
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Arrays initialization
@@ -91,33 +89,50 @@ while (~feof(fid))
     line_ith = fgetl(fid);
     str1 = sscanf(line_ith,'%s %*');
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Static gravity coefficients
     test = strcmp(str1,'gfc');
     if test == 0
         test = strcmp(str1,'gfct');
     end
     if test == 1
-      n_ith = sscanf(line_ith,'%*s %d %*');
+      data_ith_vec = sscanf(line_ith,'%*s %d %d %e %e %e %e %*');
+      n_ith = data_ith_vec(1,1);
       if (n_ith <= n_trunc) | (n_trunc == -1)
           % read SHC degree, order and respective coefficients values
           n = n_ith;
-          m = sscanf(line_ith,'%*s %*d %d %*');
-%           Cnm(n+1,m+1) = sscanf(line_ith,'%*s %*d %*d %f %*');
-%           Snm(n+1,m+1) = sscanf(line_ith,'%*s %*d %*d %*f %f %*');
-          Cnm(n+1,m+1) = str2num( sscanf(line_ith,'%*s %*s %*s %s %*') );
-          Snm(n+1,m+1) = str2num( sscanf(line_ith,'%*s %*s %*s %*s %s %*') );          
+          m = data_ith_vec(2,1);
+          Cnm(n+1,m+1) = data_ith_vec(3,1);
+          Snm(n+1,m+1) = data_ith_vec(4,1);         
           if sigma_shc ~= 0
-%               sCnm(n+1,m+1) = sscanf(line_ith,'%*s %*d %*d %*f %*f %f %*');
-%               sSnm(n+1,m+1) = sscanf(line_ith,'%*s %*d %*d %*f %*f %*f %f %*');
-              sCnm(n+1,m+1) = str2num( sscanf(line_ith,'%*s %*s %*s %*s %*s %s %*') );
-              sSnm(n+1,m+1) = str2num( sscanf(line_ith,'%*s %*s %*s %*s %*s %*s %s %*') );
+              sCnm(n+1,m+1) = data_ith_vec(5,1);
+              sSnm(n+1,m+1) = data_ith_vec(6,1);         
           end
-          clear n m
       end
     end
-    clear test str1  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     if test == 1
+%       n_ith = sscanf(line_ith,'%*s %d %*');
+%       if (n_ith <= n_trunc) | (n_trunc == -1)
+%           % read SHC degree, order and respective coefficients values
+%           n = n_ith;
+%           m = sscanf(line_ith,'%*s %*d %d %*');
+% %           Cnm(n+1,m+1) = sscanf(line_ith,'%*s %*d %*d %f %*');
+% %           Snm(n+1,m+1) = sscanf(line_ith,'%*s %*d %*d %*f %f %*');
+%           Cnm(n+1,m+1) = str2num( sscanf(line_ith,'%*s %*s %*s %s %*') );
+%           Snm(n+1,m+1) = str2num( sscanf(line_ith,'%*s %*s %*s %*s %s %*') );          
+%           if sigma_shc ~= 0
+% %               sCnm(n+1,m+1) = sscanf(line_ith,'%*s %*d %*d %*f %*f %f %*');
+% %               sSnm(n+1,m+1) = sscanf(line_ith,'%*s %*d %*d %*f %*f %*f %f %*');
+%               sCnm(n+1,m+1) = str2num( sscanf(line_ith,'%*s %*s %*s %*s %*s %s %*') );
+%               sSnm(n+1,m+1) = str2num( sscanf(line_ith,'%*s %*s %*s %*s %*s %*s %s %*') );
+%           end
+%           clear n m
+%       end
+%     end
+%     clear test str1  
 end
 fclose(fid);
-clear fid line_ith str1 test 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -132,7 +147,6 @@ if n_trunc == 1 && sz1 == 1
         sSnm(1+1,1+1) = 0;
     end
 end
-clear sz1 sz2
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -145,6 +159,5 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % maximum degree (n) and order (m)
 [nmax n2] = size(Cnm);
-clear n2
 nmax = nmax-1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

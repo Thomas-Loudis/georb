@@ -61,7 +61,7 @@ fprintf(fid,'%s\n',text_line);
 fprintf(fid,'%s\n',' ');
 
 param_keyword = 'time_period_of_data';
-fprintf(fid,'%s %s ',param_keyword, ' ');
+fprintf(fid,'%s %s ',param_keyword, time_period_of_data);
 fprintf(fid,'%s\n','');
 
 fprintf(fid,'%s\n',' ');
@@ -121,7 +121,8 @@ c_coef = Cnm(n+1,m+1);
 s_coef = Snm(n+1,m+1);
 sigma_c = sigma_Cnm(n+1,m+1);
 sigma_s = sigma_Snm(n+1,m+1);
-fprintf(fid,'%-5s%5d%5d%20.12e%20.12e%20.12e%20.12e','gfc', n, m, c_coef, s_coef, sigma_c, sigma_s);
+% fprintf(fid,'%-5s%5d%5d%20.12e%20.12e%20.12e%20.12e','gfc', n, m, c_coef, s_coef, sigma_c, sigma_s);
+fprintf(fid,'%-5s%5d%5d%27.17e%27.17e%27.17e%27.17e','gfc', n, m, c_coef, s_coef, sigma_c, sigma_s);
 fprintf(fid,'%s\n',' ');
     end
 end

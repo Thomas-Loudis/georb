@@ -60,6 +60,5 @@ fprintf(fid,'%5d',Xprm_estim(i_itr+1,1));
 fprintf(fid,'%31.15e ',Xprm_estim(i_itr+1,2:end));
 fprintf(fid,'\n');
 fclose(fid);
-clear outfilename
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

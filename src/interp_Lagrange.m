@@ -75,16 +75,26 @@ Nloop = x_log2 - 1;
 for iloop = 1 : Nloop
     % iloop
     Np = iN - (i0 -1);
-    i_centre = fix(Np / 2) + i0;
+    % i_centre = fix(Np / 2) + i0 
+    i_centre = i0 + fix(Np / 2) - 1 ;
     if xint < X_matrix(i_centre,1)
         iN = i_centre;
+        if iloop == Nloop
+            iN = i_centre + fix(dpint / 2);
+        end    
     else
         i0 = i_centre;
+        if iloop == Nloop
+            i0 = i_centre - fix(dpint / 2);            
+        end    
     end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 
+% i0
+% iN
+% X_matrix
 X = X_matrix(i0:iN,1);
 Y = Y_matrix(i0:iN,:);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -140,8 +150,9 @@ for i = 1 : sz1
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if interpolation == 1
+% Xo_indx
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Number of points before "xint"
 Xno_before = Xo_indx;
 % Number of points after "xint"
@@ -163,7 +174,7 @@ if (dpint_limit2 > Xno_after)
     Xo_indx = sz1 - dpint_limit2;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+% Xo_indx
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % X,Y values of data points defined by the final value of "dpint"
@@ -173,12 +184,26 @@ end
 % Find index position of the first X value for the data area defined
 % by dpint (according if dpint is even or odd)
 X1_indx = Xo_indx - (fix(dpint/2) - 1);
+
+if 1 < 0
+% Special cases at the edges of data series (start and end)
+% Start
+if X1_indx < 0
+    X1_indx = 1;
+end
+% End 
+Xend_indx = X1_indx + dpint-1;
+if Xend_indx > sz1
+    X1_indx = sz1 - (dpint - 1);
+end
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Xdpint = zeros(dpint,1);
 Ydpint = zeros(dpint,1);
 for i = 1 : dpint
+    % i_index = X1_indx + i-1
     Xdpint(i,1) = X(X1_indx+i-1,1);
     Ydpint(i,1) = Y(X1_indx+i-1,1);
 end

@@ -1,4 +1,4 @@
-function [orbit_model_struct] = orbit_model_init (main_config_fname,ic_data_matrix,src_version)
+function [orbit_model_struct] = orbit_model_init (main_config_fname,ic_satellites,src_version)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -6,6 +6,13 @@ function [orbit_model_struct] = orbit_model_init (main_config_fname,ic_data_matr
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Purpose:
 %  Orbit model intialisation; Create orbit/forces matrix for first epoch 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Input arguments:
+% - orbit_model_struct  : Orbit model structure array 
+% - ic_satellites       : Initial Conditions for all satellites for all days in structure array
+%                       Structure Format: ic_satellites.epochs.ic_data
+% Output arguments:
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Dr. Thomas Loudis Papanikolaou                               7 April 2025
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -20,7 +27,8 @@ param_keyword = 'orb_config_filename';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-ic_data_orbiter1 = ic_data_matrix(1).ic_data;
+% ic_data_orbiter1 = ic_satellites(1).ic_data;
+ic_data_orbiter1 = ic_satellites(1).epochs.ic_data;
 ic_data_orbiter1_epoch0 = ic_data_orbiter1(1,:);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

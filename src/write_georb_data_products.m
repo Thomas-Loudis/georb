@@ -39,7 +39,8 @@ Gmatrix = orbit_matrices.gravity_gradient_matrix;
 Rmatrix = orbit_matrices.earth_orientation_matrix;
 
 % Xmatrix = orbit_matrices.param_cor_Xmatrix;
-Xparam_aposteriori = orbit_matrices.param_aposteriori;
+% Xparam_aposteriori = orbit_matrices.param_aposteriori;
+Xparam_aposteriori = orbit_model_struct.param_aposteriori;
 
 % orbit_matrices.observation_matrix = OBS_matrix;
 OBS_residuals = orbit_matrices.observation_residuals;

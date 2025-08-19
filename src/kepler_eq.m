@@ -1,4 +1,4 @@
-function [E] = kepler_eq(M,e)
+function [E_anomaly] = kepler_eq(M,ecc)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -44,12 +44,13 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % number of iterations
 iter = 7;
+% E = zeros(1,iter+1)
 for i = 1 : iter
     if i == 1
         E(i) = Eo;
     end    
     % auxiliary function
-    f_E = E(i) - ecc * sin( E(i) ) - M ;
+    f_E = E(i) - ecc * sin( E(i) ) - M; 
 
     E(i+1) = E(i) - f_E / ( 1 - ecc * cos(E(i)) ) ;
 end
@@ -57,4 +58,4 @@ end
 
 [n1 n2] = size(E);
 % Converse in degrees
-E = E(n1,n2) * (180 / pi);
+E_anomaly = E(n1,n2) * (180 / pi);

@@ -21,6 +21,8 @@ function [GM,ae,Cnm,Snm,sCnm,sSnm, n_max_eqm, m_max_eqm, n_max_veq, m_max_veq, t
 %             Code minor modifications
 % 30/10/2022  Dr. Thomas Papanikolaou
 %             Read orbit configuration format via structure array or file
+% 18/05/2025  TLP
+%             Minor changes for optiizing the gravity parameter estimation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -182,9 +184,51 @@ degree_min = grav_paramestim_degree_min;
 degree_max = grav_paramestim_degree_max;
 order_min  = 0;
 order_max  = degree_max;
+S_order_min = 1;
 
 % Initialisation of gravity parameters' coefficients matrices 
-[N_param_GRAV, Nparam_C, Nparam_S , C_degree_order, S_degree_order, Cnm_paramestim, Snm_paramestim] = gravity_param_ic(degree_min, degree_max, order_min, order_max);
+[N_param_GRAV, Nparam_C, Nparam_S , C_degree_order, S_degree_order, Cnm_paramestim, Snm_paramestim] = gravity_param_ic(degree_min, degree_max, order_min, order_max, S_order_min);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Gravity signal (case studies only)
+gravity_signal_yn = 'n';
+test_effect_01 = strcmp(gravity_signal_yn,'y');
+if test_effect_01 == 1
+    gravity_signal_type = 1;
+    if gravity_signal_type == 1 
+    % GRAVsimul :: gravity solution simulation
+    % gravity_model_fname = 'grav_signal_dgeo.gfc'
+    % gravity_model_fname = 'GEORB_Gravity_Solution_DeltaSignal_53351-53357.gfc' 
+    % gravity_model_fname = 'GEORB_Gravity_Solution_delta_53351.gfc' 
+    gravity_model_fname = 'MAGIC_Level2a_HIS_reference_fields_monthly_mtmshc_HIS_31_20020101_20020131_do_180.gfc'
+
+    grav_signal_degree_max = grav_paramestim_degree_max
+    [GM_signal,ae_signal,Cnm_signal,Snm_signal,sCnm_signal,sSnm_signal,nmax_signal,tide_system_signal] = gfc(gravity_model_fname, grav_signal_degree_max, sigma_shc); 
+
+    elseif gravity_signal_type == 2
+    % MAGIC simulation
+    % gravity_model_fname = 'mtmshc_HIS_20041108_20041208.180' 
+    gravity_model_fname = 'shc_L2a_monthly_MAGIC_20041208-20050107_120.gfc'
+    % gravity_model_fname = 'shc_L2a_monthly_NGGM_20041208-20050107_120.gfc'
+    % gravity_model_fname = 'shc_L2a_monthly_Grace-C-like_20041208-20050107_120.gfc'
+    
+    grav_signal_degree_max = -1
+    [GM_signal,ae_signal,Cnm_signal,Snm_signal,sCnm_signal,sSnm_signal,nmax_signal,tide_system_signal] = gfc(gravity_model_fname, grav_signal_degree_max, sigma_shc); 
+    C20_slr = 4.49795080362669e-11;
+    C20_magic = Cnm_signal(2+1,0+1);
+    Cnm_signal(2+1,0+1) = C20_slr;
+    end
+
+    % nmax_signal
+    degree_signal = nmax_signal;
+    order_signal = nmax_signal;
+else
+    Cnm_signal = 0;
+    Snm_signal = Cnm_signal;
+    degree_signal = 0;
+    order_signal = 0;
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -203,13 +247,25 @@ gfm_struct.tide_system = tide_system;
 
 % Gravity Field parameters estimation y/n 
 gfm_struct.gravity_solution_yn = grav_paramestim_yn;
-% Set param_estim_yn to 'n' for the initial step of orbit determination only
+% 'param_estim_yn' is set to 'n' (off mode) for the initial orbit determination and 
+% during the final step of the POD function it is set to 'y' if gravity_solution_yn is 'y'  
 gfm_struct.param_estim_yn = 'n';
+% gfm_struct.param_estim_yn = grav_paramestim_yn
 gfm_struct.param_estim_degree = grav_paramestim_degree_range;
+% C,S coefficients matrices to be estimated as corrections to the apriori gravity model Cnm, Snm
 gfm_struct.Cnm_estim  = Cnm_paramestim; 
 gfm_struct.Snm_estim  = Snm_paramestim;
+% OVerall Number of harmonics coefficients (C,S) to be estimated
 gfm_struct.parameters_number = N_param_GRAV;
+% Degree and Order values matrix of the C,S coefficients to be estimated
 gfm_struct.C_degree_order_estim = C_degree_order;
 gfm_struct.S_degree_order_estim = S_degree_order;
+
+% Gravity signal (temporal); Optional, applied only for case studies
+gfm_struct.gravity_signal_yn = gravity_signal_yn;
+% Signal' delta C,S coefficients matrices
+gfm_struct.Cnm_signal  = Cnm_signal; 
+gfm_struct.Snm_signal  = Snm_signal;
+gfm_struct.degree_signal = [degree_signal order_signal];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

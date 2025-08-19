@@ -87,10 +87,34 @@ s_CEO = XYs_IAU200A(:,4);
 [UTC,GPS_time] = time_scales(TT,mjd, TAI_UTC_table);
 % MJD in UTC time scale
 [jd,mjd_int] = MJD_date(UTC,Dy,Mh,Yr);
+mjd_UTC = mjd_int;
+mjd_TT = mjd;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % UT1_UTC = UT1 - UTC
 [UT1_UTC_int] = interp_Lagrange(eop_mjd,UT1_UTC,mjd_int,dpint);
+
+EOP_zonaltides = 0;
+if EOP_zonaltides == 1
+    [n_mjd, n2] = eop_mjd
+    [n_UT1_UTC, n4] = UT1_UTC
+    for i_mjd = 1 : n_mjd
+        mjd_day_data = eop_mjd(i_mjd,1);
+% EOP variations due to Zonal Tides terms  
+% delta_UT1_zonaltides is removed and then restored to the EOP Data 
+[delta_UT1_zonaltides, delta_LOD_zonaltides, delta_omega_zonaltides] = eop_zonal_tides(mjd_day_data);
+% delta_UT1   = - delta_UT1_zonaltides + delta_UT1_oceantides;
+% Remove Zonal TIdes
+    UT1_UTC_ZonalTides_removed(i_mjd,1) = UT1_UTC(i_mjd,1) - delta_UT1_zonaltides;
+    end
+
+% Interpolate at compuation epoch    
+[UT1_UTC_int_ZonalTides_no] = interp_Lagrange(eop_mjd,UT1_UTC_ZonalTides_removed,mjd_int,dpint);
+% Restore Zonal Tides effect
+[delta_UT1_zonaltides, delta_LOD_zonaltides, delta_omega_zonaltides] = eop_zonal_tides(mjd_int)
+
+UT1_UTC_int = UT1_UTC_int_ZonalTides_no + delta_UT1_zonaltides;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Polar motion
@@ -120,20 +144,20 @@ X_PN = Xt_IAU2000;
 Y_PN = Yt_IAU2000;
 
 % VLBI corrections (dX,dY) after interpolation 
-% [dX_arcsec] = interp_Lagrange(eop_mjd,dX_VLBI,mjd_int,dpint);
-% [dY_arcsec] = interp_Lagrange(eop_mjd,dY_VLBI,mjd_int,dpint);
+[dX_arcsec] = interp_Lagrange(eop_mjd,dX_VLBI,mjd_int,dpint);
+[dY_arcsec] = interp_Lagrange(eop_mjd,dY_VLBI,mjd_int,dpint);
 % Interpolation not applied
 % dX_arcsec = dX_VLBI(2,1);
 % dY_arcsec = dY_VLBI(2,1);
 % (dX,dY)EOP in arcsec
 % Conversion from arcsec to radians
-% dX = (dX_arcsec / 3600) * (pi / 180);
-% dY = (dY_arcsec / 3600) * (pi / 180);
-% 
+dX = (dX_arcsec / 3600) * (pi / 180);
+dY = (dY_arcsec / 3600) * (pi / 180);
+
 % Precession-Nutation model IAU2000 (X,Y,s) + VLBI corrections (dX,dY)
 % (X,Y) = (X,Y)IAU2000 + (dX,dY)VLBI
-% X_PN = Xt_IAU2000 + dX;
-% Y_PN = Yt_IAU2000 + dY;
+X_PN = Xt_IAU2000 + dX;
+Y_PN = Yt_IAU2000 + dY;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Position of the CEO(Celestial Ephemeris Origin) in the GCRS
 % computation of quantity s(t) in radians
@@ -142,18 +166,71 @@ Y_PN = Yt_IAU2000;
 % s = s_CEO(2,1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Tidal Variations to EOP 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+delta_UT1 = 0;
+delta_LOD = 0;
+delta_omega = 0;
+delta_xp_rad = 0;
+delta_yp_rad = 0;
+
+EOP_cor_01 = 1;
+if EOP_cor_01 > 0
+% EOP variations due to Zonal Tides terms :: applied only for special studies 
+% delta_UT1_zonaltides is removed and then restored to the EOP Data 
+[delta_UT1_zonaltides, delta_LOD_zonaltides, delta_omega_zonaltides] = eop_zonal_tides(mjd);
+
+% EOP corrections due to Ocean Tides terms (arcsec, sec)
+% [delta_x_oceantides, delta_y_oceantides, delta_UT1_oceantides, delta_LOD_oceantides] = eop_ocean_tides(mjd_TT, mjd_UTC)
+[delta_x_oceantides, delta_y_oceantides, delta_UT1_oceantides, delta_LOD_oceantides] = eop_ocean_tides(mjd_TT, mjd_TT);
+
+% UT1 and LOD libration effect in sec, sec/day for UT1, LOD respectively
+% [delta_UT1_libr, delta_LOD_libr] = eop_UT1_libr(mjd_TT, mjd_UTC);
+[delta_UT1_libr, delta_LOD_libr] = eop_UT1_libr(mjd_TT, mjd_TT);
+
+% UT1 corrections at interpolation epoch
+% delta_UT1   = - delta_UT1_zonaltides + delta_UT1_oceantides;
+% delta_omega = delta_omega_zonaltides;
+delta_UT1   = delta_UT1_oceantides + delta_UT1_libr;
+
+% Polar Motion libration correction due to tidal gravitation (arcsec)
+% [delta_x_libr, delta_y_libr] = eop_pm_libr(mjd_TT, mjd_UTC); 
+[delta_x_libr, delta_y_libr] = eop_pm_libr(mjd_TT, mjd_TT); 
+
+delta_xp_arcsec = delta_x_oceantides + delta_x_libr;
+delta_yp_arcsec = delta_y_oceantides + delta_y_libr;
+
+% Conversion from arcsec to radians
+delta_xp_rad = (delta_xp_arcsec / 3600) * (pi / 180);
+delta_yp_rad = (delta_yp_arcsec / 3600) * (pi / 180);
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Transormation matrix computations
+% Polar Motion coordinates (corrected at interpolation epoch)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+xp = xp + delta_xp_rad;
+yp = yp + delta_yp_rad;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% UT1 time
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% (UT1-UTC) in sec
+UT1 = UT1_UTC_int + UTC;
+% Tidal Variations corrections to UT1
+UT1 = UT1 + delta_UT1;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Transformation matrix computations
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % t parameter
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% computation of UT1 time
-% IERS parameter (UT1-UTC) in sec
-UT1 = UT1_UTC_int + UTC ;
-
 % computation of Julian Day Number in TT time
 [JD_TT,MJD_TT] = MJD_date(TT,Dy,Mh,Yr);
 
@@ -168,7 +245,14 @@ t = ( JD_TT - 2451545.0 ) / 36525;
 % Earth Rotation Angle
 Tu = JD_UT1 - 2451545.0;
 %theta = 2* pi * ( 0.7790572732640 + 1.00273781191135448 * Tu );
-theta = 2 * pi * ( 0.7790572732640 + Tu + 0.00273781191135448 * Tu );
+theta = 2*pi * ( 0.7790572732640 + Tu + 0.00273781191135448 * Tu );
+theta = 2*pi * ( 0.7790572732640 + 1.00273781191135448 * Tu) + delta_omega * Tu ;
+
+theta = mod( theta , 2*pi);
+
+% JD_UT1_fraction = JD_UT1 - fix(JD_UT1);
+% theta = mod( 2*pi * ( 0.7790572732640 + JD_UT1_fraction + 0.00273781191135448 * Tu ) , 2*pi);
+
 
 % Earth Rotation matrix
 % computation of  R(t) = R3(-theta)
@@ -184,6 +268,8 @@ R_t = R3_theta;
 % s' quantity: s' = -47 microarcseconds * t
 % converse from microarcseconds to radians
 s_TEO = -(47 * 10^(-6) / 3600) * (pi / 180) *  t;  
+
+s_TEO = -1 * mod( (47 * 10^(-6) / 3600) * (pi / 180) * t , 2*pi);  
 
 % computation of matrix R3(-s')
 R3_sTEO = [ cos(-s_TEO)  sin(-s_TEO)     0
@@ -252,10 +338,15 @@ P = [ 0  -1   0
       0   0   0 ] ;
 % Earth angular velocity w = 0.7292115*10^-4 rad/s Moritz 1980, IAG 1999
 omega = 0.7292115 * 10^(-4);
+dtheta = omega;
 % note: instantaneous computation of dTHETA / dt should replace omega
 % THETA = -GAST
 
-dtheta = omega;
+dtheta = 2 * pi * 1.00273781191135448 * (1/86400);
+dtheta = mod( 2*pi * 1.00273781191135448 * (1/86400) , 2*pi);
+
+% Zonal Tides Correction
+dtheta = dtheta + delta_omega;
 
 % Derivative of EOP matrix: dEOP
 %dEOP = dtheta * A_t * P * R3_s * R_t * R3_sTEO * R2_x * R1_y ;
@@ -327,3 +418,28 @@ Pinv = [  0   1   0
 
 dEOP_inv = dtheta * W_t_inv * Pinv * R_t_inv * Q_t_inv ;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% time_arg = TT 
+% 
+% trs2crs_matrices = 0
+% EOP
+% dEOP
+% EOP_inv
+% dEOP_inv
+% 
+% trs2crs_matrices = 1
+% 
+% EOP_inv = inv(EOP)
+% dEOP_inv2 = dtheta * Pinv * EOP_inv
+% 
+% trs2crs_matrices = 2
+% 
+% EOP_T = EOP'
+% dEOP_T = dEOP'
+% 
+% trs2crs_matrices = 3
+% % EOP = Q_t * R_t * W_t;
+
+% EOP_inv = W_t' * R_t' * Q_t' ;
+% dEOP_inv = dtheta * W_t' * P' * R_t' * Q_t' ; 
+

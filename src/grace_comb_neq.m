@@ -1,4 +1,4 @@
-function [NEQ_N, NEQ_u, NEQ_N_reduced, NEQ_u_reduced, Xmatrix_orbit1, Xmatrix_orbit2, Xmatrix, Xcommon_NEQreduced, grace_pod_struct] = grace_comb_neq(grace_pod_struct)
+function [NEQ_N, NEQ_u, NEQ_N_reduced, NEQ_u_reduced, Xmatrix_orbit1, Xmatrix_orbit2, Xmatrix, Xcommon, Xcommon_NEQreduced, grace_pod_struct] = grace_comb_neq(grace_pod_struct, design_matrix_scale_orbit, design_matrix_param_orbit, NEQ_write)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Function: orbit_mission_grace
@@ -56,13 +56,13 @@ COMBESTIM_weight = observation_model_matrix.COMBESTIM_weight;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Read data from grace_pod structure array
-orbcGA                      = grace_pod_struct.grace1_pod.orbit_matrices.orbit_crf;
-orbcGB                      = grace_pod_struct.grace2_pod.orbit_matrices.orbit_crf;
-sat1_OBS_matrix             = grace_pod_struct.grace1_pod.orbit_matrices.observation_matrix;
-sat2_OBS_matrix             = grace_pod_struct.grace2_pod.orbit_matrices.observation_matrix;
+orbcGA                       = grace_pod_struct.grace1_pod.orbit_matrices.orbit_crf;
+orbcGB                       = grace_pod_struct.grace2_pod.orbit_matrices.orbit_crf;
+sat1_OBS_matrix              = grace_pod_struct.grace1_pod.orbit_matrices.observation_matrix;
+sat2_OBS_matrix              = grace_pod_struct.grace2_pod.orbit_matrices.observation_matrix;
 
-sat1_OBS_residuals          = grace_pod_struct.grace1_pod.orbit_matrices.observation_residuals;
-sat2_OBS_residuals          = grace_pod_struct.grace2_pod.orbit_matrices.observation_residuals;
+sat1_OBS_residuals           = grace_pod_struct.grace1_pod.orbit_matrices.observation_residuals;
+sat2_OBS_residuals           = grace_pod_struct.grace2_pod.orbit_matrices.observation_residuals;
 
 sat1_veqZ_matrix             = grace_pod_struct.grace1_pod.orbit_matrices.state_transition_matrix;
 sat1_veqP_matrix             = grace_pod_struct.grace1_pod.orbit_matrices.sensitivity_matrix;
@@ -84,27 +84,53 @@ intersat_rangerate_residuals = grace_pod_struct.intersat_pod.intersat_rangerate_
 weight_sol_opt = COMBESTIM_weight;
     
 % Weights based on errors / residuals from step-1 orbit parameter estimation  
-Cv_sat1_obs = [sat1_OBS_residuals(:,2); sat1_OBS_residuals(:,3); sat1_OBS_residuals(:,4)];
-Cv_sat2_obs = [sat2_OBS_residuals(:,2); sat2_OBS_residuals(:,3); sat2_OBS_residuals(:,4)];  
+if weight_sol_opt == 2
 % LRI range and range-rate obseravations
-Cv_LRI_range = intersat_range_residuals(:,2);
-Cv_LRI_rangerate = intersat_rangerate_residuals(:,2);
+% Cv_LRI_range = intersat_range_residuals(:,2);
+% Cv_LRI_rangerate = intersat_rangerate_residuals(:,2);
+% Cv_LRI = [Cv_LRI_range Cv_LRI_rangerate];
+
+% Orbit Residuals matrices
+[n1, n2] = size(sat1_OBS_residuals);
+for i = 1 : n1
+Cv_sat1_obs( (i-1)*3+1 : 3*i , 1) = [sat1_OBS_residuals(i,2); sat1_OBS_residuals(i,3); sat1_OBS_residuals(i,4)]';
+end
+n_obs1 = 3 * n1;
+[n1, n2] = size(sat2_OBS_residuals);
+for i = 1 : n1
+Cv_sat2_obs( (i-1)*3+1 : 3*i , 1) = [sat2_OBS_residuals(i,2); sat2_OBS_residuals(i,3); sat2_OBS_residuals(i,4)]';
+end
+n_obs2 = 3 * n1;
+
+[RMS_orbit1_residuals, sigma_orbit1_residuals] = rms(Cv_sat1_obs);
+[RMS_orbit2_residuals, sigma_orbit2_residuals] = rms(Cv_sat2_obs);
+orbit_obs_residuals = [Cv_sat1_obs; Cv_sat2_obs];
+[RMS_orbit_residuals, sigma_orbit_residuals] = rms(orbit_obs_residuals);
+
+[RMS_range_residuals, sigma_range_residuals] = rms(intersat_range_residuals(:,2));
+[RMS_rangerate_residuals, sigma_rangerate_residuals] = rms(intersat_rangerate_residuals(:,2));
+
+Cv_sat1_obs = sigma_orbit1_residuals;
+Cv_sat2_obs = sigma_orbit2_residuals;
+Cv_LRI_range = sigma_range_residuals;
+Cv_LRI_rangerate = sigma_rangerate_residuals;
 Cv_LRI = [Cv_LRI_range Cv_LRI_rangerate];
 
 % Fixed weights to sigma defined values
-if weight_sol_opt == 3
-sigma_obsorb = 5 * 10^-2;
-sigma_range = 5 * 10^-3;
-sigma_rangerate = 1 * 10^-6;
-    
-[d1_obs, d2_obs] = size(Cv_sat1_obs);
-[d1_obs2, d2_obs2] = size(Cv_sat2_obs);
-[d1_lri, d2_lri] = size(Cv_LRI_range);
+elseif weight_sol_opt == 3
+sigma_obsorb = 2 * 10^-2;
+sigma_range = 2 * 10^-3;
+sigma_rangerate = 0.2 * 10^-6;
 
-Cv_sat1_obs = sigma_obsorb + zeros(d1_obs,1);
-Cv_sat2_obs = sigma_obsorb + zeros(d1_obs2,1);
-Cv_LRI_range = sigma_range + zeros(d1_lri,1);
-Cv_LRI_rangerate = sigma_rangerate + zeros(d1_lri,1);
+sigma_orbit1_residuals      = sigma_obsorb;
+sigma_orbit2_residuals      = sigma_obsorb;
+sigma_range_residuals       = sigma_range;
+sigma_rangerate_residuals   = sigma_rangerate;
+
+Cv_sat1_obs = sigma_orbit1_residuals;
+Cv_sat2_obs = sigma_orbit2_residuals;
+Cv_LRI_range = sigma_range_residuals;
+Cv_LRI_rangerate = sigma_rangerate_residuals;
 Cv_LRI = [Cv_LRI_range Cv_LRI_rangerate];
 
 elseif weight_sol_opt == 1
@@ -121,23 +147,33 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % GRACE-4 matrices for combined estimator
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Inter-satellite observatios w.r.t. GRACE-4
-[Xmatrix_LRI_sat2, Amatrix_rangerate_sat2, Wmatrix_rangerate_sat2, Amatrix_range_sat2, Wmatrix_range_sat2, NEQ_range_sat2, NEQ_rangerate_sat2] = estimator_orbit_intersat(orbcGA,orbcGB, sat1_veqZ_matrix,sat1_veqP_matrix, sat2_veqZ_matrix,sat2_veqP_matrix, intersat_observation_data, Cv_LRI);
+% Inter-satellite observations w.r.t. GRACE-2/-4
+% [Xmatrix_LRI_sat2, Amatrix_rangerate_sat2, Wmatrix_rangerate_sat2, Amatrix_range_sat2, Wmatrix_range_sat2, NEQ_range_sat2, NEQ_rangerate_sat2] = estimator_orbit_intersat(orbcGA,orbcGB, sat1_veqZ_matrix,sat1_veqP_matrix, sat2_veqZ_matrix,sat2_veqP_matrix, intersat_observation_data, Cv_LRI);
+[Amatrix_rangerate_sat2, Wmatrix_rangerate_sat2, Amatrix_range_sat2, Wmatrix_range_sat2, NEQ_range_sat2, NEQ_rangerate_sat2] = neq_intersat_ranging(orbcGA,orbcGB, sat1_veqZ_matrix,sat1_veqP_matrix, sat2_veqZ_matrix,sat2_veqP_matrix, intersat_observation_data, Cv_LRI); 
 
 % Orbit pseudo-observations
-[Xmatrix_obsorb_grace2,Xmatrix_alt_obsorb_grace2,Wmatrix_obsorb_grace2,Amatrix_obsorb_grace2, Cx, Cv, NEQn_grace2, NEQu_grace2] = estimator_orbit (orbcGB, sat2_veqZ_matrix, sat2_veqP_matrix, sat2_OBS_matrix, Cv_sat2_obs,1);
+% meth ='estimator_orbit'
+% tic
+% [Xmatrix_obsorb_grace2,Xmatrix_alt_obsorb_grace2,Wmatrix_obsorb_grace2,Amatrix_obsorb_grace2, Cx, Cv, NEQn_grace2, NEQu_grace2] = estimator_orbit (orbcGB, sat2_veqZ_matrix, sat2_veqP_matrix, sat2_OBS_matrix, Cv_sat2_obs,1);
+% toc
+% 
+% meth ='neq_orbit'
+% tic
+[NEQn_grace2, NEQu_grace2, Amatrix_obsorb_grace2, Wmatrix_obsorb_grace2] = neq_orbit (orbcGB, sat2_veqZ_matrix, sat2_veqP_matrix, sat2_OBS_matrix, Cv_sat2_obs);
+% toc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % GRACE-3 matrices for combined estimator
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Inter-satellite observatios w.r.t. GRACE-4
-[Xmatrix_LRI_sat1, Amatrix_rangerate_sat1, Wmatrix_rangerate_sat1, Amatrix_range_sat1, Wmatrix_range_sat1, NEQ_range_sat1, NEQ_rangerate_sat1] = estimator_orbit_intersat(orbcGB,orbcGA, sat2_veqZ_matrix,sat2_veqP_matrix, sat1_veqZ_matrix,sat1_veqP_matrix, intersat_observation_data, Cv_LRI);
+% Inter-satellite observations w.r.t. GRACE-1/-3
+% [Xmatrix_LRI_sat1, Amatrix_rangerate_sat1, Wmatrix_rangerate_sat1, Amatrix_range_sat1, Wmatrix_range_sat1, NEQ_range_sat1, NEQ_rangerate_sat1] = estimator_orbit_intersat(orbcGB,orbcGA, sat2_veqZ_matrix,sat2_veqP_matrix, sat1_veqZ_matrix,sat1_veqP_matrix, intersat_observation_data, Cv_LRI);
+[Amatrix_rangerate_sat1, Wmatrix_rangerate_sat1, Amatrix_range_sat1, Wmatrix_range_sat1, NEQ_range_sat1, NEQ_rangerate_sat1] = neq_intersat_ranging(orbcGB,orbcGA, sat2_veqZ_matrix,sat2_veqP_matrix, sat1_veqZ_matrix,sat1_veqP_matrix, intersat_observation_data, Cv_LRI); 
 
 % Orbit pseudo-observations
-[Xmatrix_obsorb_grace1,Xmatrix_alt_obsorb_grace1,Wmatrix_obsorb_grace1,Amatrix_obsorb_grace1, Cx, Cv, NEQn_grace1, NEQu_grace1] = estimator_orbit (orbcGA, sat1_veqZ_matrix, sat1_veqP_matrix, sat1_OBS_matrix, Cv_sat1_obs,1);
+% [Xmatrix_obsorb_grace1,Xmatrix_alt_obsorb_grace1,Wmatrix_obsorb_grace1,Amatrix_obsorb_grace1, Cx, Cv, NEQn_grace1, NEQu_grace1] = estimator_orbit (orbcGA, sat1_veqZ_matrix, sat1_veqP_matrix, sat1_OBS_matrix, Cv_sat1_obs,1);
+[NEQn_grace1, NEQu_grace1, Amatrix_obsorb_grace1, Wmatrix_obsorb_grace1] = neq_orbit (orbcGA, sat1_veqZ_matrix, sat1_veqP_matrix, sat1_OBS_matrix, Cv_sat1_obs);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Common Parameters:
@@ -157,7 +193,6 @@ Nparam_common = N_param_GRAV;
 end    
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Dimensions of design matrix and Number of parameters, observations 
@@ -238,6 +273,60 @@ b_rangerate = Wmatrix_rangerate_sat2;
 b_range = Wmatrix_range_sat2;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if NEQ_write == 1
+save A_orbit1.neq  A_orbit1 -ASCII -double
+save A_orbit2.neq  A_orbit2 -ASCII -double
+save A_rangerate.neq  A_rangerate -ASCII -double
+save A_range.neq  A_range -ASCII -double
+
+save b_orbit1.neq  b_orbit1 -ASCII -double
+save b_orbit2.neq  b_orbit2 -ASCII -double
+save b_rangerate.neq  b_rangerate -ASCII -double
+save b_range.neq  b_range -ASCII -double
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Scaling of Design Matrix
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% design_matrix_scale_orbit
+if design_matrix_scale_orbit == 1
+scale_orbit_pos = 3 * 10^6;
+scale_orbit_vel = 3 * 10^3;
+% Orbit 1
+A_orbit1(:,col_orbit1_1 : col_orbit1_1 -1+3)         = A_orbit1(:,col_orbit1_1 : col_orbit1_1 -1+3) * scale_orbit_pos;
+A_orbit1(:,col_orbit1_1 -1+4 : col_orbit1_1 -1+6)    = A_orbit1(:,col_orbit1_1 -1+4 : col_orbit1_1 -1+6) * scale_orbit_vel;
+% Orbit 2
+A_orbit2(:,col_orbit2_1 : col_orbit2_1 -1+3)        = A_orbit2(:,col_orbit2_1 : col_orbit2_1 -1 + 3) * scale_orbit_pos;
+A_orbit2(:,col_orbit2_1 -1+4 : col_orbit2_1 -1+6)   = A_orbit2(:,col_orbit2_1 -1+4 : col_orbit2_1 -1+6) * scale_orbit_vel;
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Orbital Parameters combination transformation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% design_matrix_param_orbit
+if design_matrix_param_orbit == 1
+% Orbital parameters of sate vector replacement    
+% k1 = x_orbit1 - x_orbit2;
+% k2 = x_orbit1 + x_orbit2;
+
+% Orbit 1
+A_orbit1(:,col_orbit1_1 : col_orbit1_2) = A_orbit1(:,col_orbit1_1 : col_orbit1_2) * (1/2);
+A_orbit1(:,col_orbit2_1 : col_orbit2_2) = A_orbit1(:,col_orbit1_1 : col_orbit1_2);
+% Orbit 2
+A_orbit2(:,col_orbit2_1 : col_orbit2_2) = A_orbit2(:,col_orbit2_1 : col_orbit2_2) * (1/2);
+A_orbit2(:,col_orbit1_1 : col_orbit1_2) = A_orbit2(:,col_orbit2_1 : col_orbit2_2) * (-1);
+% Range-Rate
+% A_rangerate(:, col_orbit1_1 : col_orbit1_2) = A_rangerate(:, col_orbit1_1 : col_orbit1_2);
+A_rangerate(:, col_orbit2_1 : col_orbit2_2) = A_rangerate(:, col_orbit2_1 : col_orbit2_2) - A_rangerate(:, col_orbit2_1 : col_orbit2_2); % zeros;
+% Range
+% A_range(:, col_orbit1_1 : col_orbit1_2) = A_range(:, col_orbit1_1 : col_orbit1_2);
+A_range(:, col_orbit2_1 : col_orbit2_2) = A_range(:, col_orbit2_1 : col_orbit2_2) - A_range(:, col_orbit2_1 : col_orbit2_2); % zeros;
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Normal Equations 
@@ -245,13 +334,17 @@ b_range = Wmatrix_range_sat2;
 % 3. Approach-3
 % Individual NEQ matrices per block/type of observations
 % Orbit 1
-[Xestim_orbit1, NEQ_N_orbit1, NEQ_u_orbit1] = estimator_neq_sol(A_orbit1, b_orbit1, Cv_sat1_obs);
+% [Xestim_orbit1, NEQ_N_orbit1, NEQ_u_orbit1] = estimator_neq_sol(A_orbit1, b_orbit1, Cv_sat1_obs);
+[NEQ_N_orbit1, NEQ_u_orbit1] = estimator_neq(A_orbit1, b_orbit1, Cv_sat1_obs);
 % Orbit 2
-[Xestim_orbit2, NEQ_N_orbit2, NEQ_u_orbit2] = estimator_neq_sol(A_orbit2, b_orbit2, Cv_sat2_obs);
+% [Xestim_orbit2, NEQ_N_orbit2, NEQ_u_orbit2] = estimator_neq_sol(A_orbit2, b_orbit2, Cv_sat2_obs);
+[NEQ_N_orbit2, NEQ_u_orbit2] = estimator_neq(A_orbit2, b_orbit2, Cv_sat2_obs);
 % Range-rate
-[Xestim_rangerate, NEQ_N_rangerate, NEQ_u_rangerate] = estimator_neq_sol(A_rangerate, b_rangerate, Cv_LRI_rangerate);
+% [Xestim_rangerate, NEQ_N_rangerate, NEQ_u_rangerate] = estimator_neq_sol(A_rangerate, b_rangerate, Cv_LRI_rangerate);
+[NEQ_N_rangerate, NEQ_u_rangerate] = estimator_neq(A_rangerate, b_rangerate, Cv_LRI_rangerate);
 % Range
-[Xestim_range, NEQ_N_range, NEQ_u_range] = estimator_neq_sol(A_range, b_range, Cv_LRI_range);
+% [Xestim_range, NEQ_N_range, NEQ_u_range] = estimator_neq_sol(A_range, b_range, Cv_LRI_range);
+[NEQ_N_range, NEQ_u_range] = estimator_neq(A_range, b_range, Cv_LRI_range);
 
 % Combined solution Observations:  
 % Normal Equations :: Sum matrices
@@ -294,13 +387,14 @@ end
 
 [NEQn_d1 NEQn_d2] = size(NEQ_N);
 [NEQu_d1 NEQu_d2] = size(NEQ_u);
-
-% Least Squares solution
-tol2 = 30;
-Xmatrix3 = lsqminnorm(NEQ_N, NEQ_u, tol2);
-Xmatrix = Xmatrix3;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Weighted Least Squares solution
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+inv_id = 6;
+[Xmatrix] = inv_ls(NEQ_N, NEQ_u, inv_id);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Reduced NEQ matrices :: pre-elimination of orbit arc-related parameters
@@ -311,21 +405,87 @@ n_gravparam = Nparam_common;
 Xmatrix_GRAV_NEQ_reduced = Xmatrix_NEQ_reduced;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% Cond_no_prior_NEQn_grace1 = cond(NEQn_grace1)
+% Cond_no_prior_NEQn_grace2 = cond(NEQn_grace2)
+Cond_no_post_Nfinal = cond(NEQ_N);
+Cond_no_post_Nfinal_reduced = cond(NEQ_N_reduced);
+
+Condition_number_matrix(1,1) = Cond_no_post_Nfinal;
+Condition_number_matrix(2,1) = Cond_no_post_Nfinal_reduced;
+
+if NEQ_write == 1
+save NEQ_N_orbit1.neq  NEQ_N_orbit1 -ASCII -double
+save NEQ_u_orbit1.neq  NEQ_u_orbit1 -ASCII -double
+
+save NEQ_N_orbit2.neq  NEQ_N_orbit2 -ASCII -double
+save NEQ_u_orbit2.neq  NEQ_u_orbit2 -ASCII -double
+
+save NEQ_N_rangerate.neq  NEQ_N_rangerate -ASCII -double
+save NEQ_u_rangerate.neq  NEQ_u_rangerate -ASCII -double
+
+save NEQ_N_range.neq  NEQ_N_range -ASCII -double
+save NEQ_u_range.neq  NEQ_u_range -ASCII -double
+
+save NEQ_N_reduced.neq  NEQ_N_reduced -ASCII -double
+save NEQ_u_reduced.neq  NEQ_u_reduced -ASCII -double
+
+save NEQ_N.neq  NEQ_N -ASCII -double
+save NEQ_u.neq  NEQ_u -ASCII -double
+
+save COND_number_NEQ.neq  Condition_number_matrix -ASCII -double
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Orbit and Gravity Field parameters estimated corrections
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Orbit Parameters estimated corrections    
 Xmatrix_orbit1 = Xmatrix(1 : col_orbit1_2 , 1);
-Xmatrix_orbit2 = Xmatrix(col_orbit2_1 : col_orbit2_2 , 1);   
-% Gravity parameters estimated corrections    
-Xmatrix_gravparam = Xmatrix(col_common_1 : col_common_2 , 1);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Xmatrix_orbit2 = Xmatrix(col_orbit2_1 : col_orbit2_2 , 1) ;
 
-Xcommon = Xmatrix_gravparam;
-Xcommon_NEQreduced = Xmatrix_NEQ_reduced;
+if design_matrix_param_orbit == 1
+% Orbital parameters of state vector replacement back to original     
+% k1 = x_orbit1 - x_orbit2;
+% k2 = x_orbit1 + x_orbit2;
+% x_orbit1 =  (k1 + k2) / 2; 
+% x_orbit2 = (-k1 + k2) / 2;
+k1 = Xmatrix_orbit1;
+k2 = Xmatrix_orbit2;
+Xmatrix_orbit1 =  (k1 + k2) / 2 ;
+Xmatrix_orbit2 = (-k1 + k2) / 2 ;
+
+Xmatrix(1 : col_orbit1_2 , 1) = Xmatrix_orbit1;
+Xmatrix(col_orbit2_1 : col_orbit2_2 , 1) = Xmatrix_orbit2;  
+end
+
+if design_matrix_scale_orbit == 1
+% Xmatrix_orbit1 = [scale_orbit_pos * Xmatrix(1 : col_orbit1_1 -1+3 , 1); ... 
+%                   scale_orbit_vel * Xmatrix(col_orbit1_1 -1+4 : col_orbit1_1 -1+6 , 1) ];
+% Xmatrix_orbit2 = [scale_orbit_pos * Xmatrix(col_orbit2_1 : col_orbit2_1 -1+3 , 1); ... 
+%                   scale_orbit_vel * Xmatrix(col_orbit2_1 -1+4 : col_orbit2_1 -1+6 , 1) ] ;
+
+Xmatrix(1 : col_orbit1_1 -1+3 , 1)                  = scale_orbit_pos * Xmatrix(1 : col_orbit1_1 -1+3 , 1); 
+Xmatrix(col_orbit1_1 -1+4 : col_orbit1_1 -1+6 , 1)  = scale_orbit_vel * Xmatrix(col_orbit1_1 -1+4 : col_orbit1_1 -1+6 , 1);
+
+Xmatrix(col_orbit2_1 : col_orbit2_1 -1+3 , 1)       = scale_orbit_pos * Xmatrix(col_orbit2_1 : col_orbit2_1 -1+3 , 1); 
+Xmatrix(col_orbit2_1 -1+4 : col_orbit2_1 -1+6 , 1)  = scale_orbit_vel * Xmatrix(col_orbit2_1 -1+4 : col_orbit2_1 -1+6 , 1) ;
+
+Xmatrix_orbit1 = Xmatrix(1 : col_orbit1_2 , 1);
+Xmatrix_orbit2 = Xmatrix(col_orbit2_1 : col_orbit2_2 , 1) ;
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Gravity parameters estimated corrections    
+Xmatrix_common = Xmatrix(col_common_1 : col_common_2 , 1);
+Xcommon             = Xmatrix_common;
+Xcommon_NEQreduced  = Xmatrix_NEQ_reduced;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Structure array update :: param_aposteriori
 % sat1_Xparam_aposteriori     = grace_pod_struct.grace1_pod.orbit_matrices.param_aposteriori;
 grace_pod_struct.grace1_pod.orbit_matrices.param_cor_Xmatrix = Xmatrix_orbit1;
 grace_pod_struct.grace2_pod.orbit_matrices.param_cor_Xmatrix = Xmatrix_orbit2;
+
+if NEQ_write == 1
+save Xcommon_grav.neq  Xcommon -ASCII -double
+save Xcommon_grav_NEQreduced.neq  Xcommon_NEQreduced -ASCII -double
+end

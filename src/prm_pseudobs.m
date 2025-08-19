@@ -147,6 +147,7 @@ end
 % Kinematic Orbit data format :: GRACE gnv1b
 test = strcmp(pseudo_obs_type,'gnv1b');
 test_gnv1b = strcmp(pseudo_obs_type,'gnv1b');
+test_GNI1B = strcmp(pseudo_obs_type,'GNI1B');
 if test == 1
     %test_gnv1b = 1;
     orbtype = 'dyn';
@@ -214,8 +215,10 @@ end
 if test_grace == 1 || test_gracefo == 1    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % GRACE GNV1B orbits 
-    if test_gnv1b == 1 
-        [gnv1b,COVmatrix] = grace_gnv1b(obsorb_fname);   
+    if test_gnv1b == 1 || test_GNI1B == 1
+       % Orbit reference frame
+       OBS_ORB_Frame = 'trs';
+       [gnv1b,COVmatrix] = grace_gnv1b(obsorb_fname);   
         [sz1 sz2] = size(gnv1b);
         orbte = zeros(sz1,4);
         for i = 1 : sz1
@@ -230,6 +233,12 @@ if test_grace == 1 || test_gracefo == 1
                 COVmatrix(i*3-2:i*3,1) = [mjdTT mjdTT mjdTT]';
             end
             clear mjdgps t D M Y tutc tTT mjdTT
+        end
+        % GNI1B
+        if test_GNI1B == 1
+            % Orbit reference frame
+            OBS_ORB_Frame = 'crs';
+           orbce = orbte;
         end
         
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

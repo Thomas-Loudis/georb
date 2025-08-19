@@ -47,11 +47,11 @@ orbt = zeros(d1,d2);
 for it = 1 : d1
     mjd_it = orbc(it,1);
     [EOP,dEOP,EOP_inv,dEOP_inv] = trs2crs(mjd_it,eopdat,dpint, orbit_model_struct);
-    rITRS = (EOP)' * orbc(it,2:4)';
+    rITRS = EOP_inv * orbc(it,2:4)';
     if Vel_vector == 0        
     orbt(it,:) = [mjd_it rITRS'];
     elseif Vel_vector == 1
-    vITRS = (EOP)' * orbc(it,5:7)' + dEOP_inv * orbc(it,2:4)';
+    vITRS = EOP_inv * orbc(it,5:7)' + dEOP_inv * orbc(it,2:4)';
     orbt(it,:) = [mjd_it rITRS' vITRS'];
     end
 end

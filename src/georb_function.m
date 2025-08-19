@@ -64,7 +64,9 @@ test_orbit_mission = strcmp(georb_mode,'orbit_mission');
 % Satellite missions cases ::
 test_mission_grace   = strcmp(orbiting_object_name,'GRACE_mission');
 test_mission_gracefo = strcmp(orbiting_object_name,'GRACE_FO_mission');
-if test_orbit_mission == 1 && ( test_mission_grace == 1 || test_mission_gracefo == 1 )
+test_mission_GRACEC  = strcmp(orbiting_object_name,'GRACE_C_mission');
+test_mission_NGGM    = strcmp(orbiting_object_name,'NGGM_mission');
+if test_orbit_mission == 1 && ( test_mission_grace == 1 || test_mission_gracefo == 1 || test_mission_GRACEC == 1 || test_mission_NGGM == 1 )
     [out_dir_name] = orbit_mission_grace(orbit_model_struct, ic_data_matrix);
 end 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     

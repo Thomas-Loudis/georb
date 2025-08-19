@@ -194,6 +194,8 @@ date_name = sprintf('%d%s%s%s%s',year,'-',month_2d,'-',day_2d);
 % Satellite/Object name
 param_keyword = 'orbiting_object_name';
 [orbiting_object_name] = read_param_cfg(orbit_config_fname,param_keyword);
+% Initialisation to the full satellite ID name
+grace_sat_id = orbiting_object_name;
 test = strcmp(orbiting_object_name,'GRACE-A');
 if test == 1
     grace_sat_id = "A";
@@ -210,6 +212,23 @@ test = strcmp(orbiting_object_name,'GRACE-D');
 if test == 1
     grace_sat_id = "D";
 end
+test = strcmp(orbiting_object_name,'GRACE-E');
+if test == 1
+    grace_sat_id = "E";
+end
+test = strcmp(orbiting_object_name,'GRACE-F');
+if test == 1
+    grace_sat_id = "F";
+end
+test = strcmp(orbiting_object_name,'NGGM-1');
+if test == 1
+    grace_sat_id = "G";
+end
+test = strcmp(orbiting_object_name,'NGGM-2');
+if test == 1
+    grace_sat_id = "H";
+end
+
 
 % Data format suffix
 dataformat_suffix = sprintf('%s','.txt');

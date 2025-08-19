@@ -94,6 +94,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Write Orbit Observation residuals
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if size(sat1_OBS_matrix,1) > 1      
+
 % GRACE1
 orbc = orbcGA;
 orbce = sat1_OBS_matrix;
@@ -119,6 +121,13 @@ OBS_residuals = dorbc;
 % Update central structure arrays
 orbit_matrices_G2.observation_residuals = OBS_residuals;
 grace_pod_struct.grace2_pod.orbit_matrices.observation_residuals = OBS_residuals;
+
+else
+rms_obs_GA = [0 0 0];
+rms_obs_GB = [0 0 0];
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

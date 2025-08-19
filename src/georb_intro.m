@@ -15,17 +15,17 @@ function georb_intro(main_config_fname)
 % Dr. Thomas Loudis Papanikolaou                            21 January 2025
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-src_version = 'v.1.9.4.6';
+src_version = 'v.1.9.7';
 fprintf('%s%s \n\n','GEORB ',src_version);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Initial Conditions series structure matrix
-[ic_data_struct] = ic_series_preproc(main_config_fname);
+[ic_satellites] = ic_series_preproc(main_config_fname);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Orbit modelling initialisation 
-[orbit_model_struct] = orbit_model_init(main_config_fname,ic_data_struct,src_version);
+[orbit_model_struct] = orbit_model_init(main_config_fname,ic_satellites,src_version);
 [orbit_model_struct] = orbit_model_comb(orbit_model_struct);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -33,6 +33,6 @@ fprintf('%s%s \n\n','GEORB ',src_version);
 to_tic = tic;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % georb function in serial or parallel mode
-georb_series(orbit_model_struct, ic_data_struct)
+georb_series(orbit_model_struct, ic_satellites)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 fprintf('%s % .3f \n', 'Overall Computation Time (min) :', toc(to_tic)/60);

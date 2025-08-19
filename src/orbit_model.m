@@ -77,6 +77,7 @@ orbit_model_struct.GM_Earth = GM;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 param_keyword = '3rd_body_peturbations';
 [effect_yn] = read_param_cfg(cfg_fname,param_keyword);
+orbit_model_struct.planets.effect_yn = effect_yn;
 test_planets = strcmp(effect_yn,'y');
 param_keyword = 'Tides_effects';
 [effect_yn] = read_param_cfg(cfg_fname,param_keyword);
@@ -133,6 +134,7 @@ orbit_model_struct.atm_tides = aod_tides_struct;
 end
 %--------------------------------------------------------------------------
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Load Love numbers (LLN) kn' 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -148,12 +150,17 @@ orbit_model_struct.loadlovenumbers = loadlovenumbers_struct;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Ocean Pole Tide 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+param_keyword = 'ocean_pole_tide';
+[ocean_pole_tide_yn] = read_param_cfg(cfg_fname,param_keyword);
+test = strcmp(ocean_pole_tide_yn,'y');
+oceanpoletide_struct.ocean_pole_tide_yn = ocean_pole_tide_yn;
+if test == 1
 % Max Degree of spherical harmonics expansion 
 nm_values = ocean_tides_struct.degree_eqm;
 oceanTides_degree = nm_values(1);
 oceanTides_order  = nm_values(2);
-opoletide_n = oceanTides_degree;
-opoletide_m  = opoletide_n; 
+opoletide_n       = oceanTides_degree;
+opoletide_m       = opoletide_n; 
 oceanpoletide_struct.opoletide_degree_eqm = [opoletide_n opoletide_m];
 oceanpoletide_struct.opoletide_degree_veq = [n_max_veq m_max_veq];
 
@@ -168,7 +175,7 @@ oceanpoletide_struct.desaioplecoef_Anm_R = Anm_R;
 oceanpoletide_struct.desaioplecoef_Anm_I = Anm_I;
 oceanpoletide_struct.desaioplecoef_Bnm_R = Bnm_R;
 oceanpoletide_struct.desaioplecoef_Bnm_I = Bnm_I;
-
+end
 orbit_model_struct.oceanpoletide = oceanpoletide_struct;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

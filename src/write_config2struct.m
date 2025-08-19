@@ -1042,6 +1042,12 @@ test_obs_type = strcmp(pseudo_obs_type, obs_keyword);
 if test_obs_type == 1
 datalevel_name  = 'GNV1B';
 end
+obs_keyword = 'GNI1B';
+test_obs_type = strcmp(pseudo_obs_type, obs_keyword);
+if test_obs_type == 1
+datalevel_name  = 'GNI1B';
+end
+
 test_mission_grace   = strcmp(mission_name,'GRACE_mission');
 if test_mission_grace == 1
     datarelease_ver = '02';
@@ -1102,11 +1108,17 @@ if test_georb_mode == 1
     % Satellite missions cases :: GRACE missions
     test_mission_grace   = strcmp(mission_name,'GRACE_mission');
     test_mission_gracefo = strcmp(mission_name,'GRACE_FO_mission');
+    test_mission_GRACEC  = strcmp(mission_name,'GRACE_C_mission');
+    test_mission_NGGM    = strcmp(mission_name,'NGGM_mission');
+    test_mission_grav = test_mission_grace + test_mission_gracefo + test_mission_GRACEC + test_mission_NGGM;
+    % if test_orbit_mission == 1 && ( test_mission_grav > 0 )
+
     if test_mission_grace == 1 
     datarelease_ver = '03';
     % datarelease_ver = sca_data_release;
     end
-if test_mission_grace == 1 || test_mission_gracefo == 1
+% if test_mission_grace == 1 || test_mission_gracefo == 1 || test_mission_grav > 0
+if test_mission_grace == 1 || test_mission_gracefo == 1 || test_mission_GRACEC == 1 || test_mission_NGGM == 1
 % Satellite Data :: KBR data
 param_keyword = 'KBR_data';
 %param_value = sscanf(satdata_line_mjd,'%*s%*s%*s%*s%*s%*s%*s%*s%*s %s %*');

@@ -66,7 +66,9 @@ param_keyword = 'orbiting_objects_mission';
 % Satellite missions cases ::
 test_mission_grace   = strcmp(orbiting_objects_mission,'GRACE_mission');
 test_mission_gracefo = strcmp(orbiting_objects_mission,'GRACE_FO_mission');
-
+test_mission_GRACEC  = strcmp(orbiting_objects_mission,'GRACE_C_mission');
+test_mission_NGGM    = strcmp(orbiting_objects_mission,'NGGM_mission');
+    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % GRACE folder for output files/folders of orbits and instersatellite-ranging data analysis
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -78,6 +80,10 @@ if test_mission_grace == 1
 elseif test_mission_gracefo == 1
     %OUT_foldername_GRACE = 'GRACE-FO';
     OUT_fname_mission_mjd = sprintf('%s%s%d','GRACE-FO','_',fix(IC_MJDo));
+elseif test_mission_GRACEC == 1
+    OUT_fname_mission_mjd = sprintf('%s%s%d','GRACE-CO','_',fix(IC_MJDo));
+elseif test_mission_NGGM == 1
+    OUT_fname_mission_mjd = sprintf('%s%s%d','NGGM','_',fix(IC_MJDo));    
 end
 
 if test_orbit_mission == 0

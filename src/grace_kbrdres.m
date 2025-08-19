@@ -80,8 +80,8 @@ intersat_ranging_orbits.rangerate   = dv;
 % dResidual = residual(i) - residual(i-1)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [sz1 sz2] = size(range_common);
-% dresrange = zeros(sz1-1,2);
-% dresrangerate = zeros(sz1-1,2);
+dresrange = zeros(sz1-1,2);
+dresrangerate = zeros(sz1-1,2);
 j = 1;
 for i = 1 : sz1
     if i > 1

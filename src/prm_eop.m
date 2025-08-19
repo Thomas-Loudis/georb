@@ -44,39 +44,54 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Time period length in Days
-arcd = fix(time_period / (24 * 60 * 60)) + 1;
+% arcd = fix(time_period / (24 * 60 * 60)) + 1;
+arcd = fix(time_period / (24 * 60 * 60));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Half of dpint
-dpint2 = dpint/2;
+% dpint2 = dpint/2;
+dpint2 = (dpint + arcd)/2;
 % Integer of dpint2
 dpint2_intg = fix(dpint2);
+dp_all = arcd + dpint; 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Array of MJD numbers of EOP data points that are required for the orbit
 % arc length: mjd_dp  dpx1 matrix 
-if dpint2_intg - dpint2 < 10^-8
-    mjd1 = mjdo_UTC - (dpint2 - 1);
-    dp = arcd + (dpint2-1) + (dpint2);
-    mjd_dp = zeros(dp,1);
-    mjd_dp(1,1) = mjd1;
-    for i = 2 : dp
-        mjd_dp(i,1) = mjd1 + i - 1;
-    end
-elseif dpint2_intg - dpint2 ~= 0    
-    mjd1 = mjdo_UTC - dpint2_intg;
-    dp = arcd + dpint2_intg + dpint2_intg;
-    mjd_dp = zeros(dp,1);
-    mjd_dp(1,1) = mjd1;
-    for i = 2 : dp
-        mjd_dp(i,1) = mjd1 + i - 1;
-    end        
+% if dpint2_intg - dpint2 < 10^-8
+%     mjd1 = mjdo_UTC - (dpint2 - 1);
+%     dp = (dpint2-1) + (dpint2);
+%     % dp = dp_all;
+%     mjd_dp = zeros(dp,1);
+%     mjd_dp(1,1) = mjd1;
+%     for i = 2 : dp
+%         mjd_dp(i,1) = mjd1 + i - 1;
+%     end
+% elseif dpint2_intg - dpint2 ~= 0    
+%     mjd1 = mjdo_UTC - dpint2_intg;
+%     dp = dpint2_intg + dpint2_intg;
+%     % dp = dp_all;
+%     mjd_dp = zeros(dp,1);
+%     mjd_dp(1,1) = mjd1;
+%     for i = 2 : dp
+%         mjd_dp(i,1) = mjd1 + i - 1;
+%     end        
+% end
+
+mjd1 = mjdo_UTC - dpint2_intg;
+% dp = dpint2_intg + dpint2_intg;
+dp = dp_all;
+mjd_dp = zeros(dp,1);
+mjd_dp(1,1) = mjd1;
+for i = 2 : dp
+    mjd_dp(i,1) = mjd1 + i - 1;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Read EOP series data file
 [eopdat] = eop_read(eopfilename,mjd_dp);
+% [eopdat] = eop_read_v2(eopfilename);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

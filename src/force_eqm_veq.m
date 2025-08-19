@@ -132,10 +132,19 @@ legendre_functions_struct.Pnm_norm_derivatives_2nd = d2Pnm_norm;
 a_earth = accel_vec;
 Uearth = partials_r;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Gravtiy parameter estimation 
-[partials_p] = force_gravity_estim(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config, gfm_struct_glob);
+% Gravity signal (temporal signal; optional considered in case studies) 
+[accel_vec] = force_gravity_signal(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config, gfm_struct_glob, legendre_functions_struct);
+accel_grav_signal_delta = accel_vec;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Gravity field parameters estimation 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+[partials_p, accel_vec, partials_r] = force_gravity_estim(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config, gfm_struct_glob, legendre_functions_struct);
 % Gravity field partials w.r.t. unknown parameters 
-PD_grav_param = partials_p;
+PD_grav_param = partials_p; 
+partials_r_grav_estim = partials_r;
+% Gravity signal (time-variable) (applied only for gravity field recovery as gravity corrections to be estimated) 
+accel_grav_signal = accel_vec;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -187,8 +196,8 @@ a_AOD_crf = accel_vec;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Overall gravitational effects components
-a_grav = a_earth + a_bodies + a_indirectJ2 + a_tides + a_relativistic + a_AOD_crf + a_atm_tides_crf;
-pdv_grav = Uearth + Utides_icrs + pdv_3rdbodies;
+a_grav = a_earth + a_bodies + a_indirectJ2 + a_tides + a_relativistic + a_AOD_crf + a_atm_tides_crf + accel_grav_signal + accel_grav_signal_delta;
+pdv_grav = Uearth + Utides_icrs + pdv_3rdbodies + partials_r_grav_estim;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 

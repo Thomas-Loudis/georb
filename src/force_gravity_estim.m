@@ -1,4 +1,4 @@
-function [partials_p, accel_vec] = force_gravity_estim(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config, gfm_struct_glob, legendre_functions_struct)
+function [partials_p, accel_vec, partials_r] = force_gravity_estim(mjd,Z_crs,Rtrs2crs, EQ_mode, ORB_config, gfm_struct_glob, legendre_functions_struct)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -20,6 +20,7 @@ function [partials_p, accel_vec] = force_gravity_estim(mjd,Z_crs,Rtrs2crs, EQ_mo
 %
 % Output arguments:
 % - partials_p:     Partials w.r.t. parameters 
+% - accel_vec:      Acceleration vector cartesian components in Celestial reference frame (GCRS)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Author:  Thomas Loudis Papanikolaou                                     
 % Created: 21 March 2023
@@ -117,27 +118,61 @@ if test_grav_paramestim_10 == 1
     degree_trunc = Nparam_grav_max;
     order_trunc  = Nparam_grav_max;
 
-    % Acceleration in ITRS
-    [partials_rpl, partials_xyz] = potential_partials_1st(rITRS,degree_trunc,order_trunc,GM_Earth,radius_Earth, delta_Cnm, delta_Snm, legendre_functions_struct, degree_min);
-    ax = partials_xyz(1,1);
-    ay = partials_xyz(2,1);
-    az = partials_xyz(3,1);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+n_max = Nparam_grav_max;
+% computation of spherical coordinates (in radians)
+[lamda,phi,l] = lamda_phi(rITRS);
+rdist = l;
+% Normalized associated Legendre functions
+[Pnm_norm] = Legendre_functions(phi,n_max);
+
+% First-order derivatives of normalized associated Legendre functions
+[dPnm_norm] = Legendre1ord(phi,n_max) ;
+
+% Second-order derivatives of the Normalized Associated Legendre functions
+[d2Pnm_norm] = Legendre2ord(phi,n_max) ;
+
+legendre_functions_struct.Pnm_norm = Pnm_norm;
+legendre_functions_struct.Pnm_norm_derivatives_1st = dPnm_norm;
+legendre_functions_struct.Pnm_norm_derivatives_2nd = d2Pnm_norm;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+
+    if VEQ_mode_test == 0    
+        % Acceleration in ITRS
+        [partials_rpl, partials_xyz] = potential_partials_1st(rITRS,degree_trunc,order_trunc,GM_Earth,radius_Earth, delta_Cnm, delta_Snm, legendre_functions_struct, degree_min);
+        ax = partials_xyz(1,1);
+        ay = partials_xyz(2,1);
+        az = partials_xyz(3,1);
+        Uearth = zeros(3,3);
+    elseif VEQ_mode_test == 1
+        % Acceleration and Partials w.r.t. state vector in ITRS
+        [partials_2nd_spher, partials_2nd_xyz, partials_1st_spher, partials_1st_xyz] = potential_partials_2nd(rITRS,degree_trunc,order_trunc,GM_Earth,radius_Earth, delta_Cnm, delta_Snm, legendre_functions_struct, degree_min);        
+        Uearth = partials_2nd_xyz;
+        ax = partials_1st_xyz(1,1);
+        ay = partials_1st_xyz(2,1);
+        az = partials_1st_xyz(3,1);
+    end
 
     % Transformation of acceleration from ITRS to the GCRS
     aGCRS = eopmatrix * [ax; ay; az];
     a_grav_x = aGCRS(1,1);
     a_grav_y = aGCRS(2,1);
     a_grav_z = aGCRS(3,1);
+    if VEQ_mode_test == 1
+        % 2nd order partials: Transformation from ITRS to GCRS
+        % (df/dr)_Inertial = EOP(t) * (df/dr)_Terrestrial * inv( EOP(t) )
+        Uearth = eopmatrix * Uearth * (eopmatrix)' ;       
+    end    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 else
     a_grav_x = 0;
     a_grav_y = 0;
     a_grav_z = 0;
-    % Uearth = zeros(3,3);
+    Uearth = zeros(3,3);
 end
 accel_grav_signal =  [a_grav_x; a_grav_y; a_grav_z];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 accel_vec = accel_grav_signal;
-% partials_r = Uearth;
+partials_r = Uearth;
 

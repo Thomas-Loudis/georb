@@ -31,74 +31,30 @@ function [Xmatrix, Xmatrix_alt, bmatrix, Amatrix_out, Cx, Cv, NEQn, NEQu] = esti
 %             Upgrade and rename of function mainf_DOD.m
 % 17/08/2022, Thomas Loudis Papanikolaou
 %             Upgrade: matrix decomposition approaches
+% 11/08/2025, TLP,  calling the new function neq_orbit
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Least-squares estimator
-% Normal Equations are formed and computed directly at the common epochs
+% Formulation of the Normal Equation matrices, Design matrix, b matrix 
+[NEQn, NEQu, Amatrix_out, bmatrix] = neq_orbit (orbref,veqZarray,veqParray,orbobs,sigma_obs);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[sz1 sz2] = size(orbobs);
-[sz3 sz4] = size(orbref);
-iobs0 = 1;
-Nepochs = 0;
-for iref = 1 : sz3
-    % Reference Orbit
-    tiref = orbref(iref,1);
-    % Pseduo-Observations (Kinematic Orbit)
-    for iobs = iobs0 : sz1
-        tiobs = orbobs(iobs,1);
-        % Common Epochs
-        if abs(tiref - tiobs) < 10^-8
-            Nepochs = Nepochs + 1;
-            % ObsEpochs(Nepochs,1) = orbref(iref,1);
-            % obstype  :  1/2  [r/v]
-            obstype = 1;
-            if obstype == 1
-                Nobsset = 3;
-            elseif obstype == 2
-                Nobsset = 6;
-            end
+
+% Cond_No_esitmator_orbit_proscale = cond(NEQn)
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            Wmatrix_ti = [orbobs(iobs,2:(Nobsset+1)) - orbref(iref,2:(Nobsset+1))]';
-            Wmatrix((Nepochs-1)*Nobsset+1 : Nepochs*Nobsset,1) = Wmatrix_ti;
-            timearray = [tiref; tiref; tiref];
-            Wmatrix_time((Nepochs-1)*Nobsset+1 : Nepochs*Nobsset,:) = [timearray Wmatrix_ti];           
+% Scaling of Design Matrix
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Design Matrix values obtained by VEQ arrays values
-            % veqZarray
-            Amatrix_ti = veqZarray( (iref-1)*6+1 : (iref-1)*6+Nobsset , 2:end);
-            Amatrix((Nepochs-1)*Nobsset+1 : Nepochs*Nobsset,:) = Amatrix_ti;
-            Amatrix_time((Nepochs-1)*Nobsset+1 : Nepochs*Nobsset,:) = [timearray Amatrix_ti];
-            % veqParray
-            if size(veqParray,1) > 1 
-            AmatrixP_ti = veqParray( (iref-1)*6+1 : (iref-1)*6+Nobsset , 2:end);
-            AmatrixP((Nepochs-1)*Nobsset+1 : Nepochs*Nobsset,:) = AmatrixP_ti;
-            end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            iobs0 = iobs + 1';
-            clear tiref tiobs            
-            break
-        end
-    end    
+design_matrix_scale_orbit = 0;
+if design_matrix_scale_orbit == 1
+scale_orbit_pos = 3 * 10^6;
+scale_orbit_vel = 3 * 10^3;
+[n1,n2] = size(Amatrix_out);
+
+Amatrix_out(:,1:3)  = Amatrix_out(:,1:3) * scale_orbit_pos;
+Amatrix_out(:,4:6)  = Amatrix_out(:,4:6) * scale_orbit_vel;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Design Matrix: Final Amatrix 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if size(veqParray,1) > 1 
-Amatrix_ZP = [Amatrix AmatrixP];
-else
-Amatrix_ZP = Amatrix;
-end
-[d1,d2] = size(Amatrix_ZP);
-Nobs = d1;
-Nparam = d2;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-bmatrix = Wmatrix;
-Amatrix_out = Amatrix_ZP;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parameters Estimation
@@ -107,15 +63,15 @@ Amatrix_out = Amatrix_ZP;
 [Xmatrix, NEQn, NEQu, error_matrix, sigma0, Cx, Cv] = estimator_neq_sol(Amatrix_out, bmatrix, sigma_obs);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% Cond_No_esitmator_orbit_postscale = cond(NEQn)
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Errors matrix
-% error_matrix = bmatrix - Amatrix_out * Xmatrix;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Covariance matrix of estimated parameters
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Scale parameters
+if design_matrix_scale_orbit == 1
+Xmatrix(1:3,1) = scale_orbit_pos * Xmatrix(1:3,1);
+Xmatrix(4:6,1) = scale_orbit_vel * Xmatrix(4:6,1);
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Xmatrix_alt = Xmatrix;
+

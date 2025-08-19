@@ -1,4 +1,4 @@
-function [ic_data_struct] = ic_series_preproc(main_config_fname)
+function [ic_satellites] = ic_series_preproc(main_config_fname)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Function: ic_series_preproc
@@ -11,9 +11,13 @@ function [ic_data_struct] = ic_series_preproc(main_config_fname)
 % - main_config_fname : Main Configuration file name
 %
 % Output arguments:
-% - ic_data_struct    : Initial Conditions of all days in structure array
+% - ic_satellites    : Initial Conditions for all satellites for all days in structure array
+%                       Structure Format: ic_satellites.epochs.ic_data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Dr. Thomas Loudis Papanikolaou                            21 January 2025
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Last modified:
+% 10/06/2025  TLP,  Source Code minor upgrade 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -53,6 +57,8 @@ if  test_orbit_mission == 1
 % Satellite missions cases :: GRACE missions
 test_mission_grace   = strcmp(orbiting_object_name,'GRACE_mission');
 test_mission_gracefo = strcmp(orbiting_object_name,'GRACE_FO_mission');
+test_mission_GRACEC  = strcmp(orbiting_object_name,'GRACE_C_mission');
+test_mission_NGGM    = strcmp(orbiting_object_name,'NGGM_mission');
 
 % GRACE or GRACE-FO mission' satellites
 if test_mission_grace == 1
@@ -61,6 +67,12 @@ if test_mission_grace == 1
 elseif test_mission_gracefo == 1
     satellite_1 = 'GRACE-C';
     satellite_2 = 'GRACE-D';
+elseif test_mission_GRACEC == 1
+    satellite_1 = 'GRACE-E';
+    satellite_2 = 'GRACE-F';
+elseif test_mission_NGGM == 1
+    satellite_1 = 'NGGM-1';
+    satellite_2 = 'NGGM-2';
 end
 
 % Read IC configuration file to get the IC epochs list for the input orbiting mission/object
@@ -81,8 +93,14 @@ ic_data_satellite2 = ic_sat2_series;
 % ic_data_struct(2).ic_data = ic_data_satellite2;
 
 % ic_series function outputs structure matrix matrixname.ic_data
-ic_data_struct(1) = ic_data_satellite1;
-ic_data_struct(2) = ic_data_satellite2;
+% ic_data_struct(1) = ic_data_satellite1;
+% ic_data_struct(2) = ic_data_satellite2;
+% ic_data_struct(1).satellites = ic_data_satellite1;
+% ic_data_struct(2).satellites = ic_data_satellite2;
+
+% IC data structure array :: ic_satellites.epochs.ic_data
+ic_satellites(1).epochs = ic_data_satellite1;
+ic_satellites(2).epochs = ic_data_satellite2;
 
 else
 
@@ -102,7 +120,12 @@ end
 
 % Fomrulation of IC series matrix for N orbit arcs
 [ic_data_series] = ic_series(ic_data_objects_array, No_orbit_arc_series);
-ic_data_struct = ic_data_series;
+% ic_time_series(ic_k).ic_data = ic_data_object_Narcs;
+% ic_data_struct = ic_data_series;
+% ic_data_struct.satellites = ic_data_series;
+
+% IC data structure array :: ic_satellites.epochs.ic_data
+ic_satellites.epochs = ic_data_series;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

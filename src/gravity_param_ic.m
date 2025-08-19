@@ -1,4 +1,4 @@
-function [N_param_GRAV, Nparam_C, Nparam_S , C_degree_order, S_degree_order, dCnm_matrix, dSnm_matrix] = gravity_param_ic(degree_min, degree_max, order_min, order_max)
+function [N_param_GRAV, Nparam_C, Nparam_S , C_degree_order, S_degree_order, dCnm_matrix, dSnm_matrix] = gravity_param_ic(degree_min, degree_max, order_min, order_max, S_order_min)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -38,14 +38,14 @@ end
 Nparam_C = Ncoef;
 
 % S coefficients
-if order_min == 0
-    % S_order_min = 1;
-    S_order_min = 0;
-end
-if order_max == 0
-    S_order_min = 0;
-end
-    S_order_min = 0;
+% S_order_min = order_min;
+% if order_min == 0
+%     S_order_min = 1;
+%     % S_order_min = 0;
+% end
+% if order_max == 0
+%     S_order_min = 0;
+% end
 Ncoef = 0;
 for n = degree_min : degree_max
     order_limit = order_max;

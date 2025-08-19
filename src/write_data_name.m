@@ -32,6 +32,8 @@ param_keyword = 'orbiting_objects_mission';
 % Satellite missions cases ::
 test_grace   = strcmp(orbiting_object_mission_name,'GRACE_mission');
 test_gracefo = strcmp(orbiting_object_mission_name,'GRACE_FO_mission');
+test_mission_GRACEC  = strcmp(orbiting_object_mission_name,'GRACE_C_mission');
+test_mission_NGGM    = strcmp(orbiting_object_mission_name,'NGGM_mission');
 
 % Satellite/Object name
 param_keyword = 'orbiting_object_name';
@@ -51,8 +53,11 @@ if mission_01 == 1
         georb_dataformat_name = sprintf('%s%s%d', 'GRACE','_',fix(IC_MJDo));
     elseif test_gracefo == 1
         georb_dataformat_name = sprintf('%s%s%d', 'GRACE-FO','_',fix(IC_MJDo));
+    elseif test_mission_GRACEC == 1
+        georb_dataformat_name = sprintf('%s%s%d', 'GRACE-CO','_',fix(IC_MJDo));
+    elseif test_mission_NGGM == 1
+        georb_dataformat_name = sprintf('%s%s%d', 'NGGM','_',fix(IC_MJDo));
     end
-
 else
     % Case of individual orbiting object/satellite
     georb_dataformat_name = sprintf('%s%s%d', orbiting_object_name,'_',fix(IC_MJDo));
