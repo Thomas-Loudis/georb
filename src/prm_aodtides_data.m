@@ -116,7 +116,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Atmospheric Tides model from data file in form of geopotential spherical harmonic coefficients
-prm_aodtides_data_atm_tides = 2;
+prm_aodtides_data_atm_tides = 1;
 if prm_aodtides_data_atm_tides == 2
 atm_tides_potential_fname = 'atmosTides_AOD1BRL06.potential.iers.txt';
 [atmtides_struct, delaunay_doodson_multipliers,aod_tides_dCnm_plus,aod_tides_dSnm_plus,aod_tides_dCnm_minus,aod_tides_dSnm_minus] = read_oceantides(atm_tides_potential_fname);
