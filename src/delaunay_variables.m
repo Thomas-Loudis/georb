@@ -34,6 +34,7 @@ taph = ( JD_TT - 2451545.0 ) / 36525;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Delaunay variables for Sun and Moon
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if 1 < 0
 % F1 = l = Mean anonaly of the Moon
 F1 = 134.96340251 * (pi/180) + 1717915923.2178 * arcsec2rad * taph + 31.8792 * arcsec2rad * taph^2 + 0.051635 * arcsec2rad * taph^3 - 0.00024470 * arcsec2rad * taph^4;
 % F2 = l' = Mean anonaly of the Sun
@@ -44,36 +45,16 @@ F3 = 93.27209062 * (pi/180) + 1739527262.8478 * arcsec2rad * taph - 12.7512 * ar
 F4 = 297.85019547 * (pi/180) + 1602961601.2090 * arcsec2rad * taph - 6.3706 * arcsec2rad * taph^2 + 0.006593 * arcsec2rad * taph^3 - 0.00003169 * arcsec2rad * taph^4;
 % F5 = Omega = Mean Longitude of the Ascending Node of the Moon
 F5 = 125.04455501 * (pi/180) - 6962890.5431 * arcsec2rad * taph + 7.4722 * arcsec2rad * taph^2 + 0.007702 * arcsec2rad * taph^3 - 0.00005939 * arcsec2rad * taph^4;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 F1 = mod(F1 , 2*pi);
 F2 = mod(F2 , 2*pi);
 F3 = mod(F3 , 2*pi);
 F4 = mod(F4 , 2*pi);
 F5 = mod(F5 , 2*pi);
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-
-% % F1 = l = Mean anonaly of the Moon
-% F1 = arcsec2rad * ( 134.96340251 * 3600 + 1717915923.2178  * taph + 31.8792 * taph^2 + 0.051635 * taph^3 - 0.00024470 * taph^4 );
-% 
-% % F2 = l' = Mean anonaly of the Sun
-% F2 = arcsec2rad * (357.52910918 * 3600 + 129596581.0481 * taph - 0.5532 * taph^2 + 0.000136 * taph^3 - 0.00001149 * taph^4);
-% 
-% % F3 = F = L - Omega
-% F3 = arcsec2rad * (93.27209062 * 3600 + 1739527262.8478 * taph - 12.7512 * taph^2 - 0.001037 * taph^3 + 0.00000417 * taph^4);
-% 
-% % F4 = D = Mean Elongation of the Moon from the Sun
-% F4 = arcsec2rad * (297.85019547 * 3600 + 1602961601.2090 * taph - 6.3706 * taph^2 + 0.006593 * taph^3 - 0.00003169 * taph^4);
-% 
-% % F5 = Omega = Mean Longitude of the Ascending Node of the Moon
-% F5 = arcsec2rad * (125.04455501 * 3600 - 6962890.5431 * taph + 7.4722 * taph^2 + 0.007702 * taph^3 - 0.00005939 * taph^4);
-
-
-% 1296000
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % F1 = l = Mean anonaly of the Moon
 F1 = arcsec2rad * mod( ( 134.96340251 * 3600 + 1717915923.2178  * taph + 31.8792 * taph^2 + 0.051635 * taph^3 - 0.00024470 * taph^4 ), 1296000);
 
@@ -88,3 +69,4 @@ F4 = arcsec2rad * mod( (297.85019547 * 3600 + 1602961601.2090 * taph - 6.3706 * 
 
 % F5 = Omega = Mean Longitude of the Ascending Node of the Moon
 F5 = arcsec2rad * mod( (125.04455501 * 3600 - 6962890.5431 * taph + 7.4722 * taph^2 + 0.007702 * taph^3 - 0.00005939 * taph^4) , 1296000);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

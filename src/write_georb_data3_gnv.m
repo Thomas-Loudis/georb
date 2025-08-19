@@ -27,7 +27,7 @@ function [georb2gnv_data_name] = write_georb_data3_gnv(orbit_config_fname, data_
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Output data file name conventions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[georb_dataformat_name, georb_dataformat_suffix] = write_data_name(orbit_config_fname, 0);
+% [georb_dataformat_name, georb_dataformat_suffix] = write_data_name(orbit_config_fname, 0);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -68,6 +68,10 @@ reference_frame_keyword = 'ICRF';
 test_reference_frame = strcmp(reference_frame,reference_frame_keyword);
 if test_reference_frame == 1
 data_functional_part2 = 'crf';
+
+% GEORB to GNV data format name :: GNT
+georb2gnv_dataformat_name = sprintf('%s','GNT1B');
+
 end
 
 % ITRF
@@ -75,6 +79,10 @@ reference_frame_keyword = 'ITRF';
 test_reference_frame = strcmp(reference_frame,reference_frame_keyword);
 if test_reference_frame == 1
 data_functional_part2 = 'trf';
+
+% GEORB to GNV data format name :: GNP
+georb2gnv_dataformat_name = sprintf('%s','GNP1B');
+
 end
 
 % ITRF
@@ -94,6 +102,12 @@ data_functional_filename = sprintf('%s%s%s%s','_',data_functional_part1,'_',data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Case orbit in itrf
 data_functional_keyword = '_orbit_trf';
+test_data_functional = strcmp(data_functional_filename,data_functional_keyword);
+if test_data_functional == 1
+    data_functional_filename = '';
+end
+% Case orbit in icrf
+data_functional_keyword = '_orbit_crf';
 test_data_functional = strcmp(data_functional_filename,data_functional_keyword);
 if test_data_functional == 1
     data_functional_filename = '';
@@ -165,7 +179,7 @@ end
 % GNP1B_2019-01-01_C_00.txt
 
 % GEORB to GNV data format name
-georb2gnv_dataformat_name = sprintf('%s','GNP1B');
+% georb2gnv_dataformat_name = sprintf('%s','GNP1B');
 
 % Date
 % mjd_to = data_matrix(1,1);

@@ -244,15 +244,13 @@ t = ( JD_TT - 2451545.0 ) / 36525;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Earth Rotation Angle
 Tu = JD_UT1 - 2451545.0;
-%theta = 2* pi * ( 0.7790572732640 + 1.00273781191135448 * Tu );
-theta = 2*pi * ( 0.7790572732640 + Tu + 0.00273781191135448 * Tu );
+% theta = 2* pi * ( 0.7790572732640 + 1.00273781191135448 * Tu );
+% theta = 2*pi * ( 0.7790572732640 + Tu + 0.00273781191135448 * Tu );
 theta = 2*pi * ( 0.7790572732640 + 1.00273781191135448 * Tu) + delta_omega * Tu ;
-
 theta = mod( theta , 2*pi);
 
 % JD_UT1_fraction = JD_UT1 - fix(JD_UT1);
 % theta = mod( 2*pi * ( 0.7790572732640 + JD_UT1_fraction + 0.00273781191135448 * Tu ) , 2*pi);
-
 
 % Earth Rotation matrix
 % computation of  R(t) = R3(-theta)
@@ -418,28 +416,3 @@ Pinv = [  0   1   0
 
 dEOP_inv = dtheta * W_t_inv * Pinv * R_t_inv * Q_t_inv ;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% time_arg = TT 
-% 
-% trs2crs_matrices = 0
-% EOP
-% dEOP
-% EOP_inv
-% dEOP_inv
-% 
-% trs2crs_matrices = 1
-% 
-% EOP_inv = inv(EOP)
-% dEOP_inv2 = dtheta * Pinv * EOP_inv
-% 
-% trs2crs_matrices = 2
-% 
-% EOP_T = EOP'
-% dEOP_T = dEOP'
-% 
-% trs2crs_matrices = 3
-% % EOP = Q_t * R_t * W_t;
-
-% EOP_inv = W_t' * R_t' * Q_t' ;
-% dEOP_inv = dtheta * W_t' * P' * R_t' * Q_t' ; 
-

@@ -239,6 +239,3 @@ else
     orbke = 0;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-save GNV_orbte.out orbte -ascii -double
-save GNV_orbce.out orbce -ascii -double

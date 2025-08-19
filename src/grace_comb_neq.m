@@ -152,15 +152,8 @@ end
 [Amatrix_rangerate_sat2, Wmatrix_rangerate_sat2, Amatrix_range_sat2, Wmatrix_range_sat2, NEQ_range_sat2, NEQ_rangerate_sat2] = neq_intersat_ranging(orbcGA,orbcGB, sat1_veqZ_matrix,sat1_veqP_matrix, sat2_veqZ_matrix,sat2_veqP_matrix, intersat_observation_data, Cv_LRI); 
 
 % Orbit pseudo-observations
-% meth ='estimator_orbit'
-% tic
 % [Xmatrix_obsorb_grace2,Xmatrix_alt_obsorb_grace2,Wmatrix_obsorb_grace2,Amatrix_obsorb_grace2, Cx, Cv, NEQn_grace2, NEQu_grace2] = estimator_orbit (orbcGB, sat2_veqZ_matrix, sat2_veqP_matrix, sat2_OBS_matrix, Cv_sat2_obs,1);
-% toc
-% 
-% meth ='neq_orbit'
-% tic
 [NEQn_grace2, NEQu_grace2, Amatrix_obsorb_grace2, Wmatrix_obsorb_grace2] = neq_orbit (orbcGB, sat2_veqZ_matrix, sat2_veqP_matrix, sat2_OBS_matrix, Cv_sat2_obs);
-% toc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -399,10 +392,15 @@ inv_id = 6;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Reduced NEQ matrices :: pre-elimination of orbit arc-related parameters
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if Nparam_common > 0
 n_orbparam  = (Nparam_grace1 - Nparam_common) + (Nparam_grace2 - Nparam_common);
 n_gravparam = Nparam_common;
 [Xmatrix_NEQ_reduced, NEQ_N_reduced, NEQ_u_reduced] = neq_reduced(NEQ_N, NEQ_u, n_orbparam, n_gravparam);
-Xmatrix_GRAV_NEQ_reduced = Xmatrix_NEQ_reduced;
+else
+Xmatrix_NEQ_reduced = 0;
+NEQ_N_reduced = 0;
+NEQ_u_reduced = 0;
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Cond_no_prior_NEQn_grace1 = cond(NEQn_grace1)
@@ -475,8 +473,12 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Gravity parameters estimated corrections    
+if Nparam_common > 0
 Xmatrix_common = Xmatrix(col_common_1 : col_common_2 , 1);
 Xcommon             = Xmatrix_common;
+else
+Xcommon = 0;
+end
 Xcommon_NEQreduced  = Xmatrix_NEQ_reduced;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

@@ -227,10 +227,6 @@ data_functional = 'Parameters';
 reference_frame = 'ICRF';
 [georb_data_name] = write_georb_data2(orbit_config_struct, data_matrix, data_functional, reference_frame);
 [status,message,messageid] = movefile(georb_data_name, OUT_fname_object_mjd);
-
-% Parameters in GNP1B data file
-[georb2gnv_data_name] = write_georb_data3_gnv(orbit_config_struct, data_matrix, data_functional, reference_frame);
-[status,message,messageid] = movefile(georb2gnv_data_name, OUT_fname_object_mjd);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -281,6 +277,7 @@ georb_data_name = sprintf('%s%s%s',georb_dataformat_name,data_functional_filenam
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % GNP1B Orbits in GNV data format (GRACE missions orbit data format)
+if 1 < 0
 mission_name = ' '; 
 param_keyword = 'georb_mode';
 [georb_mode] = read_param_cfg(orbit_config_struct,param_keyword);
@@ -316,18 +313,27 @@ test_mission_grace   = strcmp(mission_name,'GRACE_mission');
 test_mission_gracefo = strcmp(mission_name,'GRACE_FO_mission');
 % if test_mission_grace == 1 || test_mission_gracefo == 1
 
-% data_matrix = orbc;
-% data_functional = 'Orbit';
-% reference_frame = 'ICRF';
-% [georb2gnv_data_name] = write_georb_data3_gnv(orbit_config_struct, data_matrix, data_functional, reference_frame);
-% [status,message,messageid] = movefile(georb2gnv_data_name, OUT_fname_object_mjd);
+% Orbit in ICRF to GNT file
+data_matrix = orbc;
+data_functional = 'Orbit';
+reference_frame = 'ICRF';
+[georb2gnv_data_name] = write_georb_data3_gnv(orbit_config_struct, data_matrix, data_functional, reference_frame);
+[status,message,messageid] = movefile(georb2gnv_data_name, OUT_fname_object_mjd);
 
+% Orbit in ITRF to GNP file
 data_matrix = orbt;
 data_functional = 'Orbit';
 reference_frame = 'ITRF';
 [georb2gnv_data_name] = write_georb_data3_gnv(orbit_config_struct, data_matrix, data_functional, reference_frame);
 [status,message,messageid] = movefile(georb2gnv_data_name, OUT_fname_object_mjd);
-% end
+
+% Parameters to GNP1B data file
+data_matrix = Xparam_aposteriori';
+data_functional = 'Parameters';
+reference_frame = 'ICRF';
+[georb2gnv_data_name] = write_georb_data3_gnv(orbit_config_struct, data_matrix, data_functional, reference_frame);
+[status,message,messageid] = movefile(georb2gnv_data_name, OUT_fname_object_mjd);
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 OUT_data_foldername = OUT_fname_object_mjd;

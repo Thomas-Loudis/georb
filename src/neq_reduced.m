@@ -38,7 +38,7 @@ inv_mat_id = 5;
 NEQ_N_orbelim = (Ngg - Ngz * Nzz_inv * Nzg);
 NEQ_u_orbelim =  u_g - Ngz * Nzz_inv * u_z;
 
-inv_id = 6;
+inv_id = 5;
 [Xmatrix_grav] = inv_ls(NEQ_N_orbelim, NEQ_u_orbelim, inv_id);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

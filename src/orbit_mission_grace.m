@@ -108,8 +108,8 @@ for ic_i = 1 : ic_n
     ic_data_object_i = ic_data_satellite1(ic_i,:);  
     % Orbit configuration structure
     [orbit_config_struct_GRACE1] = write_config2struct(main_config_fname, orbit_model_filename, ic_data_object_i, src_version);   
-    config_file = 'orbit_config_struct_GRACE1.txt'
-    [config_file] = write_config_struct2file(orbit_config_struct_GRACE1,config_file);
+    % config_file = 'orbit_config_struct_GRACE1.txt'
+    % [config_file] = write_config_struct2file(orbit_config_struct_GRACE1,config_file);
     % Orbit Model 
     [orbit_model_struct] = orbit_model (orbit_config_struct_GRACE1,orbit_model_struct);
     % Orbit Data reading and preprocessing per satellite per date
@@ -294,12 +294,6 @@ Xmatrix_flag = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Gravity Field parameters
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Update Gravity Field structure array
-% if grav_param_01 == 1 
-% grav_field_paramestim_yn = 'y';
-% [orbit_model_struct] = orbit_model_gravity (grav_field_paramestim_yn,orbit_model_struct);
-% end
-
 % Gravity Field solution update is handled individually via function gravity_param_aposteriori
 if grav_param_01 == 1
 GRAV_field_model_update_grav_param_01 = grav_param_01;
@@ -383,7 +377,11 @@ grace_pod_struct.normal_equations_Nmatrix_reduced = NEQ_N_reduced;
 grace_pod_struct.normal_equations_umatrix_reduced = NEQ_u_reduced;
 
 % Write computed GRACE data to directory in georb format
+if grav_param_01 == 1
 neq_flag = 1;
+else
+neq_flag = 0;
+end
 [OUT_fname_mission_mjd,OUT_data_foldername_G1,OUT_data_foldername_G2, grace_pod_struct] = grace_writedata(grace_pod_struct, intersat_obs_flag, neq_flag);
 if COMBESTIM_combparamestim_01 == 1
 [status,message,messageid] = movefile(POD_apriori_orbits_folder,OUT_fname_mission_mjd);
