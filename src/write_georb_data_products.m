@@ -276,54 +276,22 @@ georb_data_name = sprintf('%s%s%s',georb_dataformat_name,data_functional_filenam
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% GNP1B Orbits in GNV data format (GRACE missions orbit data format)
-if 1 < 0
-mission_name = ' '; 
-param_keyword = 'georb_mode';
-[georb_mode] = read_param_cfg(orbit_config_struct,param_keyword);
-test_georb_mode = strcmp(georb_mode,'orbit_mission');
-if test_georb_mode == 1
-    param_keyword = 'orbiting_objects_mission';
-    [orbiting_objects_mission] = read_param_cfg(orbit_config_struct,param_keyword);
-    mission_name = orbiting_objects_mission;
-else
-    param_keyword = 'orbiting_object_name';
-    [orbiting_object_name] = read_param_cfg(orbit_config_struct,param_keyword);
-    satellite_id_name = orbiting_object_name;
-    test_satellite_mission = strcmp(satellite_id_name,'GRACE-C');
-    if test_satellite_mission == 1
-       mission_name = 'GRACE_FO_mission'; 
-    end
-    test_satellite_mission = strcmp(satellite_id_name,'GRACE-D');
-    if test_satellite_mission == 1
-       mission_name = 'GRACE_FO_mission'; 
-    end
-    test_satellite_mission = strcmp(satellite_id_name,'GRACE-A');
-    if test_satellite_mission == 1
-       mission_name = 'GRACE_mission'; 
-    end
-    test_satellite_mission = strcmp(satellite_id_name,'GRACE-B');
-    if test_satellite_mission == 1
-       mission_name = 'GRACE_mission'; 
-    end    
-end
-
-% Satellite missions cases :: GRACE missions
-test_mission_grace   = strcmp(mission_name,'GRACE_mission');
-test_mission_gracefo = strcmp(mission_name,'GRACE_FO_mission');
-% if test_mission_grace == 1 || test_mission_gracefo == 1
-
-% Orbit in ICRF to GNT file
-data_matrix = orbc;
-data_functional = 'Orbit';
-reference_frame = 'ICRF';
-[georb2gnv_data_name] = write_georb_data3_gnv(orbit_config_struct, data_matrix, data_functional, reference_frame);
-[status,message,messageid] = movefile(georb2gnv_data_name, OUT_fname_object_mjd);
+% Write Orbits in GNV data format (GRACE missions orbit data format)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+GNP_data_format = 1;
+if GNP_data_format == 1
 
 % Orbit in ITRF to GNP file
 data_matrix = orbt;
 data_functional = 'Orbit';
 reference_frame = 'ITRF';
+[georb2gnv_data_name] = write_georb_data3_gnv(orbit_config_struct, data_matrix, data_functional, reference_frame);
+[status,message,messageid] = movefile(georb2gnv_data_name, OUT_fname_object_mjd);
+
+% Orbit in ICRF to GNT file
+data_matrix = orbc;
+data_functional = 'Orbit';
+reference_frame = 'ICRF';
 [georb2gnv_data_name] = write_georb_data3_gnv(orbit_config_struct, data_matrix, data_functional, reference_frame);
 [status,message,messageid] = movefile(georb2gnv_data_name, OUT_fname_object_mjd);
 

@@ -54,6 +54,7 @@ function [EOP,dEOP,EOP_inv,dEOP_inv] = trs2crs(mjd,eop,dpint, orbit_model_struct
 %              updates
 % 07/04/2025  Thomas Loudis Papanikolaou
 %             Source Code minor upgrade 
+% 29/07/2025  TLP, EOP Tidal Variations corrections are being considered
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 

@@ -38,7 +38,7 @@ end
 mission_test = 'GRACE_C_mission';
 test_mission_keyword = strcmp(mission_name_config, mission_test);
 if test_mission_keyword == 1
-    mission_name = 'GRACE-C0';
+    mission_name = 'GRACE-CO';
 end
 
 mission_test = 'NGGM_mission';

@@ -245,15 +245,6 @@ for i_iter_estim = 1 : Nestim_comb
 grace_pod_struct.grace1_pod.orbit_matrices.observation_matrix = grace_pod_struct_step1.grace1_pod.orbit_matrices.observation_matrix; 
 grace_pod_struct.grace2_pod.orbit_matrices.observation_matrix = grace_pod_struct_step1.grace2_pod.orbit_matrices.observation_matrix; 
 
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% % TEMP :: Write Design Matrix for inter-sat range, range-rate and orbits 
-% design_matrix_scale_orbit = 0; 
-% design_matrix_param_orbit = 0; 
-% NEQ_write = 1
-% [A_range, A_rangerate, A_orbit1, A_orbit2, grace_pod_struct] = grace_comb_veq2Amatrix(grace_pod_struct, design_matrix_scale_orbit, design_matrix_param_orbit, NEQ_write);
-% grace_comb_veq2Amatrix_end = 1
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Combined Estimator algorithm :: Design matrix, Normal Equations     
 design_matrix_scale_orbit = 0; 
@@ -286,28 +277,18 @@ Xmatrix_flag = 1;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Gravity Field solution :: gravity model update
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Not supported by current Version 
-% ...
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Gravity Field parameters
+% Gravity Field model update 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Gravity Field solution update is handled individually via function gravity_param_aposteriori
 if grav_param_01 == 1
-GRAV_field_model_update_grav_param_01 = grav_param_01;
 ic_apriori_01 = 1;
 [orbit_model_matrix_GRACE1, Cmatrix_aposteriori, Smatrix_aposteriori, gravity_model_filename] = gravity_param_aposteriori(Xcommon, ic_apriori_01, orbit_model_matrix_GRACE1);
 % [orbit_model_matrix_GRACE1, Cmatrix_aposteriori, Smatrix_aposteriori, gravity_model_filename] = gravity_param_aposteriori(Xcommon_NEQreduced, ic_apriori_01, orbit_model_matrix_GRACE1);
 % Update Gravity Field model background for GRACE 2/4
 orbit_model_matrix_GRACE2.gravity_field = orbit_model_matrix_GRACE1.gravity_field;
-
-save Cmatrix_aposteriori.neq  Cmatrix_aposteriori -ASCII -double
-save Smatrix_aposteriori.neq  Smatrix_aposteriori -ASCII -double
+% save Cmatrix_aposteriori.neq  Cmatrix_aposteriori -ASCII -double
+% save Smatrix_aposteriori.neq  Smatrix_aposteriori -ASCII -double
 end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -65,10 +65,18 @@ y = L \ (P * NEQu);
 Xmatrix = U\y;
 
 elseif inv_id == 6
-% 6. Cholesky decomposition/factorisation
-L = chol(NEQn, 'lower');
+% 6. Cholesky factorisation
+% L = chol(NEQn, 'lower');
+[L, flag_sym_pos_01] = chol(NEQn, 'lower');
+if flag_sym_pos_01 == 0
 y = L \ NEQu;
 Xmatrix = L' \ y;
+else
+% LU factorisation
+[L,U,P] = lu(NEQn);
+y = L \ (P * NEQu);
+Xmatrix = U\y;
+end
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

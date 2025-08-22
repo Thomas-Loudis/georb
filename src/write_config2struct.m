@@ -1135,7 +1135,7 @@ i_struct = i_struct + 1;
 config_struct(i_struct).names  = param_keyword;
 config_struct(i_struct).values = param_value;
 end
-if test_mission_gracefo == 1
+if test_mission_grace == 0 && ( test_mission_grav > 0 ) % if test_mission_gracefo == 1
 % Satellite Data :: LRI data
 param_keyword = 'LRI_data';
 %param_value = sscanf(satdata_line_mjd,'%*s%*s%*s%*s%*s%*s%*s%*s%*s%*s %s %*');
