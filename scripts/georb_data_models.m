@@ -24,6 +24,10 @@ fclose('all');
 pwd_path = pwd;
 data_path_fname = '../data/';
 data_path = fullfile(pwd_path,'..','data');
+data_output_isfolder = isfolder(data_path);
+if data_output_isfolder == 0
+[status, message, messageid] = mkdir(data_path);
+end
 cd(data_path);
 data_path = pwd;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
