@@ -2,16 +2,16 @@ function [pulses_accel_struct] = prm_pulses_stoch (cfg_fname)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Function: cfg_empirical
+% Function: prm_pulses_stoch
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Purpose:
-%  Read configuration file for Empirical Forces variables 
+%  Read configuration file for Empirical Forces (Pulses or Piecewise accelerations) 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Input arguments:
 % - cfg_fname:          Input confiugration file name 
 % 
 % Output arguments:
-%
+% - pulses_accel_struct: Structure array empirical accelerations
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Thomas Loudis Papanikolaou                               1 September 2022
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -20,6 +20,7 @@ function [pulses_accel_struct] = prm_pulses_stoch (cfg_fname)
 %             Read orbit configuration format via structure array or file
 % 14/12/2022  Dr. Thomas Loudis Papanikolaou
 %             Code upgrade to pass output arguments to structure array 
+% 26/08/2025  TLP, Minor chnage, removing last epoch pulse/pieceiwse acceleration 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -165,7 +166,7 @@ pulses_axes_vec_01(3,1) = PULSES_axis_3;
 %N_pulses_epochs = PULSES_epochs_number;
 pulse_step      = PULSES_interval;
 pulse_offset    = PULSES_offset;
-N_pulses_epochs = fix(orbit_arc_length/pulse_step)+1 - (ceil(pulse_offset/pulse_step));
+N_pulses_epochs = fix(orbit_arc_length/pulse_step) - (ceil(pulse_offset/pulse_step));  % fix(orbit_arc_length/pulse_step)+1 - (ceil(pulse_offset/pulse_step));
 if N_pulses_epochs <= 0 
     N_pulses_epochs = 1;
 end

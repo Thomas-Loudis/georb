@@ -241,8 +241,18 @@ end
 % Parameters Estimation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if iveq < Niter_estim + 1       
-    % Least-squares estimation method
-    [Xmatrix,Amatrix2,Wmatrix2] = orbit_estim(orbc, veqZarray, veqParray, obsorbc, sigma_obs_weight, COVPform);
+% Least-Squares estimation method
+    % [Xmatrix,Amatrix2,Wmatrix2] = orbit_estim(orbc, veqZarray, veqParray, obsorbc, sigma_obs_weight, COVPform);
+    inv_id = 6;
+    PULSES_estim_yn = orbit_model_struct.empirical_forces_pulses.effect_01;
+    test_stoch = strcmp(PULSES_estim_yn,'y');
+    if test_stoch == 1
+        if (N_short_arcs > 0) && (iveq <= N_short_arcs) 
+            inv_id = 4;
+        end
+    end
+    [Xmatrix, Xmatrix_alt, bmatrix, Amatrix, Cx, Cv, NEQn, NEQu] = estimator_orbit (orbc, veqZarray, veqParray, obsorbc, sigma_obs_weight, inv_id);
+
 % Estimated Parameters: Update parameters' values to aposteriori values
     ic_apriori_01 = 1;
     [Zo_estim, Xaposteriori, orbit_model_struct] = param_aposteriori_apriori(Xmatrix, ic_apriori_01, orbit_model_struct);

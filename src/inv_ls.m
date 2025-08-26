@@ -5,7 +5,7 @@ function [Xmatrix] = inv_ls(Nmatrix, Umatrix, inv_id)
 % Matrix Inversion for Least-Squares Solution to Normal Equations 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Purpose:
-%  Matrix Inversion for supporting Least Squares Solution 
+%  Matrix Inversion for Least-Squares' Normal Equations solution 
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Input arguments:
@@ -30,7 +30,7 @@ function [Xmatrix] = inv_ls(Nmatrix, Umatrix, inv_id)
 
 % inv_ls_inv_id = 5
 % inv_id = inv_ls_inv_id;
-% Cond_No_inv_ls = cond(Nmatrix);
+% Cond_No_inv_ls = cond(Nmatrix)
 
 NEQn = Nmatrix;
 NEQu = Umatrix;
@@ -60,23 +60,37 @@ Xmatrix = lsqminnorm(NEQn,NEQu,Ntol);
 
 elseif inv_id == 5
 % 5. LU factorisation
-[L,U,P] = lu(NEQn);
-y = L \ (P * NEQu);
-Xmatrix = U\y;
+[Xmatrix] = inv_lu(Nmatrix, Umatrix);
 
 elseif inv_id == 6
 % 6. Cholesky factorisation
 % L = chol(NEQn, 'lower');
 [L, flag_sym_pos_01] = chol(NEQn, 'lower');
+% flag_sym_pos_01
+
+% Symmetric Positive Definite
 if flag_sym_pos_01 == 0
 y = L \ NEQu;
 Xmatrix = L' \ y;
+
+% Non Symmetric Positive Definite
 else
 % LU factorisation
-[L,U,P] = lu(NEQn);
-y = L \ (P * NEQu);
-Xmatrix = U\y;
+[Xmatrix] = inv_lu(Nmatrix, Umatrix);
+
 end
+
+elseif inv_id == 7
+% QR factorisation
+[Q,R] = qr(Nmatrix);            
+Xmatrix = R \ (Q' * Umatrix);        
+
+elseif inv_id == 8
+% Regularisation
+[n1,n2] = size(Nmatrix);
+sigma = 10^-6;
+Nmatrix_regul = Nmatrix + sigma * eye(n1,n2);
+Xmatrix = Nmatrix_regul \ Umatrix;
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

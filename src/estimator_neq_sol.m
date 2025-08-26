@@ -1,4 +1,4 @@
-function [Xmatrix, NEQn, NEQu, error_matrix, sigma0, Cx, Cv] = estimator_neq_sol(Amatrix, Wmatrix, sigma_obs) 
+function [Xmatrix, NEQn, NEQu, error_matrix, sigma0, Cx, Cv] = estimator_neq_sol(Amatrix, Wmatrix, sigma_obs, inv_id) 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -29,81 +29,16 @@ function [Xmatrix, NEQn, NEQu, error_matrix, sigma0, Cx, Cv] = estimator_neq_sol
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-[n_obs n_param] = size(Amatrix);
-[n_sigma d2] = size(sigma_obs);
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Weights matrix
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 1. Diagonal matrix 
-% w_sigma = 1 / (sigma_obs)^2;
-% Pmatrix = w_sigma * eye(n_obs);
-% Pmatrix = w_sigma;
-if n_sigma > 1
-Pmatrix = zeros(n_sigma,n_sigma);
-for i_sigma = 1 : n_sigma
-    w_ij = 1 / (sigma_obs(i_sigma,1) )^2;
-    Pmatrix(i_sigma,i_sigma) = w_ij;
-end
-%save Pmatrix.out Pmatrix -ASCII -double
-end
-
-if n_sigma == 1
-weight_sigma = 1 / (sigma_obs(1,1) )^2;
-end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Weighting matrices
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Normal Equations
+[NEQn, NEQu] = estimator_neq(Amatrix, Wmatrix, sigma_obs); 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Solution 0
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if n_sigma == 1
-% Weighting matrix :: Identiry matrix    
-NEQn = weight_sigma * (Amatrix' * Amatrix);
-NEQu = weight_sigma * (Amatrix' * Wmatrix);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Weighted solution
-elseif n_sigma > 1
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Solution 1
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-NEQn = Amatrix' * Pmatrix * Amatrix;
-NEQu = Amatrix' * Pmatrix * Wmatrix;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-NEQn_sol1 = NEQn;
-NEQu_sol1 = NEQu;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Solution 2
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% Solutions options :: 
-NEQn = NEQn_sol1;
-NEQu = NEQu_sol1;
-end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Parameters Estimation
+% Parameter Estimation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Normal Equations matrix inversion 
-inv_id = 6;
+% inv_id = 6;
 [Xmatrix] = inv_ls(NEQn, NEQu, inv_id);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -131,8 +66,8 @@ sigma0 = sigma;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if 1 > 0
 % Covariance matrix of parameters
-inv_mat_id = 6; 
-[Nmatrix_inv] = inv_mat(NEQn, inv_mat_id);
+% inv_id = 6; 
+[Nmatrix_inv] = inv_mat(NEQn, inv_id);
 Cx = sigma^2 * Nmatrix_inv;
 
 % Covariance matrix of errors

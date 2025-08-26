@@ -114,7 +114,7 @@ MJD_to_IC = Zo_ICRF_glb(1,1);
 % Zo_ICRF_glb
 
 dpint    = 4;
-mjd_int  = IC_MJDo
+mjd_int  = IC_MJDo;
 % Lagrange Interpolation for computing Position vector 
 [X_int]  = interp_Lagrange(orbce(:,1),orbce(:,2),mjd_int,dpint);
 [Y_int]  = interp_Lagrange(orbce(:,1),orbce(:,3),mjd_int,dpint);

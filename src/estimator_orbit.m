@@ -1,4 +1,4 @@
-function [Xmatrix, Xmatrix_alt, bmatrix, Amatrix_out, Cx, Cv, NEQn, NEQu] = estimator_orbit (orbref,veqZarray,veqParray,orbobs,sigma_obs,obstype)
+function [Xmatrix, Xmatrix_alt, bmatrix, Amatrix_out, Cx, Cv, NEQn, NEQu] = estimator_orbit (orbref,veqZarray,veqParray,orbobs,sigma_obs,inv_id)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -60,7 +60,8 @@ end
 % Parameters Estimation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Weighted Least-Squares method solution
-[Xmatrix, NEQn, NEQu, error_matrix, sigma0, Cx, Cv] = estimator_neq_sol(Amatrix_out, bmatrix, sigma_obs);
+% [Xmatrix, NEQn, NEQu, error_matrix, sigma0, Cx, Cv] = estimator_neq_sol(Amatrix_out, bmatrix, sigma_obs);
+[Xmatrix, NEQn, NEQu, error_matrix, sigma0, Cx, Cv] = estimator_neq_sol(Amatrix_out, bmatrix, sigma_obs, inv_id);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Cond_No_esitmator_orbit_postscale = cond(NEQn)

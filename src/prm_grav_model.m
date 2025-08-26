@@ -155,7 +155,12 @@ if test == 1
         [GM,ae,Cnm,Snm,sCnm,sSnm,nmax,tide_system] = gfc_tv2(gravity_model_fname, n_max_gfm, sigma_shc, MJDo);       
     else
         % GOCO series format of time-variable models
-        [GM,ae,Cnm,Snm,sCnm,sSnm,nmax,tide_system] = gfc_tv1(gravity_model_fname, n_max_gfm, sigma_shc, MJDo);       
+        [GM,ae,Cnm,Snm,sCnm,sSnm,nmax,tide_system] = gfc_tv1(gravity_model_fname, n_max_gfm, sigma_shc, MJDo);
+%         [sec,day,month,year] = MJD_inv(MJDo);
+%         sec00_mean = 0;
+%         day15 = 15;
+%         [JD_mean,MJD_mean] = MJD_date(sec00_mean,day15,month,year)
+%         [GM,ae,Cnm,Snm,sCnm,sSnm,nmax,tide_system] = gfc_tv1(gravity_model_fname, n_max_gfm, sigma_shc, MJD_mean);       
     end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -198,6 +203,8 @@ if test_effect_01 == 1
     gravity_signal_type = 1;
     if gravity_signal_type == 1 
     % GRAVsimul :: gravity solution simulation
+    % gravity_model_fname = 'grav_signal_dgeo.gfc'
+    % gravity_model_fname = 'GEORB_Gravity_Solution_DeltaSignal_53351-53357.gfc' 
     % gravity_model_fname = 'GEORB_Gravity_Solution_delta_53351.gfc' 
     gravity_model_fname = 'MAGIC_Level2a_HIS_reference_fields_monthly_mtmshc_HIS_31_20020101_20020131_do_180.gfc'
 

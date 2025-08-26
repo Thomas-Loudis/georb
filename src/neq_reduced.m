@@ -32,13 +32,13 @@ Ngg = NEQ_N(1+n_orbparam:n_orbparam+n_gravparam,n_orbparam+1:n_orbparam+n_gravpa
 u_z = NEQ_u(1:n_orbparam,1);
 u_g = NEQ_u(1+n_orbparam:n_orbparam+n_gravparam,1);
 
-inv_mat_id = 5; 
+inv_mat_id = 6; 
 [Nzz_inv] = inv_mat(Nzz, inv_mat_id);
 
 NEQ_N_orbelim = (Ngg - Ngz * Nzz_inv * Nzg);
 NEQ_u_orbelim =  u_g - Ngz * Nzz_inv * u_z;
 
-inv_id = 5;
+inv_id = 6;
 [Xmatrix_grav] = inv_ls(NEQ_N_orbelim, NEQ_u_orbelim, inv_id);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
