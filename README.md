@@ -23,9 +23,9 @@ Thomas Loudis Papanikolaou (2023). GEORB: Release for precise orbit determinatio
 ---
 ## Data Products: 
 
-Thomas Loudis Papanikolaou (2023b). Precise orbit data and Gravity field models for GRACE Follow-On mission. VBN. doi: [https://doi.org/10.5278/8b4d5e8d-0010-4461-a58e-b5b39637bd51](https://doi.org/10.5278/8b4d5e8d-0010-4461-a58e-b5b39637bd51)
+Precise orbit data and Gravity field models for GRACE Follow-On mission. VBN. doi: [10.5278/8b4d5e8d-0010-4461-a58e-b5b39637bd51](https://doi.org/10.5278/8b4d5e8d-0010-4461-a58e-b5b39637bd51)
 
-Thomas Loudis Papanikolaou (2023c). DORUS time-variable gravity field models. VBN. doi: [https://doi.org/10.5278/b9644d2d-697f-4b73-bf73-c79582e6572b](https://doi.org/10.5278/b9644d2d-697f-4b73-bf73-c79582e6572b)
+DORUS time-variable gravity field models. VBN. doi: [10.5278/b9644d2d-697f-4b73-bf73-c79582e6572b](https://doi.org/10.5278/b9644d2d-697f-4b73-bf73-c79582e6572b)
 
 
 ---
