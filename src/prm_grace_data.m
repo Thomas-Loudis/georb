@@ -201,18 +201,27 @@ acc_cal_scale_type = acc_cal_scale;
 % Set accelerometer calibration parameters to fixed values from the
 % configuration structure array (fixed values obtained from a previous
 % orbit parameter estimation)
-test_accelerometer = strcmp(acc_data_yn,'y');
-test_acc_cal_paramestim_yn = strcmp(acc_cal_paramestim_yn,'y');
-if test_accelerometer == 1  &&  test_acc_cal_paramestim_yn == 0      
-% Read configurable parameter :: Accelerometer calibration parameters initial conditions
-param_keyword = 'acc_cal_parameters_ic';
-[param_value, param_line] = read_param_cfg(cfg_fname,param_keyword);
-acc_cal_apriori_rowmatrix = str2num(param_line);
-acc_cal_param = acc_cal_apriori_rowmatrix';
-
-%[acc_cal_parameters_ic] = read_param_cfg(cfg_fname,param_keyword);
-%acc_cal_param = acc_cal_parameters_ic
-end
+% test_accelerometer = strcmp(acc_data_yn,'y');
+% test_acc_cal_paramestim_yn = strcmp(acc_cal_paramestim_yn,'y');
+% if test_accelerometer == 1  &&  test_acc_cal_paramestim_yn == 0      
+% % Read configurable parameter :: Initial Conditions
+% param_keyword = 'ic_state_vector_apriori';
+% [ic_state_vector_apriori] = read_param_cfg(cfg_fname,param_keyword);
+% % IC as provided by the input configuration file
+% test_ic_apriori = strcmp(ic_state_vector_apriori,'ic');
+% if test_ic_apriori == 1
+% % IC apriori via orbit_model structure array
+% [orbit_arc_length, IC_MJDo, IC_Zo_vec, EOP_data, EOP_interp_no, IC_Sec_00, TAI_UTC_table, IAU_PN_XYs_matrix] = prm_ic(cfg_fname);
+% IC_CRF = IC_Zo_vec;
+% % TEMP
+% acc_cal_param(1,1) = IC_CRF(7,1);
+% acc_cal_param(2,1) = IC_CRF(8,1);
+% acc_cal_param(3,1) = IC_CRF(9,1);
+% acc_cal_param(4,1) = IC_CRF(10,1);
+% acc_cal_param(5,1) = IC_CRF(11,1);
+% acc_cal_param(6,1) = IC_CRF(12,1);
+% end
+% end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

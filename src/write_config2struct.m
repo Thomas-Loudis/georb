@@ -767,6 +767,12 @@ acc_data_release = param_value;
 
 %datalevel_name  = 'ACT1B';
 %datarelease_ver = '04';
+test_acc_data_level = strcmp(acc_data_level,'ACH1B');
+test_satellite_ID = strcmp(orbiting_object_name,'GRACE-C');
+if test_acc_data_level == 1 && test_satellite_ID == 1
+acc_data_level  = 'ACT1B';
+end
+
 datalevel_name  = acc_data_level;
 datarelease_ver = acc_data_release;
 

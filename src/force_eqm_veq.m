@@ -277,7 +277,7 @@ if (Nparam_GLOB > 0)
 Nmodel_PARAM_ESTIM = Nmodel_PARAM_ESTIM_glob;
 Nparam = 0;    
 
-% Empirical Forces :: CPR terms 
+% 1. Empirical Forces :: CPR terms 
 if Nmodel_PARAM_ESTIM(1) == 1
     [n1 n2] = size(PD_accemp_P);
     for i_param = 1 : n2
@@ -286,21 +286,21 @@ if Nmodel_PARAM_ESTIM(1) == 1
     end
 end
 
-% Accelerometer calibration parameters
+% 2. Empirical Accelerations :: Piecewise acclerations or Pulses 
 if Nmodel_PARAM_ESTIM(2) == 1
-    [n1 n2] = size(PD_ACC_Cal_Param);
-    for i_param = 1 : n2
-        Nparam = Nparam + 1;
-        pdv_acc_param(:,Nparam) = PD_ACC_Cal_Param(:,i_param);
-    end
-end
-
-% Empirical Accelerations :: Piecewise acclerations or Pulses 
-if Nmodel_PARAM_ESTIM(3) == 1
     [n1 n2] = size(PD_pulses_param);
     for i_param = 1 : n2
         Nparam = Nparam + 1;
         pdv_acc_param(:,Nparam) = PD_pulses_param(:,i_param);
+    end
+end
+
+% 3. Accelerometer calibration parameters
+if Nmodel_PARAM_ESTIM(3) == 1
+    [n1 n2] = size(PD_ACC_Cal_Param);
+    for i_param = 1 : n2
+        Nparam = Nparam + 1;
+        pdv_acc_param(:,Nparam) = PD_ACC_Cal_Param(:,i_param);
     end
 end
 

@@ -54,7 +54,7 @@ if test_satpair == 0
     mission_01 = 1;
 end    
 [georb_dataformat_name, georb_dataformat_suffix] = write_data_name(orbit_config_fname, mission_01);
-georb_dataformat_suffix = sprintf('%s','.out');
+georb_dataformat_suffix = sprintf('%s','.txt'); % sprintf('%s','.out');
 georb_data_name = sprintf('%s%s%s',georb_dataformat_name,'_statistics',georb_dataformat_suffix);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

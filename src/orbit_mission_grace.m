@@ -84,9 +84,9 @@ test_mission_gracefo = strcmp(orbiting_object_name,'GRACE_FO_mission');
 test_mission_GRACEC  = strcmp(orbiting_object_name,'GRACE_C_mission');
 test_mission_NGGM    = strcmp(orbiting_object_name,'NGGM_mission');
 % GRACE or GRACE-FO mission' satellites
-% if test_mission_grace == 1 || test_mission_GRACEC == 1 || test_mission_NGGM == 1
-%     COMBESTIM_intersat_obs = 'KBR';
-% end
+if test_mission_grace == 1 || test_mission_GRACEC == 1 || test_mission_NGGM == 1
+    COMBESTIM_intersat_obs = 'KBR';
+end
 intersat_obs_flag = COMBESTIM_intersat_obs;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -124,6 +124,8 @@ for ic_i = 1 : ic_n
     ic_data_object_i = ic_data_satellite2(ic_i,:);    
     % Orbit configuration structure
     [orbit_config_struct_GRACE2] = write_config2struct(main_config_fname, orbit_model_filename, ic_data_object_i, src_version);    
+    % config_file = 'orbit_config_struct_GRACE2.txt'
+    % [config_file] = write_config_struct2file(orbit_config_struct_GRACE2,config_file);
     % Orbit modelling : IC update
     [orbit_model_struct] = orbit_model_ic (orbit_config_struct_GRACE2, orbit_model_struct);
     % Orbit Data reading and preprocessing per satellite per date
@@ -176,12 +178,30 @@ if COMBESTIM_gravity_step == 1
     COMBESTIM_gravity_param = 1;
 end
 
+grav_param_01 = 0;
+
+% Observations Residuals from POD step 1 
+grace_pod_struct.grace1_pod.orbit_matrices.observation_residuals = grace_pod_struct_step1.grace1_pod.orbit_matrices.observation_residuals; 
+grace_pod_struct.grace2_pod.orbit_matrices.observation_residuals = grace_pod_struct_step1.grace2_pod.orbit_matrices.observation_residuals; 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Update model/configuration for observation combination solution    
-if COMBESTIM_gravity_param == 1 % COMBESTIM_combparamestim_01 == 1 
+% Parameter estimation :: Combined Estimator
+% Combined Parameter Estimation for GRACE satellites based on orbit observations (GPS-based kinematic positions) and intersatellite range-rate observations (KBR, LRI)  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% orbit model / Configuration Update
+Nestim_comb = COMBESTIM_Nestim_comb;
+
+COMBESTIM_gravity_step_model_ab = 1;
+if COMBESTIM_gravity_step_model_ab == 2
+Nestim_comb = Nestim_comb + 1;
+end
+
+for i_iter_estim = 1 : Nestim_comb
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Update orbit model/configuration for gravity field parameters and observation combination solution    
+if COMBESTIM_gravity_param == 1 % COMBESTIM_combparamestim_01 == 1
+if COMBESTIM_gravity_step_model_ab == 1 || (COMBESTIM_gravity_step_model_ab == 2 && i_iter_estim == 2)
+
 % Set orbit mode to orbit integration solution for orbit arc and partials   
 orbit_pod_mode = 'orbit_propagation_veq';
 % Gravity Field parameter estimation
@@ -193,12 +213,12 @@ sat2_Xparam_aposteriori = grace_pod_struct.grace2_pod.orbit_matrices.param_apost
 % IC aposteriori 
 Xmatrix_flag = 0;
 % orbit model/configuration arrays update 
-[grace_pod_struct, orbit_model_matrix_GRACE1, orbit_model_matrix_GRACE2] = grace_model_cor(grace_pod_struct, orbit_pod_mode, grav_param_01, sat1_Xparam_aposteriori, sat2_Xparam_aposteriori, Xmatrix_flag);
+% [grace_pod_struct, orbit_model_matrix_GRACE1, orbit_model_matrix_GRACE2] = grace_model_cor(grace_pod_struct, orbit_pod_mode, grav_param_01, sat1_Xparam_aposteriori, sat2_Xparam_aposteriori, Xmatrix_flag);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Update Gravity Field solution
 grav_param_01 = COMBESTIM_gravity_param;
 % IC aposteriori 
-Xmatrix_flag = -1;
+Xmatrix_flag = 0;   % Xmatrix_flag = -1;
 % orbit model/configuration arrays update 
 [grace_pod_struct, orbit_model_matrix_GRACE1, orbit_model_matrix_GRACE2] = grace_model_cor(grace_pod_struct, orbit_pod_mode, grav_param_01, sat1_Xparam_aposteriori, sat2_Xparam_aposteriori, Xmatrix_flag);
 % Update Gravity Field structure array
@@ -217,33 +237,17 @@ end
 write_data = 0;
 [grace_pod_struct, grace1_pod, grace2_pod, intersat_pod, out_dir_name] = grace_pod(orbit_model_matrix_GRACE1, orbit_model_matrix_GRACE2, intersat_obs_flag, write_data); 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+end
 end
 % End of orbit Model/configuration Update and orbit partials computation 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Observations Weights 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Weighted estimation solution approaches
-% weight_sol_opt = COMBESTIM_weight;
-% ...    
-% ...
-% TEMP 
-grace_pod_struct.grace1_pod.orbit_matrices.observation_residuals = grace_pod_struct_step1.grace1_pod.orbit_matrices.observation_residuals; 
-grace_pod_struct.grace2_pod.orbit_matrices.observation_residuals = grace_pod_struct_step1.grace2_pod.orbit_matrices.observation_residuals; 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Parameter estimation :: Combined Estimator
-% Combined Parameter Estimation for GRACE satellites based on orbit observations (GPS-based kinematic positions) and intersatellite range-rate observations (KBR, LRI)  
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Nestim_comb = COMBESTIM_Nestim_comb;
-for i_iter_estim = 1 : Nestim_comb
-
 % (pseudo-)Observations to orbits (GPS-based kinematic positions) from POD step 1 matrices   
 grace_pod_struct.grace1_pod.orbit_matrices.observation_matrix = grace_pod_struct_step1.grace1_pod.orbit_matrices.observation_matrix; 
 grace_pod_struct.grace2_pod.orbit_matrices.observation_matrix = grace_pod_struct_step1.grace2_pod.orbit_matrices.observation_matrix; 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Combined Estimator algorithm :: Design matrix, Normal Equations     
@@ -265,31 +269,33 @@ else
 orbit_pod_mode = 'orbit_propagation_veq';
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Gravity Field parameter update
-grav_param_01 = COMBESTIM_gravity_param;
-% IC Correction values
+% IC Correction values update
 % if grav_param_01 == 0
 Xmatrix_flag = 1;
 % orbit model/configuration arrays update 
-[grace_pod_struct, orbit_model_matrix_GRACE1, orbit_model_matrix_GRACE2] = grace_model_cor(grace_pod_struct, orbit_pod_mode, grav_param_01, Xmatrix_orbit1, Xmatrix_orbit2, Xmatrix_flag); 
+% [grace_pod_struct, orbit_model_matrix_GRACE1, orbit_model_matrix_GRACE2] = grace_model_cor(grace_pod_struct, orbit_pod_mode, grav_param_01, Xmatrix_orbit1, Xmatrix_orbit2, Xmatrix_flag); 
+grav_update_flag = 0;
+[grace_pod_struct, orbit_model_matrix_GRACE1, orbit_model_matrix_GRACE2] = grace_model_cor(grace_pod_struct, orbit_pod_mode, grav_update_flag, Xmatrix_orbit1, Xmatrix_orbit2, Xmatrix_flag); 
 % end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Gravity Field model update 
+% Gravity Field parameters :: gravity model update
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Gravity Field solution update is handled individually via function gravity_param_aposteriori
 if grav_param_01 == 1
 ic_apriori_01 = 1;
-[orbit_model_matrix_GRACE1, Cmatrix_aposteriori, Smatrix_aposteriori, gravity_model_filename] = gravity_param_aposteriori(Xcommon, ic_apriori_01, orbit_model_matrix_GRACE1);
-% [orbit_model_matrix_GRACE1, Cmatrix_aposteriori, Smatrix_aposteriori, gravity_model_filename] = gravity_param_aposteriori(Xcommon_NEQreduced, ic_apriori_01, orbit_model_matrix_GRACE1);
+% [orbit_model_matrix_GRACE1, Cmatrix_aposteriori, Smatrix_aposteriori, gravity_model_filename] = gravity_param_aposteriori(Xcommon, ic_apriori_01, orbit_model_matrix_GRACE1);
+[orbit_model_matrix_GRACE1, Cmatrix_aposteriori, Smatrix_aposteriori, gravity_model_filename] = gravity_param_aposteriori(Xcommon_NEQreduced, ic_apriori_01, orbit_model_matrix_GRACE1);
 % Update Gravity Field model background for GRACE 2/4
 orbit_model_matrix_GRACE2.gravity_field = orbit_model_matrix_GRACE1.gravity_field;
+
 % save Cmatrix_aposteriori.neq  Cmatrix_aposteriori -ASCII -double
 % save Smatrix_aposteriori.neq  Smatrix_aposteriori -ASCII -double
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if NEQ_write > 0
@@ -304,12 +310,21 @@ end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+if grav_param_01 == 0
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % GRACE orbit propagation and partials
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 write_data = 0;
 [grace_pod_struct, grace1_pod, grace2_pod, intersat_pod, out_dir_name] = grace_pod(orbit_model_matrix_GRACE1, orbit_model_matrix_GRACE2, intersat_obs_flag, write_data);  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TEMP Update
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Estimated Parameters
+grace_pod_struct.grace1_pod.orbit_matrices.param_aposteriori = Xmatrix_orbit1;
+grace_pod_struct.grace2_pod.orbit_matrices.param_aposteriori = Xmatrix_orbit2;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Observation Residuals update 
@@ -337,8 +352,7 @@ grace_pod_struct.grace1_pod.orbit_matrices.observation_residuals = obs_residuals
 grace_pod_struct.grace2_pod.orbit_matrices.observation_residuals = obs_residuals_G2; 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+end
 end
 % End of Combined parameter estimator iterations
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -358,11 +372,7 @@ grace_pod_struct.normal_equations_Nmatrix_reduced = NEQ_N_reduced;
 grace_pod_struct.normal_equations_umatrix_reduced = NEQ_u_reduced;
 
 % Write computed GRACE data to directory in georb format
-if grav_param_01 == 1
 neq_flag = 1;
-else
-neq_flag = 0;
-end
 [OUT_fname_mission_mjd,OUT_data_foldername_G1,OUT_data_foldername_G2, grace_pod_struct] = grace_writedata(grace_pod_struct, intersat_obs_flag, neq_flag);
 if COMBESTIM_combparamestim_01 == 1
 [status,message,messageid] = movefile(POD_apriori_orbits_folder,OUT_fname_mission_mjd);

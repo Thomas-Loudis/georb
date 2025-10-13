@@ -32,7 +32,7 @@ function [Zo_estim, Xaposteriori, orbit_model_struct] = param_aposteriori_aprior
 % Forces model structure matrix
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % IC_MJDo = orbit_model_struct.IC_MJD; % = IC_MJDo;
-Zo_ICRF_glb                 = orbit_model_struct.IC_CRF;  % = [IC_MJDo IC_Zo_vec'];
+Zo_ICRF_glb                 = orbit_model_struct.IC_CRF; % Row Vector IC = [IC_MJDo IC_Zo_vec'];
 Nparam_GLOB                 = orbit_model_struct.forces_param_estim_no;
 Nmodel_PARAM_ESTIM_glob     = orbit_model_struct.forces_param_estim_yn;
 emp_cpr_glob                = orbit_model_struct.empirical_forces_cpr; 
@@ -77,7 +77,7 @@ Xaposteriori_Z = Zo_aposteriori;
 Zo_estim = [Zo_ICRF_glb(1,1) Zo_aposteriori'];
 Zo_ICRF_glb = Zo_estim;
 % Update Forces model matrix :: All IC parameters update at the end of function
-orbit_model_struct.IC_CRF = Zo_ICRF_glb;
+% orbit_model_struct.IC_CRF = Zo_ICRF_glb;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%       
 
 
@@ -96,7 +96,7 @@ if Nmodel_PARAM_ESTIM_glob(1) == 1
 emp_cpr_struct = emp_cpr_glob;
 % Empirical accelerations vector matrix 3x3 for radial, along-track, cross-track
 EMP_ACCEL_apriori = emp_cpr_struct.acceleration_matrix; 
-[n1 n2] = size(EMP_ACCEL_apriori);
+[n1, n2] = size(EMP_ACCEL_apriori);
 EMP_ACCEL_aposteriori = zeros(n1,n2);
 % Array for defining the parameters to be estimated
 EMP_FORCE_PARAM_yn = emp_cpr_struct.parameters_01;
@@ -194,43 +194,9 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% GRACE Accelerometry data Calibration Parameters
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if Nmodel_PARAM_ESTIM_glob(2) == 1    
-% Accelerometer Calibration Parameters matrix
-ACC_CAL_PARAM_matrix = accelerometer_data_cal_glob.cal_parameters;
-acc_cal_param_apriori = ACC_CAL_PARAM_matrix;
-[d1, d2] = size(ACC_CAL_PARAM_matrix);
-acc_cal_param_aposteriori = zeros(d1,d2);
-Nparam_ACC_CAL = d1;
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if ic_apriori_01 == 0
-    acc_cal_param_apriori = zeros(d1,d2);
-end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-for i_cal_param = 1 : Nparam_ACC_CAL
-    Nparam = Nparam + 1;
-    acc_cal_param_aposteriori(i_cal_param,1) = acc_cal_param_apriori(i_cal_param,1) + Xmatrix_P(Nparam);
-    Xaposteriori_P(Nparam,1) = acc_cal_param_aposteriori(i_cal_param,1);    
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Estimated Parameter value update :: CAL parameters via central structure matrix 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-ACC_CAL_PARAM_matrix = acc_cal_param_aposteriori;
-accelerometer_data_cal_glob.cal_parameters = ACC_CAL_PARAM_matrix;
-% Update Forces model matrix 
-orbit_model_struct.accelerometer_struct = accelerometer_data_cal_glob; 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-end
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Empirical Accelerations/Pulses parameters
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if Nmodel_PARAM_ESTIM_glob(3) == 1    
+if Nmodel_PARAM_ESTIM_glob(2) == 1    
     pulses_accel_struct = pulses_stoch_accel_glob;
     % Empirical accelerations matrix 
     pulses_matrix = pulses_accel_struct.acceleration_matrix;
@@ -281,12 +247,46 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% GRACE Accelerometry data Calibration Parameters
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if Nmodel_PARAM_ESTIM_glob(3) == 1    
+% Accelerometer Calibration Parameters matrix
+ACC_CAL_PARAM_matrix = accelerometer_data_cal_glob.cal_parameters;
+acc_cal_param_apriori = ACC_CAL_PARAM_matrix;
+[d1, d2] = size(ACC_CAL_PARAM_matrix);
+acc_cal_param_aposteriori = zeros(d1,d2);
+Nparam_ACC_CAL = d1;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if ic_apriori_01 == 0
+    acc_cal_param_apriori = zeros(d1,d2);
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+for i_cal_param = 1 : Nparam_ACC_CAL
+    Nparam = Nparam + 1;
+    acc_cal_param_aposteriori(i_cal_param,1) = acc_cal_param_apriori(i_cal_param,1) + Xmatrix_P(Nparam);
+    Xaposteriori_P(Nparam,1) = acc_cal_param_aposteriori(i_cal_param,1);    
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Estimated Parameter value update :: CAL parameters via central structure matrix 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ACC_CAL_PARAM_matrix = acc_cal_param_aposteriori;
+accelerometer_data_cal_glob.cal_parameters = ACC_CAL_PARAM_matrix;
+% Update Forces model matrix 
+orbit_model_struct.accelerometer_struct = accelerometer_data_cal_glob; 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Gravity Field parameters
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Gravity solution update is managed individually via function gravity_param_aposteriori 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Aposteriori matrix
@@ -298,7 +298,6 @@ else
     Xaposteriori = Xaposteriori_Z;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 % Update all IC parameters within orbit_model structure array
 orbit_model_struct.IC_CRF = [Zo_ICRF_glb(1,1) Xaposteriori'];

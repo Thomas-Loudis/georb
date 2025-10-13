@@ -51,37 +51,78 @@ param_value = grav_field_paramestim_yn;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Add ACC calibration parameters to the partials 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if acc_cal_update == 1
+% Accelerometer calibration parameters estimation y/n 
+acc_cal_paramestim_yn = 'y';
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Set ACC calibration parameters to fixed values; Cancelled
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if acc_cal_update == 100
+% Update Configuration structure array
 % Modify :: PARAM acc_cal_paramestim :: VALUE n
 param_keyword = 'acc_cal_paramestim';
-param_value = 'n';
+param_value = acc_cal_paramestim_yn;
 [config_struct] = write_configstruct_cor(config_struct, param_keyword, param_value);
 
-% ic_apriori_01 = 0;
-[Zo_estim, Xaposteriori,orbit_model_struct] = param_aposteriori_apriori(orbit_parameters, ic_apriori_01,orbit_model_struct);
-
+% Update Accelerometer structure array :: Accelerometer calibration parameters estimation y/n
 accelerometer_struct = accelerometer_data_cal_glob;
+accelerometer_struct.param_estim_yn = acc_cal_paramestim_yn;
 
-% Accelerometer Calibration Parameters matrix
-acc_cal_parameters_ic = accelerometer_struct.cal_parameters;
+% Update orbit_model_struct :: Forces effects and Number of parameters to be estimated (VEQ)
+orbit_model_struct.accelerometer_struct = accelerometer_struct;
+[orbit_model_struct] = orbit_model_force_parameters (orbit_model_struct);
 
-% param_value :: acc_cal_parameters_ic
-param_value   = sprintf('%-27.17e ', acc_cal_parameters_ic);
-% Modify :: PARAM keyword
-param_keyword = 'acc_cal_parameters_ic';
+% Apriori ACC Calbration paraemters
+ACC_CAL_PARAM_matrix = accelerometer_struct.cal_parameters;
+[d1, d2] = size(ACC_CAL_PARAM_matrix);
+% acc_cal_param_Xmatrix = zeros(d1,d2)
+acc_cal_param_Xmatrix = ACC_CAL_PARAM_matrix
 
-[k m] = size(config_struct);
-i_struct = m;
-i_struct = i_struct + 1;
-param_keyword = 'acc_cal_parameters_ic';
-config_struct(i_struct).names  = param_keyword;
-config_struct(i_struct).values = param_value;
+% Update IC vector (TEMP: considering ACC CAL Parameters last force model unknown parameters)
+orbit_parameters
+orbit_parameters = [orbit_parameters; acc_cal_param_Xmatrix]
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% [config_struct] = write_configstruct_cor(config_struct, param_keyword, param_value);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Set ACC calibration parameters to fixed values
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if acc_cal_update == -1
+% Accelerometer calibration parameters estimation y/n 
+acc_cal_paramestim_yn = 'n';
+
+% Update Configuration structure array
+% Modify :: PARAM acc_cal_paramestim :: VALUE n
+param_keyword = 'acc_cal_paramestim';
+param_value = acc_cal_paramestim_yn;
+[config_struct] = write_configstruct_cor(config_struct, param_keyword, param_value);
+
+% Update Accelerometer structure array :: Accelerometer calibration parameters estimation y/n
+accelerometer_struct = accelerometer_data_cal_glob;
+accelerometer_struct.param_estim_yn = acc_cal_paramestim_yn;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Empirical Forces (stochastic) Pulses / Piecewise accelerations 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+pulses_stoch_struct     = orbit_model_struct.empirical_forces_pulses;
+PULSES_estim_yn = pulses_stoch_struct.effect_01;
+test_empaccel_paramestim = strcmp(PULSES_estim_yn,'y');
+if test_empaccel_paramestim == 1    
+pulses_stoch_struct.effect_01 = 'n';
+orbit_model_struct.empirical_forces_pulses = pulses_stoch_struct;
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Update orbit_model_struct :: Forces effects and Number of parameters to be estimated (VEQ)
+orbit_model_struct.accelerometer_struct = accelerometer_struct;
+[orbit_model_struct] = orbit_model_force_parameters (orbit_model_struct);
+
+% Update: empirical forces / stochastic pulses return to initial mode for the force model (EQM only)
+if test_empaccel_paramestim == 1    
+pulses_stoch_struct.effect_01 = PULSES_estim_yn;
+orbit_model_struct.empirical_forces_pulses = pulses_stoch_struct;
+end
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

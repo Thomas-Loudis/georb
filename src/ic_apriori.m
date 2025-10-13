@@ -28,7 +28,7 @@ function [orbit_model_struct] = ic_apriori (orbit_config_fname, obsorbc, orbit_m
 % Orbit/Force model central matrix
 GM_glob = orbit_model_struct.GM_Earth;
 IC_MJDo     = orbit_model_struct.IC_MJD; 
-Zo_ICRF_glb = orbit_model_struct.IC_CRF; 
+Zo_ICRF_glb = orbit_model_struct.IC_CRF; % IC row vector: [IC_MJD IC_vector_row]
 arc     = orbit_model_struct.orbit_arc_length_sec; 
 eopdat  = orbit_model_struct.EOP_data; 
 dpint   = orbit_model_struct.EOP_interp_no; 

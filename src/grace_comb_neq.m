@@ -76,11 +76,9 @@ intersat_rangerate_residuals = grace_pod_struct.intersat_pod.intersat_rangerate_
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Observations Weights 
+% Observations Weights - TEMP
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Weighted estimation solution approaches
-% observation_model_matrix = orbit_model_GRACE1.observation_model_matrix;
-% COMBESTIM_weight = observation_model_matrix.COMBESTIM_weight;
 weight_sol_opt = COMBESTIM_weight;
     
 % Weights based on errors / residuals from step-1 orbit parameter estimation  
@@ -293,6 +291,18 @@ A_orbit1(:,col_orbit1_1 -1+4 : col_orbit1_1 -1+6)    = A_orbit1(:,col_orbit1_1 -
 % Orbit 2
 A_orbit2(:,col_orbit2_1 : col_orbit2_1 -1+3)        = A_orbit2(:,col_orbit2_1 : col_orbit2_1 -1 + 3) * scale_orbit_pos;
 A_orbit2(:,col_orbit2_1 -1+4 : col_orbit2_1 -1+6)   = A_orbit2(:,col_orbit2_1 -1+4 : col_orbit2_1 -1+6) * scale_orbit_vel;
+
+% Range-Rate
+A_rangerate(:,col_orbit1_1 : col_orbit1_1 -1+3)        = A_rangerate(:,col_orbit1_1 : col_orbit1_1 -1+3)      * scale_orbit_pos;
+A_rangerate(:,col_orbit1_1-1 +4 : col_orbit1_1-1 +6)   = A_rangerate(:,col_orbit1_1 -1+4 : col_orbit1_1 -1+6) * scale_orbit_vel;
+A_rangerate(:,col_orbit2_1 : col_orbit2_1-1 +3)        = A_rangerate(:,col_orbit2_1 : col_orbit2_1 -1 + 3)    * scale_orbit_pos;
+A_rangerate(:,col_orbit2_1-1 +4 : col_orbit2_1-1 +6)   = A_rangerate(:,col_orbit2_1 -1+4 : col_orbit2_1 -1+6) * scale_orbit_vel;
+
+% Range
+A_range(:,col_orbit1_1 : col_orbit1_1 -1+3)        = A_range(:,col_orbit1_1 : col_orbit1_1 -1+3)      * scale_orbit_pos;
+A_range(:,col_orbit1_1-1 +4 : col_orbit1_1-1 +6)   = A_range(:,col_orbit1_1 -1+4 : col_orbit1_1 -1+6) * scale_orbit_vel;
+A_range(:,col_orbit2_1 : col_orbit2_1-1 +3)        = A_range(:,col_orbit2_1 : col_orbit2_1 -1 + 3)    * scale_orbit_pos;
+A_range(:,col_orbit2_1-1 +4 : col_orbit2_1-1 +6)   = A_range(:,col_orbit2_1 -1+4 : col_orbit2_1 -1+6) * scale_orbit_vel;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -483,9 +493,11 @@ Xcommon_NEQreduced  = Xmatrix_NEQ_reduced;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Structure array update :: param_aposteriori
-% sat1_Xparam_aposteriori     = grace_pod_struct.grace1_pod.orbit_matrices.param_aposteriori;
 grace_pod_struct.grace1_pod.orbit_matrices.param_cor_Xmatrix = Xmatrix_orbit1;
 grace_pod_struct.grace2_pod.orbit_matrices.param_cor_Xmatrix = Xmatrix_orbit2;
+
+grace_pod_struct.grace1_pod.orbit_matrices.param_aposteriori = Xmatrix_orbit1;
+grace_pod_struct.grace2_pod.orbit_matrices.param_aposteriori = Xmatrix_orbit2;
 
 if NEQ_write == 1
 save Xcommon_grav.neq  Xcommon -ASCII -double

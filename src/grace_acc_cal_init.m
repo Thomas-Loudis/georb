@@ -83,7 +83,7 @@ if bias_yn == 1
 end
 
 % Apriori values
-scale_ij_apriori = 10^-5;
+scale_ij_apriori = 0; % 10^-5;
 
 % Scale factors initialise to 1
 if SCALE_case == 1

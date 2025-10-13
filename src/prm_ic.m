@@ -256,7 +256,7 @@ if test == 1
     kepler_0(6)     = E_anomaly_deg;
     % Keplerian elements to state vector Cartesian coordinates
     [zo]            = kepler_z(kepler_0);
-    IC_Zo_vec = zo';
+    IC_Zo_vec(1:6,1) = zo';
 else
     IC_Zo_vec = IC_Zo;
 end
@@ -269,7 +269,7 @@ if test == 1
     vo_itrf = [IC_Zo_vec(4,1) IC_Zo_vec(5,1) IC_Zo_vec(6,1)]';
     ro_icrf = eop * ro_itrf;
     vo_icrf = eop * vo_itrf + deop * ro_itrf;
-    IC_Zo_vec = [ro_icrf; vo_icrf];
+    IC_Zo_vec(1:6,1) = [ro_icrf; vo_icrf];
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

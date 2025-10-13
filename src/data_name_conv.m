@@ -112,7 +112,9 @@ end
 % ACC Data GRACE Level 1b data (ACC1B_2009-11-17_A_01.asc)
 data_keyword = 'ACT1B';
 test_keyword = strcmp(datalevel_name,data_keyword);
-if test_keyword == 1
+data_keyword2 = 'ACH1B';
+test_keyword2 = strcmp(datalevel_name,data_keyword2);
+if test_keyword == 1 || test_keyword2 == 1
     mission_test = 'GRACE-FO';
     test_mission_keyword = strcmp(mission_name, mission_test);
     if test_mission_keyword == 1
@@ -134,7 +136,7 @@ if test_keyword == 1
     release_ver = datarelease_ver;
     format_ext  = dataformat_suffix;
     % ACC file name considering format name conventions
-    data_filename = sprintf('%s%1c%d%1c%s%1c%s%1c%s%1c%s%s', data_keyword,'_',year,'-',fname_month,'-',fname_day,'_',id_letter,'_',release_ver,format_ext);
+    data_filename = sprintf('%s%1c%d%1c%s%1c%s%1c%s%1c%s%s', datalevel_name,'_',year,'-',fname_month,'-',fname_day,'_',id_letter,'_',release_ver,format_ext);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

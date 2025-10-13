@@ -290,13 +290,13 @@ if test == 1
     MODEid = sprintf('%s%d','VEQ',0);
     VEQ_sol = 1;
     [orbc,orbk,orbt,veqZarray,veqParray,forces_accel_veq, Gmatrix, Rmatrix] = orbit_integr(orbit_config_fname, VEQ_sol, orbit_model_struct);
-    % fprintf('%s %.3f \n', 'Time (min):  VEQ integration:',toc(to_VEQ)/60);
+    fprintf('%s %.3f \n', 'Time (min):  VEQ integration:',toc(to_VEQ)/60);
 % Equation of Motion numerical integration solution
     to_EQM = tic;
     MODEid = sprintf('%s%d','ESM',0);
     VEQ_sol = 0;
     [orbc,orbk,orbt,veqZarray_0,veqParray_0,forces_accel] = orbit_integr(orbit_config_fname, VEQ_sol, orbit_model_struct);
-    % fprintf('%s %.3f \n', 'Time (min):  EQM integration:',toc(to_EQM)/60);
+    fprintf('%s %.3f \n', 'Time (min):  EQM integration:',toc(to_EQM)/60);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 else
     Gmatrix = zeros(3,3); 
@@ -318,7 +318,7 @@ if test == 1
     MODEid = sprintf('%s%d','ESM',0);
     VEQ_sol = 0;
     [orbc,orbk,orbt,veqZarray_0,veqParray_0,forces_accel] = orbit_integr(orbit_config_fname, VEQ_sol, orbit_model_struct);
-    % fprintf('%s %.3f \n', 'Time (min):  EQM integration:',toc(to_EQM)/60);
+    fprintf('%s %.3f \n', 'Time (min):  EQM integration:',toc(to_EQM)/60);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     veqZarray = veqZarray_0;
     veqParray = veqParray_0;

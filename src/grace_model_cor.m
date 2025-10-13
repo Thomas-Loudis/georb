@@ -38,17 +38,25 @@ grav_param_01 = gravity_sol_01;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Accelerometer Calibration parameter update
+acc_cal_update = 0;
+% if grav_param_01 == 1 
+% acc_cal_update = 1; 
+% end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Initial Conditions change
 Xmatrix = Xmatrix_orbit1;
 
 % GRACE-1/3 orbit model/configuration array update 
-[orbit_config_G1,orbit_model_G1] = config_struct_update(orbit_config_G1, orbit_pod_mode, Xmatrix, Xmatrix_flag, 0, grav_param_01,orbit_model_G1);
+[orbit_config_G1,orbit_model_G1] = config_struct_update(orbit_config_G1, orbit_pod_mode, Xmatrix, Xmatrix_flag, acc_cal_update, grav_param_01,orbit_model_G1);
 
 % Initial Conditions change
 Xmatrix = Xmatrix_orbit2;
 
 % GRACE-2/4 orbit model/configuration array update 
-[orbit_config_G2,orbit_model_G2] = config_struct_update(orbit_config_G2, orbit_pod_mode, Xmatrix, Xmatrix_flag, 0, grav_param_01,orbit_model_G2);
+[orbit_config_G2,orbit_model_G2] = config_struct_update(orbit_config_G2, orbit_pod_mode, Xmatrix, Xmatrix_flag, acc_cal_update, grav_param_01,orbit_model_G2);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 orbit_model_G1.orbit_config = orbit_config_G1;

@@ -94,6 +94,7 @@ reference_frame = 'Kepler';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Partial Derivatives
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if 1 < 0
 [n1, n2] = size(veqZarray);
 [n3, n4] = size(veqParray);
 if n1 > 1 
@@ -101,14 +102,14 @@ if n1 > 1
     VEQ_matrix = [veqZarray veqParray(:,2:n4)];
     end
     if n3 <= 1 
-    VEQ_matrix = [veqZarray];
+    VEQ_matrix = veqZarray;
     end    
 data_matrix = VEQ_matrix;
 data_functional = 'Partial Derivatives';
 reference_frame = 'ICRF';
 [georb_data_name] = write_georb_data2(orbit_config_struct, data_matrix, data_functional, reference_frame);
 [status,message,messageid] = movefile(georb_data_name, OUT_fname_object_mjd);
-
+end
 
 if 1 < 0
 

@@ -54,7 +54,6 @@ function [EOP,dEOP,EOP_inv,dEOP_inv] = trs2crs(mjd,eop,dpint, orbit_model_struct
 %              updates
 % 07/04/2025  Thomas Loudis Papanikolaou
 %             Source Code minor upgrade 
-% 29/07/2025  TLP, EOP Tidal Variations corrections are being considered
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -97,8 +96,8 @@ mjd_TT = mjd;
 
 EOP_zonaltides = 0;
 if EOP_zonaltides == 1
-    [n_mjd, n2] = eop_mjd
-    [n_UT1_UTC, n4] = UT1_UTC
+    [n_mjd, n2] = size(eop_mjd);
+    [n_UT1_UTC, n4] = size(UT1_UTC);
     for i_mjd = 1 : n_mjd
         mjd_day_data = eop_mjd(i_mjd,1);
 % EOP variations due to Zonal Tides terms  
@@ -112,7 +111,7 @@ if EOP_zonaltides == 1
 % Interpolate at compuation epoch    
 [UT1_UTC_int_ZonalTides_no] = interp_Lagrange(eop_mjd,UT1_UTC_ZonalTides_removed,mjd_int,dpint);
 % Restore Zonal Tides effect
-[delta_UT1_zonaltides, delta_LOD_zonaltides, delta_omega_zonaltides] = eop_zonal_tides(mjd_int)
+[delta_UT1_zonaltides, delta_LOD_zonaltides, delta_omega_zonaltides] = eop_zonal_tides(mjd_int);
 
 UT1_UTC_int = UT1_UTC_int_ZonalTides_no + delta_UT1_zonaltides;
 end
