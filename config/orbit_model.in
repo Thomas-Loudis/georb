@@ -16,8 +16,7 @@ orbit_mode                orbit_propagation_eqm
 
 ---------------------------------------------------------------------------
 % Orbit arc length in sec
-% Orbit_arc_length           86400
-Orbit_arc_length           5400
+Orbit_arc_length           10800
 ---------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------
@@ -95,12 +94,11 @@ Gravity_field_terms       time-variable
 
 % Gravity Field model 
 % Model file name in .gfc format (Spherical harmonic coefficients)
-gravity_model_fname       GOCO06s.gfc 
-% gravity_model_fname       EIGEN-6C4.gfc 
+gravity_model_fname       GOCO06s_aodReduced.gfc 
 
 % Gravity model's degree and order (truncation value of harmonics series expansion)
-gravity_model_degree      180          
-gravity_model_order       180
+gravity_model_degree      200          
+gravity_model_order       200
 
 % Variational Equations: Gravity model's degree and order
 veq_gravity_model_degree        30          
@@ -108,10 +106,9 @@ veq_gravity_model_order         30
 ---------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------
-% Gravity Field Solution  |  Status: Not fully supported by current version
+% Gravity Field Solution   | Status: Not fully supported by current version
 ---------------------------------------------------------------------------
-% Gravity Field Solution is based on the Variational Equations method 
-% Gravity solution is configured by seting variable 'grav_field_paramestim_yn' to 'y' 
+% Gravity solution is supported by the variable 'grav_field_paramestim_yn' if set to 'y' 
 % Data Output provides the Normal Equations' reduced matrices w.r.t. gravity field parameters (harmonics coefficients)
 
 % Gravity Field parameters estimation 
@@ -121,6 +118,7 @@ grav_field_paramestim_yn       n
 grav_paramestim_degree_min     2   
 grav_paramestim_degree_max     30
 ---------------------------------------------------------------------------
+
 
 ---------------------------------------------------------------------------
 Sun, Moon and Planets orbtial perturbations
@@ -147,7 +145,7 @@ solid_earth_tides_2_freq        y
 ocean_tides                     y    
 
 % Atmospheric Tides (Based on AOD1B data)
-atm_tides                       n    
+atm_tides                       y    
 
 % Solid Earth Pole Tide
 solid_earth_pole_tide           y    
@@ -158,8 +156,6 @@ ocean_pole_tide                 y
 ---------------------------------------------------------------------------
 % Ocean Tides model file name (format of spherical harmonic coefficients)
 ocean_tides_model_fname         fes2004_Cnm-Snm.dat
-% ocean_tides_model_fname         fes2014b.v1.Cnm-Snm_Om1+Om2C20_without_S1_wave.POT_format.txt
-% ocean_tides_model_fname         oceanTide_EOT11a.potential.iers.txt
 % ocean_tides_model_fname         oceanTide_FES2014b.potential.iers.txt
 
 % Ocean Tides model degree and order (truncation value)
@@ -187,7 +183,7 @@ atm_tides_degree                180
 Atmosphere and Ocean De-Aliasing (AOD) effects   
 ---------------------------------------------------------------------------
 % AOD effects included/excluded: y/n
-aod_effects               n
+aod_effects               y
 
 % AOD data level name
 aod_data_level                  AOD1B
@@ -244,10 +240,11 @@ acc_cal_paramestim        y
 Accelerometer data
 ---------------------------------------------------------------------------
 % Accelerometer data level name
-acc_data_level                  ACT1B
+% acc_data_level                  ACT1B
+acc_data_level                  ACC1B
 
 % Accelerometer data release
-acc_data_release                04
+acc_data_release                02
 
 % Accelerometer data: Interpolator number of points 
 accelerometer_interp_no         4
@@ -259,7 +256,7 @@ Star Camera data
 sca_data_level                  SCA1B
 
 % Star Camera data release
-sca_data_release                04
+sca_data_release                03
 
 % Star Camera data: Interpolator number of points 
 star_camera_interp_no     4
@@ -337,7 +334,6 @@ PULSES_interval           5400
 stoch_time_interval       300
 
 % Time offset (seconds)
-% PULSES_offset             0
 PULSES_offset             5400
 
 % Reference Frame of pulses 
@@ -368,13 +364,13 @@ Pseudo-Observations based on kinematic orbit data in ITRF (Terrestrial Reference
 - 'georb'         : Internal orbit data format of GEORB software
 - 'kepler'        : Kepler orbit :: "Status: Not supported by current version"
 
-pseudo_obs_type           georb  
+pseudo_obs_type           gnv1b  
 
 % Pseudo-observations outliers filter y/n: 
-obs_outliers_yn           n 
+obs_outliers_yn           y 
 
 % Pseudo-observations outliers threshold (in cm) 
-pseudo_obs_sigma          50
+pseudo_obs_sigma          30
 
 % Covariance matrix of pseudo-observations orbit data :: "Status: Not supported by current version"
 % 'identity', 'diagonal', 'full' 
@@ -391,22 +387,30 @@ estimator_iterations      1
 ---------------------------------------------------------------------------
 Inter-satellite Ranging Observations 
 ---------------------------------------------------------------------------
-% Case of GRACE missions :: Inter-satellite ranging data are applied as external validation (set combined_param_estim_yn to n) or as observations (set combined_param_estim_yn to y)
+% This configuration is applied only for GRACE-like missions with inter-satellite ranging instrument on-board
+
 % Combined Parameter Estimation (observation combination with inter-satellite ranging data)
 % y/n status 
 combined_param_estim_yn   n 
+
+% Weights of combined parameter estimator approaches
+% Weights are computed based on the a-priori Sigma values of the orbits observations, range and range-rate observations
+% Sigma Units are cm, mm, μm/sec for orbits, inter-satellite range, inter-satellite range-rate respectively  
+sigma_obs_orbit           5
+sigma_intersat_range      5
+sigma_intersat_rangerate  5
  
 % GRACE & GRACE-FO missions 
 % % (In case of GRACE-FO use one of the two intersatellite ranging instruments LRI or KBR)
 % K-Band Ranging instrument data
 % KBR use as observations within orbit parameter estimation 
-KBR_obs_estim             n
+KBR_obs_estim             y
 
 % Laser Ranging Instrument data
 % LRI use as observations within orbit parameter estimation
-LRI_obs_estim             y
+LRI_obs_estim             n
 
-% Simulated Intersatellite Ranging data (in georb format); Selecting this option, only the simulated data will be used
+% Simulated Intersatellite Ranging data (in georb format); Selecting this option, only the simulated data will be applied
 intersat_ranging_data_simul     n
 
 % Ranging data for observation combination (range-rate only is recommended) 

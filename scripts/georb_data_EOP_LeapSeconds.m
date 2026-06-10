@@ -1,13 +1,26 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%--------------------------------------------------------------------------
 % GEORB models' data
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%--------------------------------------------------------------------------
+
+%--------------------------------------------------------------------------
+% Copyright (C) 2007-present  Thomas (Loudis) Papanikolaou 
+% 
+% GEORB :: 'Gravity and Precise Orbit Determination system'
+% 
+% GEORB is a software for Precise Orbit Determination (POD), gravity field 
+% recovery and mission design
+% 
+% GEORB is licensed under the GNU Affero General Public License v3.0 while 
+% for information regarding dual-license options visit the official website
+% www.georb.gr 
+%--------------------------------------------------------------------------
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% georb_data_EOP_LeapSeconds.m script
+% georb_data_models.m script
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Purpose:
-%  georb_data_EOP_LeapSeconds is a script file for downloading/updating 
-%  the Earth Orientation Parameters (EOP) and Leap Seconds data 
+%  georb_data_models is a script file for downloading the basic models'
+%  data required for the operation of the GEORB software  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Thomas Loudis Papanikolaou                                   18 June 2022
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -24,12 +37,12 @@ fclose('all');
 pwd_path = pwd;
 data_path_fname = '../data/';
 data_path = fullfile(pwd_path,'..','data');
-data_output_isfolder = isfolder(data_path);
-if data_output_isfolder == 0
-[status, message, messageid] = mkdir(data_path);
-end
+
+data_path = '/Volumes/Data/GEORB/georb_lab0/data';
+% addpath(genpath(data_path));
+
 cd(data_path);
-data_path = pwd;
+% data_path = pwd;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 fprintf('%s \n', 'GEORB scripts:');

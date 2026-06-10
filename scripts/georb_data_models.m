@@ -1,6 +1,19 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%--------------------------------------------------------------------------
 % GEORB models' data
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%--------------------------------------------------------------------------
+
+%--------------------------------------------------------------------------
+% Copyright (C) 2007-present  Thomas (Loudis) Papanikolaou 
+% 
+% GEORB :: 'Gravity and Precise Orbit Determination system'
+% 
+% GEORB is a software for Precise Orbit Determination (POD), gravity field 
+% recovery and mission design
+% 
+% GEORB is licensed under the GNU Affero General Public License v3.0 while 
+% for information regarding dual-license options visit the official website
+% www.georb.gr 
+%--------------------------------------------------------------------------
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % georb_data_models.m script
@@ -23,11 +36,7 @@ fclose('all');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 pwd_path = pwd;
 data_path_fname = '../data/';
-data_path = fullfile(pwd_path,'..','data');
-data_output_isfolder = isfolder(data_path);
-if data_output_isfolder == 0
-[status, message, messageid] = mkdir(data_path);
-end
+data_path = fullfile(pwd_path,data_path_fname);
 cd(data_path);
 data_path = pwd;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -51,6 +60,21 @@ fprintf('%s', 'Gravity Field model :: EIGEN-6S4 :: ');
 url_read   = 'http://icgem.gfz-potsdam.de/getmodel/gfc/4cc119d62d3f83adce857914bcabdfa7ca2f91677ed2905934cf52698584b4c9/EIGEN-6S4%20(v2).gfc';
 save_fname = 'EIGEN-6S4.gfc';
 outpath = websave(save_fname , url_read);
+fprintf('%s \n\n', 'downloaded');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Planetary and Lunar ephemeris by JPL/NASA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+fprintf('%s', 'Planetary/Lunar ephemeris :: DE423 :: ');
+url_read   = 'https://ssd.jpl.nasa.gov/ftp/eph/planets/ascii/de423/ascp2000.423';
+save_fname = 'ascp2000.423';
+outpath = websave(save_fname , url_read);
+
+url_read   = 'https://ssd.jpl.nasa.gov/ftp/eph/planets/ascii/de423/header.423';
+save_fname = 'header.423';
+outpath = websave(save_fname , url_read);
+
 fprintf('%s \n\n', 'downloaded');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -80,23 +104,8 @@ outpath = websave(save_fname , url_read);
 fprintf('%s \n\n', 'downloaded');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Planetary and Lunar ephemeris by JPL/NASA
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-fprintf('%s', 'Planetary/Lunar ephemeris :: DE423 :: ');
-url_read   = 'https://ssd.jpl.nasa.gov/ftp/eph/planets/ascii/de423/ascp2000.423';
-save_fname = 'ascp2000.423';
-outpath = websave(save_fname , url_read);
-
-url_read   = 'https://ssd.jpl.nasa.gov/ftp/eph/planets/ascii/de423/header.423';
-save_fname = 'header.423';
-outpath = websave(save_fname , url_read);
-
-fprintf('%s \n\n', 'downloaded');
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 fprintf('%s%s \n\n', 'Data have been downloaded and saved in :: ', data_path);
 
 % Direct to the central path of the package
-georb_path = fullfile(pwd_path,'..');
+georb_path = fullfile(pwd_path,'/../');
 cd(georb_path);

@@ -1,25 +1,30 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%--------------------------------------------------------------------------
 %                                 GEORB                                   %
 %                                                                         %
 %                                                                         %
 %              Gravity and precisE ORBit determination system             %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% GEORB is a software for Precise Orbit Determination (POD) of Low Earth
-% Orbiters (LEOs) / satellite gravity missions, gravity field recovery  and
-% orbit design of future missions.  
+%--------------------------------------------------------------------------
+% Copyright (C) 2007-present  Thomas (Loudis) Papanikolaou 
 % 
-% The source code has been written by Thomas since 2007. 
-% GEORB was released as open source in 2022 and is available through the
-% repository https://github.com/Thomas-Loudis/georb 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% GEORB :: 'Gravity and Precise Orbit Determination system'
+% 
+% GEORB is a software for Precise Orbit Determination (POD), gravity field 
+% recovery and mission design
+% 
+% GEORB is licensed under the GNU Affero General Public License v3.0 while 
+% for information regarding dual-license options visit the official website
+% www.georb.gr 
+%--------------------------------------------------------------------------
 % Dr. Thomas Loudis Papanikolaou                                  July 2022
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%--------------------------------------------------------------------------
+
+%--------------------------------------------------------------------------
 % Citing GEORB:
 %
 % Thomas Loudis Papanikolaou (2023). GEORB: Release for precise orbit
 % determination of low Earth orbiters and satellite gravity missions,
 % Software Impacts, doi: https://doi.org/10.1016/j.simpa.2023.100502    
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%--------------------------------------------------------------------------
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -55,8 +60,8 @@ addpath(genpath(config_path));
 src_path = fullfile(main_path,'..','src');
 addpath(genpath(src_path));
 
-% output_path = fullfile(main_path,'..','data_output');
-% addpath(genpath(output_path));
+output_path = fullfile(main_path,'..','data_output');
+addpath(genpath(output_path));
 
 georb_path = fullfile(main_path,'..');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

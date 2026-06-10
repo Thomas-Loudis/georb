@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------
-GEORB main configutation file                                      
+GEORB main configuration file                                      
 ---------------------------------------------------------------------------
 Main configuration file that sets the system' basic modes
 
@@ -25,6 +25,7 @@ georb_mode                orbit_objects
 % - 'ALL_OBJECTS'                     : Considers all objects written in the Initial Conditions configuration file (see below ic_config_filename)
 % -  Individual satellite/object; Examples :: 'GRACE-A', 'GRACE-B', 'GRACE-C', 'GRACE-D' (The ID name must exist in the ic_config_filename)
 
+% orbiting_object_name      GRACE_mission
 % orbiting_object_name      GRACE_FO_mission
 % orbiting_object_name      GRACE-C
 orbiting_object_name      ALL_OBJECTS
@@ -33,7 +34,7 @@ orbiting_object_name      ALL_OBJECTS
 ---------------------------------------------------------------------------
 % Initial Conditions configuration file :: Satellite/Object Names ID and Initial Epochs
 ---------------------------------------------------------------------------
-ic_config_filename        ic.in
+ic_config_filename        ic_config.in
 ---------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------
@@ -44,8 +45,8 @@ ic_config_filename        ic.in
 % - 'obs' : Observations based 
 % - 'ext' : External Orbit data file
 
-% ic_state_vector_apriori   obs
 ic_state_vector_apriori   ic
+% ic_state_vector_apriori   obs
 ---------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------
@@ -60,4 +61,16 @@ orbit_time_series_arcs    0
 Orbit modelling :: Configuration file name for setting Models, Methods, Data
 ---------------------------------------------------------------------------
 orb_config_filename       orbit_model.in   
+---------------------------------------------------------------------------
+
+---------------------------------------------------------------------------
+Parallel Computing configuration (requires Parallel Computing toolbox)
+---------------------------------------------------------------------------
+% Activate/Deactivate the parallel computing feature 
+% 'y' : on, 'n' : off 
+% If set to 'y' the requested orbit arcs/dates will be computed in parallel
+parallel_computing_yn     n   
+
+% Number of Cores to be used in parallel
+num_cpu_cores             4
 ---------------------------------------------------------------------------
