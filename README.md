@@ -4,9 +4,9 @@
 
 # Gravity and precisE ORBit determination system
 
-[GEORB](https://georb.gr) is a software for Precise Orbit Determination (POD) of Low Earth Orbiters (LEOs) and satellite gravity missions, gravity field recovery and orbit design of future space missions. 
+[GEORB](https://georb.gr) is a software for Precise Orbit Determination (POD), gravity field recovery and misison design. 
 
-Initiated in 2007 and released as open source in 2022, GEORB is designed as a versatile tool to support academic research in satellite geodesy and orbital mechanics, as well as industrial applications in Earth observation and space exploration. GEORB specialises in analysis of satellite gravity missions' data and simulation of future space gravity missions, supporting missions such as the [Gravity Recovery And Climate Experiment (GRACE)](https://www.jpl.nasa.gov/missions/gravity-recovery-and-climate-experiment-grace) and contributing to the preparation of the upcoming ESA/NASA [Mass-Change and Geosciences International Constellation (MAGIC)](https://www.eoportal.org/satellite-missions/magic) mission. The current release delivers data products of precise orbits, calibrated accelerometer data and time-variable gravity field models for the NASA/GFZ’ [GRACE Follow-On](https://www.jpl.nasa.gov/missions/gravity-recovery-and-climate-experiment-follow-on-grace-fo) mission. 
+Initiated in 2007 and released as open source in 2022, GEORB is designed as a versatile tool to support academic research in satellite geodesy and orbital mechanics as well as applications in Space Situational Awareness, Earth system science and space exploration. GEORB specialises in analysis of satellite gravity missions' data and simulation of future space gravity missions, supporting missions such as the [Gravity Recovery And Climate Experiment (GRACE)](https://www.jpl.nasa.gov/missions/gravity-recovery-and-climate-experiment-grace) and contributing to the preparation of the upcoming ESA/NASA [Mass-Change and Geosciences International Constellation (MAGIC)](https://www.eoportal.org/satellite-missions/magic) mission. The current release delivers data products of precise orbits, calibrated accelerometer data and time-variable gravity field models for the NASA/GFZ’ [GRACE Follow-On](https://www.jpl.nasa.gov/missions/gravity-recovery-and-climate-experiment-follow-on-grace-fo) mission. 
 
 Data Products (major):
 - Precise Orbit data
@@ -19,6 +19,11 @@ Data Products (major):
 ## Cite GEORB: 
 
 Thomas Loudis Papanikolaou (2023). GEORB: Release for precise orbit determination of low Earth orbiters and satellite gravity missions, *Software Impacts*, doi: [https://doi.org/10.1016/j.simpa.2023.100502](https://www.sciencedirect.com/science/article/pii/S2665963823000398). 
+
+---
+## License 
+
+GEORB is licensed under the GNU Affero General Public License v3.0 while for information regarding dual-license options visit the official website [georb.gr](https://georb.gr/) 
 
 ---
 ## Data Products: 
