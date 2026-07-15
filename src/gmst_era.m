@@ -1,4 +1,4 @@
-function [era, gmst] = gmst_era(mjd_TT, mjd_UT)  
+function [era, gmst] = gmst_era(mjd_TT, mjd_UT1)  
 
 %-------------------------------------------------------------------------- 
 % Copyright (C) 2007-present  Thomas (Loudis) Papanikolaou  
@@ -18,7 +18,7 @@ function [era, gmst] = gmst_era(mjd_TT, mjd_UT)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Input arguments: 
 % - mjd_TT          : MJD in Terrestrial Time including fraction of the day 
-% - mjd_UT          : MJD in Universal Time including fraction of the day 
+% - UT1:            : UT1 in seconds (since mjd_TT 00h) 
 % 
 % Output arguments: 
 % - era             : Earth Rotation angle in radians 
@@ -34,26 +34,24 @@ function [era, gmst] = gmst_era(mjd_TT, mjd_UT)
 radcoef = pi / (180 * 3600); 
 const_2PI = 6.283185307179586476925287;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
- 
-JD_TT  = mjd_TT + 2400000.5; 
-JD_UT1 = mjd_UT + 2400000.5; 
+
+% Julian Day numbers
+JD_TT  = mjd_TT  + 2400000.5; 
+JD_UT1 = mjd_UT1 + 2400000.5; 
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Earth Rotation Angle (ERA) 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-% computaton of ERA in radians 
-Tu = JD_UT1 - 2451545.0;
-Tu_fraction = mod(Tu, 1);
-% era = 2*pi * ( 0.7790572732640 + Tu + 0.00273781191135448 * Tu ); 
-era = mod( (const_2PI * (Tu_fraction + 0.7790572732640 + 0.00273781191135448 * Tu )), const_2PI);
+% computation of ERA in radians 
+UT1 = (mjd_UT1 - fix(mjd_UT1)) * 86400;
+[era] = era_function(mjd_TT, UT1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Greenwich Mean Sidereal Time (GMST) in radians 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
 % parameter t 
-taph = ( JD_TT - 2451545.0 ) / 36525; 
- 
+taph = ( JD_TT - 2451545.0 ) / 36525;  
 % GMST computation in radians 
 %gmst_0 = era + 0.014506 * radcoef + 4612.156534 * radcoef * taph + 1.3915817 * radcoef * taph^2 - 0.00000044 * radcoef * taph^3 - 0.000029956 * radcoef * taph^4 - 0.0000000368 * radcoef * taph^5; 
 % arcsec

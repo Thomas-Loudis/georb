@@ -33,23 +33,13 @@ function [trs2crs_mat,dtrs2crs_mat, crs2trs_mat,dcrs2trs_mat] = trs2crs(mjd,eop,
 % - dpint:  Number of data points (days) that are required for the EOP 
 %           interpolation to the computation epoch 
 % 
-% Output arguments: 
-% - EOP:       Direct transformation matrix EOP = Q(t)*R(t)*W(t) 
-% - dEOP:      Derivative of EOP matrix. 
-%              This matrix is required for the tranformation of velocity 
-%              vector from ITRS to GCRS. 
-%              v_CRS = EOP * v_TRS + dEOP * r_TRS 
-% - EOP_inv:   Inverse transformation matrix (from CRS to TRS) 
-%              EOP_inv = W(-t) * R(-t) * Q(-t) = EOP ^ T = (EOP)' 
-% - dEOP_inv:  Derivative of inverse of EOP. 
-%              This matrix is required for the inverse tranformation of 
-%              velocity vector from GCRS to ITRS.  
+% Output arguments:
+% - trs2crs_mat:  ITRS to GCRS transformation matrix Q(t)*R(t)*W(t) 
+% - dtrs2crs_mat: Derivative of ITRS to GCRS transformation matrix
+% - crs2trs_mat:  GCRS to ITRS transformation matrix  W(-t) * R(-t) * Q(-t) 
+% - dcrs2trs_mat: Derivative of GCRS to ITRS transformation matrix
 % 
 %-------------------------------------------------------------------------- 
-% Remark: 
-%  Precession, Nutation and Polar motion are considered as constant for the 
-%  computation of the derivative of EOP and EOP_inv matrices. 
-%--------------------------------------------------------------------------  
 % References: 
 %  Petit, G.; Luzum, B. IERS Conventions 2010, IERS Technical Note No. 36; 
 %  Verlag des Bundesamts für Kartographie und Geodäsie: Frankfurt am Main, 
@@ -170,5 +160,5 @@ MJD_UT1 = fix(mjd) + UT1 / 86400;
 %--------------------------------------------------------------------------
 % Transformation matrix from ITRS to GCRS :: trs2crs_mat matrix and dtrs2crs_mat is its derivative w.r.t. time 
 % Transformation matrix from GCRS to ITRS :: crs2trs_mat matrix and its derivative dcrs2trs_mat
-[trs2crs_mat,dtrs2crs_mat,crs2trs_mat,dcrs2trs_mat] = trs2crs_matrix(mjd_TT, MJD_UT1, X_PN, Y_PN, s_PN, xp, yp);
+[trs2crs_mat,dtrs2crs_mat,crs2trs_mat,dcrs2trs_mat] = trs2crs_matrix(mjd_TT, UT1, X_PN, Y_PN, s_PN, xp, yp);
 %-------------------------------------------------------------------------- 

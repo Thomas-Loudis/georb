@@ -1,4 +1,4 @@
-function [trs2crs_mat,dtrs2crs_mat, crs2trs_mat,dcrs2trs_mat] = trs2crs_matrix(mjd_TT, MJD_UT1, X_PN, Y_PN, s_PN, xp, yp) 
+function [trs2crs_mat,dtrs2crs_mat, crs2trs_mat,dcrs2trs_mat] = trs2crs_matrix(mjd_TT, UT1, X_PN, Y_PN, s_PN, xp, yp) 
 
 %-------------------------------------------------------------------------- 
 % Copyright (C) 2007-present  Thomas (Loudis) Papanikolaou  
@@ -27,7 +27,7 @@ function [trs2crs_mat,dtrs2crs_mat, crs2trs_mat,dcrs2trs_mat] = trs2crs_matrix(m
 %-------------------------------------------------------------------------- 
 % Input arguments: 
 % - mjd_TT:       computation epoch's MJD in Terrestrial Time (TT) scale 
-% - MJD_UT1:      computation epoch's MJD in UT1 time scale 
+% - UT1:          computation epoch's seconds (since MJD 00h) in UT1 time scale 
 % - X_PN:         Precession-Nutation model X coordinate 
 % - Y_PN:         Precession-Nutation model Y coordinate 
 % - s_PN:         Precession-Nutation model CIO' s coordinate 
@@ -71,7 +71,8 @@ taph = ( JD_TT - 2451545.0 ) / 36525;
 %-------------------------------------------------------------------------- 
 % Earth Rotation Angle 
 %-------------------------------------------------------------------------- 
-[era, gmst] = gmst_era(mjd_TT, MJD_UT1);
+% [era, gmst] = gmst_era(mjd_TT, mjd_UT1);
+[era] = era_function(mjd_TT, UT1);
 theta = era;
 %-------------------------------------------------------------------------- 
  
