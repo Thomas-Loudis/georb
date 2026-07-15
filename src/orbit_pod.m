@@ -174,7 +174,7 @@ if iveq < Niter_estim + 1
     MODEid = sprintf('%s%d','VEQ',iveq); 
     VEQ_sol = 1; 
     [orbc,orbk,orbt,veqZarray,veqParray,forces_accel_veq] = orbit_integr(orbit_config_fname, VEQ_sol, orbit_model_struct); 
-    % fprintf('%s %.3f \n', 'Time (min):  VEQ integration:',toc(to_VEQ)/60); 
+    fprintf('%s %.3f \n', 'Time (min):  VEQ integration:',toc(to_VEQ)/60); 
 end 
  
 % Equation of Motion numerical integration solution 
@@ -182,7 +182,7 @@ end
     MODEid = sprintf('%s%d','ESM',iveq); 
     VEQ_sol = 0; 
     [orbc,orbk,orbt,veqZarray_0,veqParray_0,forces_accel] = orbit_integr(orbit_config_fname, VEQ_sol, orbit_model_struct); 
-    % fprintf('%s %.3f \n', 'Time (min):  EQM integration:',toc(to_EQM)/60); 
+    fprintf('%s %.3f \n', 'Time (min):  EQM integration:',toc(to_EQM)/60); 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  
 to_obs_estim = tic; 
@@ -197,10 +197,10 @@ if param_estim_01 > 0
     % Observations residuals 
     MODEid2 = sprintf('%s%s',MODEid,'obs'); 
     [rms_orbital,rms_orbc_obs,rms_orbk,rms_orbt,dstn,dorbc_obs,dkepl,dorbt,rms_3D] = mainf_statistout2(GM_glob,orbc,orbk,orbt,obsorbc,obsorbt,veqZarray,veqParray,MODEid2,i_write); 
-    if iveq == Niter_estim + 1  
+    % if iveq == Niter_estim + 1  
     fprintf('%s %11.6f %11.6f %11.6f', 'Orbit residuals: RMS(XYZ): ',rms_orbc_obs(1:3)); 
     fprintf('\n\n'); 
-    end 
+    % end 
  
     % External Observations residuals (OBS part not used within estimator) 
     %MODEid2 = sprintf('%s%s',MODEid,'obsext'); 
