@@ -80,6 +80,14 @@ while (~feof(fid))
         i = 1; 
        position_end_of_header = ftell(fid);              
     end 
+    % GNP format 
+    str_endheader = sscanf(line,'%s %*'); 
+    endofheader_gracefo = '#end_of_header'; 
+    test = strcmp(str_endheader,endofheader_gracefo); 
+    if test == 1 
+        i = 1; 
+       position_end_of_header = ftell(fid);              
+    end 
 end 
 fclose(fid); 
  

@@ -31,7 +31,11 @@ function [F1,F2,F3,F4,F5] = delaunay_variables(MJD)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Thomas D. Papanikolaou, AUTH                                    June 2011 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
- 
+% Last modified: 
+% 12/2025      Thomas Loudis Papanikolaou 
+%              Equations modification to minimize rounding errors  
+%-------------------------------------------------------------------------- 
+
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Coefficient for Conversion from arcsec to radians 

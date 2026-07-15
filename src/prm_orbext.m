@@ -200,7 +200,7 @@ elseif test_goce == 1
     [orbte] = sp3c_orb(orbfname,orbtype,tstop); 
      
 elseif test_gnv1b == 1 
-    % GRACE-FO and GRACE GNV1B orbts         
+    % GRACE-FO and GRACE GNV1B orbts
     gnv1bfname = ext_orbit_data_fname; 
     [gnv1b] = grace_gnv1b(gnv1bfname); 
     [sz1 sz2] = size(gnv1b); 
@@ -237,7 +237,8 @@ end
 if dpint > 0   
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Orbit transformation from ITRS to GCRS 
-[orbce] = orbt2c(orbte,eopdat,dpint,orbit_model_struct); 
+[orbce] = orbt2c(orbte,eopdat,dpint,orbit_model_struct);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Keplerian Elements computations 
 [sz1 sz2] = size(orbce); 
