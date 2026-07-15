@@ -37,12 +37,8 @@ fclose('all');
 pwd_path = pwd;
 data_path_fname = '../data/';
 data_path = fullfile(pwd_path,'..','data');
-
-data_path = '/Volumes/Data/GEORB/georb_lab0/data';
-% addpath(genpath(data_path));
-
 cd(data_path);
-% data_path = pwd;
+data_path = pwd;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 fprintf('%s \n', 'GEORB scripts:');
