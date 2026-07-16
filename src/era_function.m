@@ -57,4 +57,12 @@ Tu_fraction = Tu_fraction2;
 % computation of ERA in radians 
 % era = 2*pi * ( 0.7790572732640 + Tu + 0.00273781191135448 * Tu ); 
 era = mod( (const_2PI * (Tu_fraction + 0.7790572732640 + 0.00273781191135448 * Tu )), const_2PI);
+
+if 1 < 0
+Tu_TT = fix(mjd_TT) + 2400000 - 2451545.0;
+Tu_fraction_UT1 = UT1 / 86400 + 0.5;
+Tu_fraction = Tu_fraction_UT1;
+era = const_2PI * (Tu_fraction + 0.7790572732640 + 0.00273781191135448 * Tu_TT + 0.00273781191135448 * Tu_fraction  );
+era = mod( era, const_2PI);
+end
 %-------------------------------------------------------------------------- 

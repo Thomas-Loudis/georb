@@ -1,4 +1,4 @@
-function [delta_x, delta_y, delta_UT1, delta_LOD] = eop_ocean_tides(mjd_TT, mjd_UT)  
+function [delta_x, delta_y, delta_UT1, delta_LOD] = eop_ocean_tides(mjd_TT, UT1)  
 
 %-------------------------------------------------------------------------- 
 % Copyright (C) 2007-present  Thomas (Loudis) Papanikolaou  
@@ -17,7 +17,8 @@ function [delta_x, delta_y, delta_UT1, delta_LOD] = eop_ocean_tides(mjd_TT, mjd_
 % eop_ocean_tides : Ocean Tides effect to Polar motion and UT1 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Input arguments: 
-% - mjd             : MJD including the fraction of the day 
+% - mjd_TT          : MJD in TT including the fraction of the day 
+% - UT1:            : UT1 time in seconds since the 00h of MJD in TT  
 % 
 % Output arguments: 
 % - delta_x         : Ocean Tidal effect to Polar motion x coordinate in arcsec 
@@ -143,9 +144,9 @@ radcoef = pi / (180 * 3600);
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Greenwich Mean Sidereal Time (GMST) in radians 
-% [thetag] = iers_gmst(mjd,eop,dpint, orbit_model_struct); 
-[era, gmst] = gmst_era(mjd_TT, mjd_UT); 
- 
+% [era, gmst] = gmst_era(mjd_TT, mjd_UT); 
+[gmst, era] = gmst_angle(mjd_TT, UT1);
+
 % Theta angle 
 theta_f = mod( (gmst + pi), 2*pi); 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 

@@ -27,9 +27,10 @@ function [xp, yp, UT1_UTC_int, dX, dY] = eop_interp(eop_data, dpint, mjd)
 %                  eop_data = [ MJD_UTC xpole ypole UT1_UTC dX_VLBI dY_VLBI ]  
 % 
 % Output arguments: 
-% - delta_UT1:     Corrections to UT1 in seconds
-% - delta_xp:      Corrections to polar motion x coordinate in radians
-% - delta_yp:      Corrections to polar motion y coordinate in radians
+% - xp:            polar motion x coordinate in radians
+% - yp:            polar motion y coordinate in radians
+% - UT1_UTC_int:   UT1-UTC time difference 
+% - dX, dY:        VLBI Corrections to the Precession-Nutation model 
 % 
 %--------------------------------------------------------------------------  
 % Thomas Loudis Papanikolaou                                   10 July 2026 

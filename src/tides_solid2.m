@@ -1,4 +1,4 @@
-function [dCnm,dSnm] = tides_solid2(mjd,eop,dpint, orbit_model_struct) 
+function [dCnm,dSnm] = tides_solid2(mjd, UT1) 
 
 %-------------------------------------------------------------------------- 
 % Copyright (C) 2007-present  Thomas (Loudis) Papanikolaou  
@@ -26,10 +26,7 @@ function [dCnm,dSnm] = tides_solid2(mjd,eop,dpint, orbit_model_struct)
 % Input arguments 
 % - mjd     : MJD in Terrestrial Time (TT) scale including the fraction of 
 %             the day  
-% - eop:    Earth Orientation Parameters (EOP) data that are required for 
-%           the orbit arc length 
-% - dpint:  Number of data points (days) that are required for the EOP 
-%           interpolation to the computation epoch 
+% - UT1     : UT1 time in seconds since the 00h of MJD in TT  
 % 
 % Output arguments: 
 % - dCnm    : Cnm corrections matrix 
@@ -44,7 +41,10 @@ function [dCnm,dSnm] = tides_solid2(mjd,eop,dpint, orbit_model_struct)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Last modified: 
 % 07/04/2025  Thomas Loudis Papanikolaou 
-%             Source Code minor upgrade  
+%             Source Code minor upgrade 
+% 16/07/2026  Thomas Loudis Papanikolaou 
+%             Call of the new gmst_angle function with reduced rounding
+%             errors of the Earth Orientation Angle
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  
 % dCnm = zeros(5,5); 
@@ -54,7 +54,9 @@ function [dCnm,dSnm] = tides_solid2(mjd,eop,dpint, orbit_model_struct)
 [F1,F2,F3,F4,F5] = delaunay_variables(mjd); 
  
 % Greenwich Mean Sidereal Time (GMST) in radians 
-[thetag] = iers_gmst(mjd,eop,dpint, orbit_model_struct); 
+% [thetag] = iers_gmst(mjd,eop,dpint, orbit_model_struct); 
+[gmst, era] = gmst_angle(mjd, UT1);
+thetag = gmst;
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % dC20 correction 

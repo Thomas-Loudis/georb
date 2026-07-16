@@ -90,7 +90,11 @@ zGCRS = [rGCRS; vGCRS];
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Celestial (GCRS) to Terrestrial (ITRS) transformation 
-[eopmatrix,deopmatrix] = trs2crs(mjd,eop,dpint, orbit_model_struct); 
+% [eopmatrix,deopmatrix] = trs2crs(mjd,eop,dpint, orbit_model_struct);
+[trs2crs_mat,dtrs2crs_mat, crs2trs_mat,dcrs2trs_mat, UT1, X_PN, Y_PN, s_PN, xp, yp] = trs2crs(mjd,eop,dpint, orbit_model_struct);
+eopmatrix = trs2crs_mat;
+deopmatrix = dtrs2crs_mat;
+
 % Position vector in ITRS 
 rITRS = (eopmatrix)' * rGCRS; 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
@@ -181,7 +185,7 @@ pdv_3rdbodies = partials_r;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 r_Moon = Moon_Z_crs(1:3,1); 
 r_Sun  = Sun_Z_crs(1:3,1); 
-[accel_tides, accel_atm_tides, partials_r] = force_tides(mjd,Z_crs,Rtrs2crs, EQ_mode,ORB_config, GM_Earth,radius_Earth,GM_Moon,r_Moon,GM_Sun,r_Sun, eop,dpint, legendre_functions_struct, orbit_model_struct); 
+[accel_tides, accel_atm_tides, partials_r] = force_tides(mjd,Z_crs,Rtrs2crs, EQ_mode,ORB_config, GM_Earth,radius_Earth,GM_Moon,r_Moon,GM_Sun,r_Sun, eop, UT1, legendre_functions_struct, orbit_model_struct); 
 a_tides = accel_tides; 
 a_atm_tides_crf = accel_atm_tides; 
 Utides_icrs = partials_r;     

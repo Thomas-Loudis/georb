@@ -1,4 +1,4 @@
-function [dCnm,dSnm] = tides_ocean(n_max,m_max,mjd,eop,dpint,DelaunayNf,dCnm_plus,dSnm_plus,dCnm_minus,dSnm_minus, orbit_model_struct) 
+function [dCnm,dSnm] = tides_ocean(n_max,m_max,mjd,eop,UT1,DelaunayNf,dCnm_plus,dSnm_plus,dCnm_minus,dSnm_minus, orbit_model_struct) 
 
 %-------------------------------------------------------------------------- 
 % Copyright (C) 2007-present  Thomas (Loudis) Papanikolaou  
@@ -63,6 +63,9 @@ function [dCnm,dSnm] = tides_ocean(n_max,m_max,mjd,eop,dpint,DelaunayNf,dCnm_plu
 %             Code optimization (CPU time minimization)  
 % 07/04/2025  Thomas Loudis Papanikolaou 
 %             Source Code minor upgrade  
+% 16/07/2026  Thomas Loudis Papanikolaou 
+%             Call of the new gmst_angle function with reduced rounding
+%             errors of the Earth Orientation Angle
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  
 % Preallocation 
@@ -74,7 +77,9 @@ function [dCnm,dSnm] = tides_ocean(n_max,m_max,mjd,eop,dpint,DelaunayNf,dCnm_plu
 [F1,F2,F3,F4,F5] = delaunay_variables(mjd); 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Greenwich Mean Sidereal Time (GMST) in radians 
-[thetag] = iers_gmst(mjd,eop,dpint, orbit_model_struct); 
+% [thetag] = iers_gmst(mjd,eop,dpint, orbit_model_struct);
+[gmst, era] = gmst_angle(mjd, UT1);
+thetag = gmst;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 

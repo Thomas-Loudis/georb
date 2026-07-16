@@ -1,4 +1,4 @@
-function [delta_UT1, delta_xp, delta_yp] = eop_cor(mjd_TT, mjd_UT) 
+function [delta_UT1, delta_xp, delta_yp] = eop_cor(mjd_TT, UT1) 
 
 %-------------------------------------------------------------------------- 
 % Copyright (C) 2007-present  Thomas (Loudis) Papanikolaou  
@@ -24,7 +24,7 @@ function [delta_UT1, delta_xp, delta_yp] = eop_cor(mjd_TT, mjd_UT)
 % 
 % Input arguments: 
 % - mjd_TT:        MJD in Terrestrial Time (TT) scale 
-% - mjd_UT:        MJD in Universal Time scale in UT1 
+% - UT1:           UT1 time in seconds since the 00h of MJD in TT (mjd_TT) 
 % 
 % Output arguments: 
 % - delta_UT1:     Corrections to UT1 in seconds
@@ -50,17 +50,17 @@ delta_omega = delta_omega_zonaltides;
  
 %-------------------------------------------------------------------------- 
 % EOP corrections due to Ocean Tides terms (arcsec, sec) 
-[delta_x_oceantides, delta_y_oceantides, delta_UT1_oceantides, delta_LOD_oceantides] = eop_ocean_tides(mjd_TT, mjd_UT); 
+[delta_x_oceantides, delta_y_oceantides, delta_UT1_oceantides, delta_LOD_oceantides] = eop_ocean_tides(mjd_TT, UT1); 
 %-------------------------------------------------------------------------- 
 
 %-------------------------------------------------------------------------- 
 % UT1 and LOD libration effect in sec, sec/day for UT1, LOD respectively 
-[delta_UT1_libr, delta_LOD_libr] = eop_UT1_libr(mjd_TT, mjd_UT); 
+[delta_UT1_libr, delta_LOD_libr] = eop_UT1_libr(mjd_TT, UT1); 
 %-------------------------------------------------------------------------- 
 
 %-------------------------------------------------------------------------- 
 % Polar Motion libration correction due to tidal gravitation (arcsec) 
-[delta_x_libr, delta_y_libr] = eop_pm_libr(mjd_TT, mjd_UT);  
+[delta_x_libr, delta_y_libr] = eop_pm_libr(mjd_TT, UT1);  
 %-------------------------------------------------------------------------- 
 
 %-------------------------------------------------------------------------- 

@@ -1,4 +1,4 @@
-function [delta_UT1, delta_LOD] = eop_UT1_libr(mjd_TT, mjd_UT)  
+function [delta_UT1, delta_LOD] = eop_UT1_libr(mjd_TT, UT1)  
 
 %-------------------------------------------------------------------------- 
 % Copyright (C) 2007-present  Thomas (Loudis) Papanikolaou  
@@ -17,7 +17,8 @@ function [delta_UT1, delta_LOD] = eop_UT1_libr(mjd_TT, mjd_UT)
 % eop_UT1_libr : Libration effect to UT1 and Length of Day (LOD)  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Input arguments: 
-% - mjd             : MJD including the fraction of the day 
+% - mjd_TT          : MJD in TT including the fraction of the day 
+% - UT1             : UT1 time in seconds since the 00h of MJD in TT  
 % 
 % Output arguments: 
 % - delta_UT1       : Libration effect correction to UT1 in seconds 
@@ -78,8 +79,9 @@ LOD_cos_terms = coefficients_table(:,11);
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Greenwich Mean Sidereal Time (GMST) in radians 
-% [thetag] = iers_gmst(mjd,eop,dpint, orbit_model_struct); 
-[era, gmst] = gmst_era(mjd_TT, mjd_UT); 
+% [era, gmst] = gmst_era(mjd_TT, mjd_UT);
+[gmst, era] = gmst_angle(mjd_TT, UT1);
+
 theta_f = mod( (gmst + pi), 2*pi); 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  
