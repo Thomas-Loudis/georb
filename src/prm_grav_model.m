@@ -168,13 +168,13 @@ if test == 1
         [GM,ae,Cnm,Snm,sCnm,sSnm,nmax,tide_system] = gfc_tv2(gravity_model_fname, n_max_gfm, sigma_shc, MJDo);        
     else 
         % GOCO series format of time-variable models 
-        % [GM,ae,Cnm,Snm,sCnm,sSnm,nmax,tide_system] = gfc_tv1(gravity_model_fname, n_max_gfm, sigma_shc, MJDo); 
+        [GM,ae,Cnm,Snm,sCnm,sSnm,nmax,tide_system] = gfc_tv1(gravity_model_fname, n_max_gfm, sigma_shc, MJDo); 
  
-        [sec,day,month,year] = MJD_inv(MJDo); 
-        sec00_mean = 0; 
-        day15 = 15; 
-        [JD_mean,MJD_mean] = MJD_date(sec00_mean,day15,month,year); 
-        [GM,ae,Cnm,Snm,sCnm,sSnm,nmax,tide_system] = gfc_tv1(gravity_model_fname, n_max_gfm, sigma_shc, MJD_mean);        
+        % [sec,day,month,year] = MJD_inv(MJDo); 
+        % sec00_mean = 0; 
+        % day15 = 15; 
+        % [JD_mean,MJD_mean] = MJD_date(sec00_mean,day15,month,year); 
+        % [GM,ae,Cnm,Snm,sCnm,sSnm,nmax,tide_system] = gfc_tv1(gravity_model_fname, n_max_gfm, sigma_shc, MJD_mean);        
     end 
 end 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
