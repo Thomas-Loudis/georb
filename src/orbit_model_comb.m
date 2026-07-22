@@ -27,6 +27,8 @@ function [orbit_model_struct] = orbit_model_comb (orbit_model_struct)
 % Last modified: 
 % 30/04/2025, Thomas Loudis Papanikolaou 
 %             Code minor modifications  
+% 10/06/2026, Thomas Loudis Papanikolaou 
+%             Code minor modifications  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  
  
@@ -96,15 +98,15 @@ COMBESTIM_weight = 3;
 % Sigma Units are cm, mm, μm/sec for orbits, inter-satellite range, inter-satellite range-rate respectively   
 param_keyword = 'sigma_obs_orbit'; 
 [param_value] = read_param_cfg(orbit_config_struct,param_keyword); 
-sigma_obs_orbit = sscanf(param_value,'%d %*'); 
+sigma_obs_orbit = sscanf(param_value,'%e %*'); 
  
 param_keyword = 'sigma_intersat_range'; 
 [param_value] = read_param_cfg(orbit_config_struct,param_keyword); 
-sigma_intersat_range = sscanf(param_value,'%d %*'); 
+sigma_intersat_range = sscanf(param_value,'%e %*'); 
  
 param_keyword = 'sigma_intersat_rangerate'; 
 [param_value] = read_param_cfg(orbit_config_struct,param_keyword); 
-sigma_intersat_rangerate = sscanf(param_value,'%d %*'); 
+sigma_intersat_rangerate = sscanf(param_value,'%e %*'); 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
