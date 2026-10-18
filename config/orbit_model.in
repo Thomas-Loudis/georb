@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------
-Orbit modelling configutation file *.in                                      
+Orbit modelling configuration file *.in                                      
 ---------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------
@@ -8,7 +8,7 @@ Orbit modelling configutation file *.in
 - 'orbit_propagation_eqm' : Orbit propagation (Integration solution of Equation of Motion)
 - 'orbit_propagation_veq' : Orbit propagation (Integration solution of Equation of Motion and Variational Equations)
 
-orbit_mode                orbit_propagation_eqm
+orbit_mode                orbit_propagation_veq
 ---------------------------------------------------------------------------
 
 % Comment: 
@@ -31,7 +31,7 @@ EOP_interpolation_points   4
 % Precession-Nutation model by IAU
 - 'IAU2000A' :: IAU2000A model
 - 'IAU2006'  :: IAU2006/2000A model
-precession_nutation_model    IAU2000A
+precession_nutation_model    IAU2006
 ---------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------
@@ -88,13 +88,12 @@ Relativity_effects        y
 - 'static'         : Higher terms of geopotential included up to truncated degree/order of the input gravity model
 - 'time-variable'  : Time-variable geopotential coeffcients are considered based on the input gravity model
 
-% Gravity_field_terms       static
-Gravity_field_terms       time-variable
+Gravity_field_terms       static
 
 
 % Gravity Field model 
 % Model file name in .gfc format (Spherical harmonic coefficients)
-gravity_model_fname       GOCO06s_aodReduced.gfc 
+gravity_model_fname       GOCO06s.gfc 
 
 % Gravity model's degree and order (truncation value of harmonics series expansion)
 gravity_model_degree      200          
@@ -104,21 +103,6 @@ gravity_model_order       200
 veq_gravity_model_degree        30          
 veq_gravity_model_order         30
 ---------------------------------------------------------------------------
-
----------------------------------------------------------------------------
-% Gravity Field Solution   | Status: Not fully supported by current version
----------------------------------------------------------------------------
-% Gravity solution is supported by the variable 'grav_field_paramestim_yn' if set to 'y' 
-% Data Output provides the Normal Equations' reduced matrices w.r.t. gravity field parameters (harmonics coefficients)
-
-% Gravity Field parameters estimation 
-grav_field_paramestim_yn       n
-
-% Gravity model harmonics coefficients range (to be estimated)
-grav_paramestim_degree_min     2   
-grav_paramestim_degree_max     30
----------------------------------------------------------------------------
-
 
 ---------------------------------------------------------------------------
 Sun, Moon and Planets orbtial perturbations
@@ -145,7 +129,7 @@ solid_earth_tides_2_freq        y
 ocean_tides                     y    
 
 % Atmospheric Tides (Based on AOD1B data)
-atm_tides                       y    
+atm_tides                       n    
 
 % Solid Earth Pole Tide
 solid_earth_pole_tide           y    
@@ -176,20 +160,20 @@ atm_tides_data_release          06
 
 % Atmospheric Tides model degree and order (truncation value)
 % Set to 'model_max' to select the model's maximum degree/order 
-atm_tides_degree                180 
+atm_tides_degree                100 
 ---------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------
 Atmosphere and Ocean De-Aliasing (AOD) effects   
 ---------------------------------------------------------------------------
 % AOD effects included/excluded: y/n
-aod_effects               y
+aod_effects                     n
 
 % AOD data level name
 aod_data_level                  AOD1B
 
 % AOD data release
-aod_data_release                06
+aod_data_release                07
 
 % AOD data type effect ID : Select one effect ID
 - ATM
@@ -199,7 +183,7 @@ aod_data_release                06
 aod_effect_data_type      GLO
 
 % AOD degree and order (truncation value)
-AOD_degree_max            180
+AOD_degree_max            100
 ---------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------
@@ -234,17 +218,16 @@ Accelerometer data and calibration modelling
 acc_data                  n 
 
 % Accelerometer Calibration parameters estimation
-acc_cal_paramestim        y 
+acc_cal_paramestim        n 
 
 ---------------------------------------------------------------------------
 Accelerometer data
 ---------------------------------------------------------------------------
 % Accelerometer data level name
-% acc_data_level                  ACT1B
-acc_data_level                  ACC1B
+acc_data_level                  ACH1B
 
 % Accelerometer data release
-acc_data_release                02
+acc_data_release                04
 
 % Accelerometer data: Interpolator number of points 
 accelerometer_interp_no         4
@@ -256,7 +239,7 @@ Star Camera data
 sca_data_level                  SCA1B
 
 % Star Camera data release
-sca_data_release                03
+sca_data_release                04
 
 % Star Camera data: Interpolator number of points 
 star_camera_interp_no     4
@@ -295,22 +278,23 @@ empirical_forces         n
 - 'srf_frame'     :: Spacecraft reference frame (Case of missions with star camera data)
 
 empirical_frame           srf_frame
+% empirical_frame           orbital_frame
 
 % Bias empirical accelerations per axis
-empirical_bias_axis1      n
-empirical_bias_axis2      n
-empirical_bias_axis3      n
+empirical_bias_axis1      y
+empirical_bias_axis2      y
+empirical_bias_axis3      y
 
 % Cycle per revolution (CPR) terms: Cosine (C) and Sine (S) coefficients 
 % CPR per axis
-cpr_C_axis1       y
-cpr_S_axis1       y
+cpr_C_axis1       n
+cpr_S_axis1       n
 
-cpr_C_axis2       y
-cpr_S_axis2       y
+cpr_C_axis2       n
+cpr_S_axis2       n
 
-cpr_C_axis3       y
-cpr_S_axis3       y
+cpr_C_axis3       n
+cpr_S_axis3       n
 
 % Number of cycles per revolution (once, twice, n per revolution)
 cpr_freq_number           1
@@ -341,7 +325,8 @@ PULSES_offset             5400
 - 'inertial'      :: Inertial reference frame (X,Y,Z)
 - 'srf_frame'     :: Spacecraft reference frame (Case of missions with star camera data)
 
-PULSES_frame              srf_frame
+% PULSES_frame              srf_frame
+PULSES_frame              orbital_frame
 
 % Axes components included (e.g. radial/tangential/normal, X/Y/Z)
 % Axis 1 (radial, X)
@@ -357,24 +342,30 @@ PULSES_axis_3             1
 ---------------------------------------------------------------------------
 Observations model 
 ---------------------------------------------------------------------------
-Pseudo-Observations based on kinematic orbit data in ITRF (Terrestrial Reference Frame)
+Pseudo-Observations based on kinematic orbit data
 % Options:
-- 'gnv1b'         : GRACE mission GNV1b orbit data format 
-- 'itsg_kin'      : Kinematic Orbit data products format by ITSG at TU Graz  
-- 'georb'         : Internal orbit data format of GEORB software
+- 'gnv1b'         : GRACE mission GNV1b orbit data format (ITRF)
+- 'GNI1B'         : GRACE mission GNI1b orbit data format (ICRF)
+- 'itsg_kin'      : Kinematic Orbit data products format by ITSG at TU Graz (ICRF) 
+- 'georb'         : Internal orbit data format of GEORB software (ITRF)
 - 'kepler'        : Kepler orbit :: "Status: Not supported by current version"
 
-pseudo_obs_type           gnv1b  
+pseudo_obs_type           itsg_kin  
 
 % Pseudo-observations outliers filter y/n: 
 obs_outliers_yn           y 
 
 % Pseudo-observations outliers threshold (in cm) 
-pseudo_obs_sigma          30
+pseudo_obs_sigma          50
 
 % Covariance matrix of pseudo-observations orbit data :: "Status: Not supported by current version"
 % 'identity', 'diagonal', 'full' 
 cov_pseudo_obs_data       identity 
+
+% Downsampling to orbit observations y/n:
+downsampling_orbit_yn     n 
+% Downsampling rate (in seconds) 
+downsampling_orbit_rate   30 
 ---------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------
@@ -387,19 +378,10 @@ estimator_iterations      1
 ---------------------------------------------------------------------------
 Inter-satellite Ranging Observations 
 ---------------------------------------------------------------------------
-% This configuration is applied only for GRACE-like missions with inter-satellite ranging instrument on-board
-
 % Combined Parameter Estimation (observation combination with inter-satellite ranging data)
 % y/n status 
-combined_param_estim_yn   n 
+combined_param_estim_yn   y 
 
-% Weights of combined parameter estimator approaches
-% Weights are computed based on the a-priori Sigma values of the orbits observations, range and range-rate observations
-% Sigma Units are cm, mm, μm/sec for orbits, inter-satellite range, inter-satellite range-rate respectively  
-sigma_obs_orbit           5
-sigma_intersat_range      5
-sigma_intersat_rangerate  5
- 
 % GRACE & GRACE-FO missions 
 % % (In case of GRACE-FO use one of the two intersatellite ranging instruments LRI or KBR)
 % K-Band Ranging instrument data
@@ -416,32 +398,58 @@ intersat_ranging_data_simul     n
 % Ranging data for observation combination (range-rate only is recommended) 
 intersat_range_obs        n
 intersat_rangerate_obs    y
+
 ---------------------------------------------------------------------------
+% Weights of combined parameter estimator approaches based on estimated variances references or fixed weights
+---------------------------------------------------------------------------
+% Weights for orbits based on reference variances (VCE) and observation covariance matrix of previous estimation step
+% y/n status :: if set to 'n' then the following fixed weights values will be used instead 
+combined_weights_variances_yn   y 
+
+% Weights based on fixed sigma values
+% Sigma Units are cm, mm, μm/sec for orbits, inter-satellite range, inter-satellite range-rate respectively  
+sigma_obs_orbit           5
+sigma_intersat_range      5
+sigma_intersat_rangerate  0.1
+
+---------------------------------------------------------------------------
+% Intersatellite Range-Rate Empirical Parameters
+---------------------------------------------------------------------------
+% Observation function model includes bias and bias drift and 
+% periodical (sine and cosine) terms coefficients and their derivatives
+% The range-rate empirical parameters will be considered within the combined estimator
+% y/n   
+intersat_rangerate_empirical_yn  y
+
+% Step interval in seconds 
+intersat_rangerate_empirical_step   10800 
+---------------------------------------------------------------------------
+
 
 ---------------------------------------------------------------------------
 External Orbit Comparison
 ---------------------------------------------------------------------------
-% External orbit data file name in ITRF (Terrestrial Reference Frame)
+% External orbit data file name (Data file names via satellite data list file)
 
 % Condition of applying or not the external orbit comparison ('y' or 'n')
 external_orbit_comp            n
 
 % External Orbit data format:
 % Options:
-- 'gnv1b'         : GRACE mission GNV1b orbit data format 
-- 'georb'         : Internal orbit data format of GEORB software
+- 'gnv1b'         : GRACE mission GNV1b orbit data format (ITRF) 
+- 'georb'         : Internal orbit data format of GEORB software (ITRF)
 - 'kepler'        : Kepler orbit :: "Status: Not supported by current version"
 
 external_orbit_type            gnv1b 
 ---------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------
-Orbit Design of mission based on intersatellite baseline formation (GRACE-like missions)
+Orbit Design of mission based on inter-Satellite baseline formation (GRACE-like missions)
 ---------------------------------------------------------------------------
 "Status: in-progress; Not supported by current version"
 Set the variables below only in the case of the orbit design mode (if 'georb_mode' is set to 'orbit_design' within the master configuration file)
 
-% Baseline Lenght in Km
+% Baseline Length in Km
 baseline_length           200
 
 % Constraints in orbit simulation of 
@@ -449,4 +457,36 @@ range_constraint          n
 range_rate_constraint     n
 along_constraint          n
 cross_constraint          n
+---------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------
+% Gravity Field Solution
+---------------------------------------------------------------------------
+% Gravity solution is supported by the Normal Equations matrices in the Data Output: 
+% - Reduced NEQ matrices w.r.t. gravity field parameters (harmonics coefficients) following the pre-elimination of the orbit-arc parameters
+% - Full NEQ matrices including orbital and gravity field parameters 
+
+% Gravity Field parameters estimation ('y' or 'n')
+grav_field_paramestim_yn       n
+
+% Gravity model harmonics coefficients range (to be estimated)
+grav_paramestim_degree_min     2   
+grav_paramestim_degree_max     30 
+
+% Gravity solution based on current orbit arc (to be applied for special cases only e.g. simulation, daily solutions)
+% 0. Arc-based gravity solution is not written to ouput file; Normal Equations (NEQs) matrices are only computed only and provided to output files
+% 1. Arc-based gravity solution is computed and written to output file
+gravity_arc_sol_flag          0
+
+% Downweighting factor to Orbit contribution to gravity solution 
+% Set to 1 to avoid downweighting; The factor will be multiplied to reference variance of orbits
+downweight_factor_orbit       1
+
+% Case for GRACE-like missions (GRACE, MAGIC, NGGM)
+% Accelerometers Scale factors consideration as global parameters or not (y/n) ::
+% - y: Global/common parameters along with gravity parameters. 
+%      To be included in the reduced Normal Equations matrices data (arc/daily NEQs) following the pre-elimination of the orbital arc-based parameters 
+% - n: Orbit arc parameters (excluded from the reduced Normal Equations matrices)
+acc_scale_global_yn           y
 ---------------------------------------------------------------------------
