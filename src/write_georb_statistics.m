@@ -99,11 +99,15 @@ format_rms_lri = '%-30s%s %-21s %s %-10.6f';
 fprintf(fid,'%-30s%s %-17s','Satellite/Object',':', orbiting_object_name); 
 fprintf(fid,'%s\n',''); 
  
+if length(rms_obs) > 1 
 fprintf(fid,format_rms_orb,'Pseudo-Observations residuals',':','ICRF XYZ (m)',':',rms_obs(1,1), rms_obs(1,2), rms_obs(1,3) ); 
 fprintf(fid,'%s\n',''); 
- 
+end
+
+if length(rms_extorb) > 1 
 fprintf(fid,format_rms_orb,'External orbit comparison',':','Orbital Frame RTN (m)',':',rms_extorb(1,1), rms_extorb(1,2), rms_extorb(1,3) ); 
 fprintf(fid,'%s\n\n',''); 
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  
  
@@ -119,9 +123,11 @@ param_keyword = 'orbiting_object_name';
 fprintf(fid,'%-30s%s %-17s','Satellite/Object',':', orbiting_object_name); 
 fprintf(fid,'%s\n',''); 
  
+if length(rms_obs) > 1 
 fprintf(fid,format_rms_orb,'Pseudo-Observations residuals',':','ICRF XYZ (m)',':',rms_obs(2,1), rms_obs(2,2), rms_obs(2,3) ); 
 fprintf(fid,'%s\n',''); 
- 
+end
+
 if length(rms_extorb) > 1 
 fprintf(fid,format_rms_orb,'External orbit comparison',':','Orbital Frame XYZ (m)',':',rms_extorb(2,1), rms_extorb(2,2), rms_extorb(2,3) ); 
 fprintf(fid,'%s\n\n',''); 

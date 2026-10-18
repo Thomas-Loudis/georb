@@ -58,7 +58,7 @@ fid = fopen(gravity_model_filename,'w');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Write Header :: Gravity model general comments 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-text_line = 'GEORB Gravity Field solution :: Unconstrained GRACE Follow-On gravity field solution'; 
+text_line = 'GEORB Gravity Field Solution :: Unconstrained Solution'; 
 fprintf(fid,'%s\n',text_line); 
 %fprintf(fid,'%s\n',''); 
 fprintf(fid,'%s\n',' '); 

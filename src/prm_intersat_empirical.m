@@ -30,34 +30,56 @@ function [rangerate_empirical_struct] = prm_intersat_empirical (orbit_model_stru
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  
  
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%-------------------------------------------------------------------------- 
 % Range-Rate Empirical Parameters 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-rangerate_empirical_function_01 = orbit_model_struct.intersat_rangerate_empirical_01; 
- 
-% rangerate_empirical_struct.rangerate_empirical_function_01 = 1 
+%-------------------------------------------------------------------------- 
+rangerate_empirical_struct = orbit_model_struct.rangerate_empirical_struct ; 
+
+intersat_rangerate_empirical_yn     = rangerate_empirical_struct.intersat_rangerate_empirical_yn;
+% intersat_rangerate_empirical_step   = rangerate_empirical_struct.intersat_rangerate_empirical_step;
+
+test_status_yn = strcmp(intersat_rangerate_empirical_yn,'y');    
+if test_status_yn == 1    
+rangerate_empirical_function_01 = 1; 
+else 
+rangerate_empirical_function_01 = 0;
+end     
+
+% rangerate_empirical_function_01 = orbit_model_struct.intersat_rangerate_empirical_01;  
 rangerate_empirical_struct.rangerate_empirical_function_01 = rangerate_empirical_function_01; 
- 
-% Step interval in seconds 
-rangerate_empirical_struct.rangerate_empirical_step = 10800; 
- 
-% Observation function model: Number of empirical parameters per cycle e.g  
-% bias and bias dirft and periodical terms (sine and cosine) coefficients 
-% and their derivatives 
-% rangerate_empirical_struct.rangerate_empirical_param_number = 6 
-rangerate_empirical_struct.Nparam_rangerate_cycle  = 6; 
+%-------------------------------------------------------------------------- 
+  
+%-------------------------------------------------------------------------- 
+% Observation function model: Number of empirical parameters per cycle   
+% - Set Nparam_rangerate_cycle = 6 :: bias and bias drift and
+%                                     periodical (sine and cosine) terms coefficients and their derivatives 
+% - Set Nparam_rangerate_cycle = 3 :: bias and periodical (sine and cosine) terms coefficients
+%                                     (Drift and derivatives are not estimated) 
+% - Set Nparam_rangerate_cycle = 2 :: periodical (sine and cosine) terms coefficients
+%                                     (derivatives are not estimated) 
+rangerate_empirical_struct.Nparam_rangerate_cycle  = 6;
+%-------------------------------------------------------------------------- 
  
 orbit_arc_length = orbit_model_struct.orbit_arc_length_sec;  
 IC_MJDo          = orbit_model_struct.IC_MJD;  
- 
-% Parameters Matrix formulation, initialisation, preallocation 
+
+%-------------------------------------------------------------------------- 
+% Step interval in seconds 
+%-------------------------------------------------------------------------- 
+intersat_rangerate_empirical_step   = rangerate_empirical_struct.intersat_rangerate_empirical_step;
+
+% rangerate_empirical_struct.rangerate_empirical_step = 10800; 
+rangerate_empirical_struct.rangerate_empirical_step = intersat_rangerate_empirical_step; 
+
 intersat_rangerate_emp_step = rangerate_empirical_struct.rangerate_empirical_step;  
+%-------------------------------------------------------------------------- 
+
+%-------------------------------------------------------------------------- 
+% Parameters Matrix formulation, initialisation, preallocation 
 Nparam_obs_rangerate = rangerate_empirical_struct.Nparam_rangerate_cycle; 
- 
- 
+  
 Ncycles = fix(orbit_arc_length/intersat_rangerate_emp_step) + 1;  % % -1 - (ceil(pulse_offset/pulse_step))  % fix(orbit_arc_length/pulse_step)+1 - (ceil(pulse_offset/pulse_step)); % ceil(orbit_arc_length/pulse_step) - (ceil(pulse_offset/pulse_step))   
- 
- 
+  
 rangerate_empirical_parameters_matrix = zeros(Ncycles, 2 + Nparam_obs_rangerate); 
 mjd0 = IC_MJDo; 
 sec00 = (mjd0 - fix(mjd0)) * 86400; 
@@ -66,10 +88,9 @@ rangerate_empirical_parameters_matrix(i,1) = mjd0 + (i-1) * intersat_rangerate_e
 rangerate_empirical_parameters_matrix(i,2) = sec00+ (i-1) * intersat_rangerate_emp_step; 
 end 
 rangerate_empirical_parameters_apriori = rangerate_empirical_parameters_matrix; 
- 
- 
+%-------------------------------------------------------------------------- 
+  
 rangerate_empirical_struct.rangerate_empirical_parameters  = rangerate_empirical_parameters_apriori; 
 % rangerate_empirical_struct.Nparam_rangerate_cycle  = Nparam_obs_rangerate; 
 rangerate_empirical_struct.Nparam_rangerate = Nparam_obs_rangerate * Ncycles; 
 rangerate_empirical_struct.rangerate_empirical_cycles_number  = Ncycles; 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 

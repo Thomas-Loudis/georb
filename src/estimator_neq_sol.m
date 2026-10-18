@@ -42,19 +42,22 @@ function [Xmatrix, NEQn, NEQu, error_matrix, sigma0, Cx, Cy, Cv] = estimator_neq
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  
  
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%-------------------------------------------------------------------------- 
 % Normal Equations 
 [NEQn, NEQu, Pmatrix] = estimator_neq(Amatrix, Wmatrix, sigma_obs);  
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
- 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-% Parameter Estimation 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-% Normal Equations matrix inversion  
-% inv_id = 6; 
-[Xmatrix] = inv_ls(NEQn, NEQu, inv_id); 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
- 
+%-------------------------------------------------------------------------- 
+
+%-------------------------------------------------------------------------- 
+% Normal Equations solution for Parameter Estimation
+%-------------------------------------------------------------------------- 
+% Matrix condition number tolerance for applying matrix scaling prior
+% inversion 
+NEQscaling_ncond = 10^7;
+% NEQ solution
+[Xmatrix, NEQn, NEQu, NEQscaling_mat] = neq_sol(NEQn, NEQu, inv_id, NEQscaling_ncond);
+%-------------------------------------------------------------------------- 
+
+% Reduced-Observations matrix
 bmatrix = Wmatrix; 
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
@@ -80,7 +83,11 @@ sigma0 = sigma;
 % Covariance matrix of parameters 
 % inv_id = 6;  
 [Nmatrix_inv] = inv_mat(NEQn, inv_id); 
-Cx_matrix = sigma^2 * Nmatrix_inv; 
+Cx_matrix = sigma^2 * Nmatrix_inv;
+% if orbit_pod_NEQscaling == 1
+% Estimated Parameter de-scaling
+Cx_matrix = NEQscaling_mat * Cx_matrix * NEQscaling_mat; 
+% end
  
 % Covariance matrix of observations (measurements) 
 [n_sigma_obs,n2] = size(sigma_obs); 
@@ -96,7 +103,6 @@ end
 % Covariance matrix of errors 
 % Cv_matrix  = sigma^2 * ( inv_mat(Pmatrix, inv_id) - Amatrix * Nmatrix_inv * Amatrix'); 
 Cv_matrix = 0; 
-% end  
  
 % Diagonal Elements only 
 Cx = diag(Cx_matrix); 

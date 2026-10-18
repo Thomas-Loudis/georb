@@ -1,4 +1,4 @@
-function [orbit_model_struct, orbit_matrices] = orbit_pod (orbit_config_fname, orbit_model_struct) 
+function [orbit_model_struct, orbit_matrices] = orbit_pod (orbit_config_fname, orbit_model_struct, orbit_matrices) 
 
 %-------------------------------------------------------------------------- 
 % Copyright (C) 2007-present  Thomas (Loudis) Papanikolaou  
@@ -261,7 +261,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 if iveq < Niter_estim + 1        
 % Least-Squares estimation method 
-    % [Xmatrix,Amatrix2,Wmatrix2] = orbit_estim(orbc, veqZarray, veqParray, obsorbc, sigma_obs_weight, COVPform); 
     inv_id = 6; 
     PULSES_estim_yn = orbit_model_struct.empirical_forces_pulses.effect_01; 
     test_stoch = strcmp(PULSES_estim_yn,'y'); 
@@ -270,7 +269,7 @@ if iveq < Niter_estim + 1
             inv_id = 4; 
         end 
     end 
-    [Xmatrix, Xmatrix_alt, bmatrix, Amatrix, Cx, Cy, NEQn, NEQu] = estimator_orbit (orbc, veqZarray, veqParray, obsorbc, sigma_obs_weight, inv_id); 
+    [Xmatrix, bmatrix, Amatrix, NEQn, NEQu, error_matrix, sigma0, Cx, Cy, Cv] = estimator_orbit (orbc, veqZarray, veqParray, obsorbc, sigma_obs_weight, inv_id);
  
 % Estimated Parameters: Update parameters' values to aposteriori values 
     ic_apriori_01 = 1; 
@@ -279,17 +278,33 @@ if iveq < Niter_estim + 1
     % Save Covariance matrices to the orbit model structure array 
     orbit_model_struct.Cx = Cx; 
     orbit_model_struct.Cy = Cy; 
+    orbit_model_struct.Cv = Cv; 
+    orbit_model_struct.sigma0 = sigma0; 
+    orbit_model_struct.error_matrix = error_matrix; 
 end 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
     % fprintf('%s %.3f \n', 'Time (min): Statistics, OBS screening, Parameters estimation:',toc(to_obs_estim)/60); 
 end 
  
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
+%-------------------------------------------------------------------------- 
+% Orbit matrices to output structure array 
+%-------------------------------------------------------------------------- 
 % Final Observations matrix to output argument 
 OBS_matrix = obsorbc; 
 OBS_residuals = dorbc_obs; 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
+
+orbit_matrices.param_cor_Xmatrix = Xmatrix; 
+orbit_matrices.param_aposteriori = Xaposteriori; 
  
+orbit_matrices.observation_matrix = OBS_matrix; 
+orbit_matrices.observation_residuals = OBS_residuals; 
+
+orbit_matrices.rms_observation_residuals = rms_orbc_obs; 
+
+orbit_matrices.state_transition_matrix  = veqZarray; 
+orbit_matrices.sensitivity_matrix       = veqParray; 
+%-------------------------------------------------------------------------- 
+
 % Orbit Determination iterations loop: end 
 end 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
@@ -320,7 +335,14 @@ if test == 1
     VEQ_sol = 0; 
     [orbc,orbk,orbt,veqZarray_0,veqParray_0,forces_accel] = orbit_integr(orbit_config_fname, VEQ_sol, orbit_model_struct); 
     fprintf('%s %.3f \n', 'Time (min):  EQM integration:',toc(to_EQM)/60); 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%-------------------------------------------------------------------------- 
+% Orbit matrices to output structure array 
+orbit_matrices.state_transition_matrix  = veqZarray; 
+orbit_matrices.sensitivity_matrix       = veqParray; 
+%-------------------------------------------------------------------------- 
+
 else 
     Gmatrix = zeros(3,3);  
     Rmatrix = zeros(3,3); 
@@ -348,17 +370,8 @@ if test == 1
 end 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % end 
- 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-if param_estim_01 == 0      
-Xmatrix = 0; 
-rms_orbc_obs = [0 0 0]; 
-OBS_matrix = 0; 
-Xaposteriori = 0; 
-OBS_residuals = 0; 
-end 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
- 
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % External Orbit Comparison 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
@@ -376,35 +389,35 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Orbits matrices to output structure array 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-orbit_matrices.orbit_crf = orbc; 
-orbit_matrices.orbit_trf = orbt; 
+orbit_matrices.orbit_crf    = orbc; 
+orbit_matrices.orbit_trf    = orbt; 
 orbit_matrices.orbit_kepler = orbk; 
  
-orbit_matrices.state_transition_matrix = veqZarray; 
-orbit_matrices.sensitivity_matrix = veqParray; 
+% orbit_matrices.state_transition_matrix  = veqZarray; 
+% orbit_matrices.sensitivity_matrix       = veqParray; 
  
-orbit_matrices.param_cor_Xmatrix = Xmatrix; 
-orbit_matrices.param_aposteriori = Xaposteriori; 
- 
-orbit_matrices.observation_matrix = OBS_matrix; 
-orbit_matrices.observation_residuals = OBS_residuals; 
- 
-orbit_matrices.forces_acceleration = forces_accel; 
-orbit_matrices.gravity_gradient_matrix = Gmatrix; 
+% orbit_matrices.param_cor_Xmatrix = Xmatrix; 
+% orbit_matrices.param_aposteriori = Xaposteriori; 
+% 
+% orbit_matrices.observation_matrix = OBS_matrix; 
+% orbit_matrices.observation_residuals = OBS_residuals; 
+% 
+% orbit_matrices.rms_observation_residuals = rms_orbc_obs; 
+
+orbit_matrices.forces_acceleration      = forces_accel; 
+orbit_matrices.gravity_gradient_matrix  = Gmatrix; 
 orbit_matrices.earth_orientation_matrix = Rmatrix; 
  
-orbit_matrices.external_orbit_crf = extorb_crf; 
+orbit_matrices.external_orbit_crf   = extorb_crf; 
  
-orbit_matrices.rms_orbital = rms_orbital; 
-orbit_matrices.rms_orbc = rms_orbc; 
-orbit_matrices.rms_orbk = rms_orbk; 
-orbit_matrices.rms_orbt = rms_orbt; 
+orbit_matrices.rms_orbital  = rms_orbital; 
+orbit_matrices.rms_orbc     = rms_orbc; 
+orbit_matrices.rms_orbk     = rms_orbk; 
+orbit_matrices.rms_orbt     = rms_orbt; 
  
 orbit_matrices.delta_orbital = dstn; 
 orbit_matrices.delta_orb_crf = dorbc; 
-orbit_matrices.delta_kepler = dkepl; 
+orbit_matrices.delta_kepler  = dkepl; 
 orbit_matrices.delta_orb_trf = dorbt; 
- 
-orbit_matrices.rms_observation_residuals = rms_orbc_obs; 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  

@@ -79,6 +79,7 @@ intersat_rangerate_residuals = grace_pod_struct.intersat_pod.intersat_rangerate_
 % Weighted estimation solution approaches 
 weight_sol_opt = COMBESTIM_weight; 
      
+%-------------------------------------------------------------------------- 
 % Weights based on errors/residuals from step-1 orbit parameter estimation   
 if weight_sol_opt == 4 
 % Orbit Residuals matrices 
@@ -91,44 +92,76 @@ end
 for i = 1 : n1 
 sat2_OBS_residuals_vector( (i-1)*3+1 : 3*i , 1) = [sat2_OBS_residuals(i,2); sat2_OBS_residuals(i,3); sat2_OBS_residuals(i,4)]'; 
 end 
- 
+
+sigma_mode = 2;
+if sigma_mode == 1
 [RMS_orbit1_residuals, sigma_orbit1_residuals] = rms(sat1_OBS_residuals_vector); 
 [RMS_orbit2_residuals, sigma_orbit2_residuals] = rms(sat2_OBS_residuals_vector); 
  
 % Intersatellite (LRI) range and range-rate residuals 
 [RMS_range_residuals, sigma_range_residuals] = rms(intersat_range_residuals(:,2)); 
 [RMS_rangerate_residuals, sigma_rangerate_residuals] = rms(intersat_rangerate_residuals(:,2)); 
- 
+else
+
+% Reference Variance sigma0 Variance Component values based on orbit parameter estimation of previous step 
+sigma0_sat1 = orbit_model_GRACE1.sigma0;
+sigma0_sat2 = orbit_model_GRACE2.sigma0; 
+
+% Observation Covariance matrices (diagonal)
+% Cv_sat1 = sigma0_sat1^2 * ( abs(sat1_OBS_residuals_vector) * (1/sigma0_sat1));
+% Cv_sat2 = sigma0_sat2^2 * ( abs(sat2_OBS_residuals_vector) * (1/sigma0_sat2));
+Cv_sat1 = (sat1_OBS_residuals_vector)^2;
+Cv_sat2 = (sat2_OBS_residuals_vector)^2;
+
+% Observation residuals sigma Vectors
+sigma_orbit1_residuals = sqrt(Cv_sat1);
+sigma_orbit2_residuals = sqrt(Cv_sat2);
+
+% sigma_obs_orbit_config        = observation_model_matrix.sigma_obs_orbit; 
+sigma_intersat_range_config     = observation_model_matrix.sigma_intersat_range; 
+sigma_intersat_rangerate_config = observation_model_matrix.sigma_intersat_rangerate; 
+% Units conversion to m and m/sec
+sigma_range     = sigma_intersat_range_config * 10^-3; 
+sigma_rangerate = sigma_intersat_rangerate_config * 10^-6; 
+
+sigma_range_residuals     = sigma_range;
+sigma_rangerate_residuals = sigma_rangerate;
+end
+
 % Output 
 sigma_obs_orbit1 = sigma_orbit1_residuals; 
 sigma_obs_orbit2 = sigma_orbit2_residuals; 
 sigma_intersat_range = sigma_range_residuals; 
 sigma_intersat_rangerate = sigma_rangerate_residuals; 
- 
- 
+  
+%-------------------------------------------------------------------------- 
 % Weights based on covariance matrices from step-1 orbit parameter estimation   
 elseif weight_sol_opt == 2 
+
+% Covariance matrices include the Variance component (Reference/Unit Variance) :: Cy_est = sigma0^2 * Cy_apriori    
 Cv_sat1_est = orbit_model_GRACE1.Cy; 
 Cv_sat2_est = orbit_model_GRACE2.Cy; 
  
 % Sigma factor to the orbits' Cv_sqrt 
-% sigma_obsorb = 2 * 10^-2; 
-% sigma_obsorb = 10  
-sigma_obsorb = 5; 
-% sigma_obsorb = 100  
+sigma_obsorb = 1; 
  
 % Output 
 sigma_obs_orbit1 = sigma_obsorb * sqrt(Cv_sat1_est); 
 sigma_obs_orbit2 = sigma_obsorb * sqrt(Cv_sat2_est); 
  
-sigma_range = 2 * 10^-3; 
-sigma_rangerate = 0.2 * 10^-6; 
+% sigma_obs_orbit_config        = observation_model_matrix.sigma_obs_orbit; 
+sigma_intersat_range_config     = observation_model_matrix.sigma_intersat_range; 
+sigma_intersat_rangerate_config = observation_model_matrix.sigma_intersat_rangerate; 
  
+% sigma_obsorb    = sigma_obs_orbit_config * 10^-2; 
+sigma_range     = sigma_intersat_range_config * 10^-3; 
+sigma_rangerate = sigma_intersat_rangerate_config * 10^-6; 
+
 % Output 
 sigma_intersat_range = sigma_range; 
 sigma_intersat_rangerate = sigma_rangerate; 
- 
- 
+  
+%-------------------------------------------------------------------------- 
 % Fixed weights to sigma defined values 
 elseif weight_sol_opt == 3 
 sigma_obs_orbit_config = observation_model_matrix.sigma_obs_orbit; 
@@ -144,8 +177,8 @@ sigma_obs_orbit1 = sigma_obsorb;
 sigma_obs_orbit2 = sigma_obsorb; 
 sigma_intersat_range = sigma_range; 
 sigma_intersat_rangerate = sigma_rangerate; 
- 
- 
+  
+%-------------------------------------------------------------------------- 
 % Identity matrix 
 elseif weight_sol_opt == 1 
 sigma_obs_orbit1 = 1; 
@@ -154,6 +187,3 @@ sigma_intersat_range = 1;
 sigma_intersat_rangerate = 1; 
 end 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
- 
-% save sigma_obs_orbit2.neq  sigma_obs_orbit2 -ASCII -double 
-% save sigma_obs_orbit1.neq  sigma_obs_orbit1 -ASCII -double 

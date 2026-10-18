@@ -80,7 +80,17 @@ if cfg_mode == 2
     % Numerical Integrator step     
     param_keyword = 'Stepsize'; 
     [param_value] = read_param_cfg(cfg_fname,param_keyword); 
-    integr_stepsize = sscanf(param_value,'%d %*'); 
+    integr_stepsize = sscanf(param_value,'%d %*');
+
+
+    % Downsampling to orbit observations y/n:
+    param_keyword = 'downsampling_orbit_yn'; 
+    [downsampling_orbit_yn] = read_param_cfg(cfg_fname,param_keyword); 
+
+    % Downsampling rate (in seconds) 
+    param_keyword = 'downsampling_orbit_rate'; 
+    [param_value] = read_param_cfg(cfg_fname,param_keyword); 
+    downsampling_orbit_rate = sscanf(param_value,'%d %*');
 end 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  
@@ -166,8 +176,6 @@ if test == 1
     orbtype = 'dyn'; 
 end 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
- 
-obsorb_rate = 1; 
  
 % cov_pseudo_obs 
 test = strcmp(cov_pseudo_obs,'identity'); 
@@ -303,47 +311,7 @@ if test_georb == 1
 end 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  
- 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-% Observations Epochs array within the orbit arc length 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-% [orbit_arc_length, IC_MJDo, IC_Zo_vec, EOP_data, EOP_interp_no] = prm_ic(cfg_fname); 
-% Orbit model matrix  
-IC_MJDo = orbit_model_struct.IC_MJD ; 
-orbit_arc_length = orbit_model_struct.orbit_arc_length_sec; 
-% Integration Stepsize 
-INTGstep = integr_stepsize; 
-% Orbit arc length in seconds 
-arc = orbit_arc_length; 
-% Initial epoch MJD 
-MJDo = IC_MJDo; 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
- 
-% OBSepochs array 
-[to_sec,D,M,Y] = MJD_inv(MJDo); 
-tmax_sec = to_sec + arc; 
-iobsepoch = 0; 
-tith_sec = to_sec; 
-while tith_sec <= tmax_sec 
-    tith_sec = to_sec + iobsepoch * obsorb_rate * INTGstep; 
-    iobsepoch = iobsepoch + 1; 
-end 
- 
-% Preallocation 
-OBSepochs = zeros(iobsepoch ,1); 
- 
-iobsepoch = 0; 
-tith_sec = to_sec; 
-while tith_sec <= tmax_sec 
-    tith_sec = to_sec + iobsepoch * obsorb_rate * INTGstep; 
-    %OBSepochs(iobsepoch,1) = tith_sec; 
-    [JDith,MJDith] = MJD_date(tith_sec,D,M,Y); 
-    OBSepochs(iobsepoch+1,1) = MJDith; 
-    iobsepoch = iobsepoch + 1; 
-end 
-[OBSepochs2] = mjd2mjdtt(OBSepochs,1); 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-     
+      
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Orbit transformation from ITRS to GCRS 
 if OBS_ORB_Frame == 'trs' 
@@ -379,7 +347,66 @@ elseif Vel_vector == 0
     orbke = 0; 
 end 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Observations Epochs array within the orbit arc length 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% [orbit_arc_length, IC_MJDo, IC_Zo_vec, EOP_data, EOP_interp_no] = prm_ic(cfg_fname); 
+% Orbit model matrix  
+IC_MJDo = orbit_model_struct.IC_MJD ; 
+orbit_arc_length = orbit_model_struct.orbit_arc_length_sec; 
+
+%-------------------------------------------------------------------------- 
+test_downsampling_orbit_yn = strcmp(downsampling_orbit_yn,'y'); 
+if test_downsampling_orbit_yn == 1 
+% Downsampling step for reducing the observations epochs number
+% obsorb_rate = 30
+obsorb_rate = downsampling_orbit_rate;
+else
+obsorb_rate = 1;     
+end
+
+% Test with initial orbit interval step
+orbit_rate_initial = (orbce(2,1) - orbce(1,1)) * 86400;
+if downsampling_orbit_rate < orbit_rate_initial
+obsorb_rate = 1;     
+end
+% obsorb_rate
+%-------------------------------------------------------------------------- 
+
+% Orbit arc length in seconds 
+arc = orbit_arc_length; 
+% Initial epoch MJD 
+MJDo = IC_MJDo; 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  
+% OBSepochs array 
+[to_sec,D,M,Y] = MJD_inv(MJDo); 
+tmax_sec = to_sec + arc; 
+iobsepoch = 0; 
+tith_sec = to_sec; 
+while tith_sec <= tmax_sec 
+    tith_sec = to_sec + iobsepoch * obsorb_rate; 
+    iobsepoch = iobsepoch + 1; 
+end 
+ 
+% Preallocation 
+OBSepochs = zeros(iobsepoch ,1); 
+ 
+iobsepoch = 0; 
+tith_sec = to_sec; 
+while tith_sec <= tmax_sec 
+    tith_sec = to_sec + iobsepoch * obsorb_rate; 
+    %OBSepochs(iobsepoch,1) = tith_sec; 
+    [JDith,MJDith] = MJD_date(tith_sec,D,M,Y); 
+    OBSepochs(iobsepoch+1,1) = MJDith; 
+    iobsepoch = iobsepoch + 1; 
+end 
+[OBSepochs2] = mjd2mjdtt(OBSepochs,1); 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Exclude OBS according to obsorb_rate 
 obsorbt_full = orbte; 

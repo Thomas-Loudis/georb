@@ -77,11 +77,14 @@ for ic_i = 1 : ic_n
     [orbit_model_struct] = orbit_data_longarc (main_config_fname, orbit_model_filename, config_struct, src_version, orbit_model_struct); 
  
     orbit_model_struct.orbit_config = config_struct;   
+
+    % orbit_matrices initialisation
+    [orbit_matrices] = orbit_matrices_init();
  
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
     % Orbit Determination of satellite/object i 
-    % [orbit_config_fname, orbit_matrix, orbit_rms, veqZ_matrix, veqP_matrix, OBS_matrix, Xparam_aposteriori, OBS_residuals, extorb] = orbit_object(config_struct, write_data, orbit_model_struct);     
-    [orbit_config_fname, orbit_model_struct, orbit_matrices, OUT_data_foldername] = orbit_object(config_struct, write_data, orbit_model_struct);         
+    % [orbit_config_fname, orbit_matrix, orbit_rms, veqZ_matrix, veqP_matrix, OBS_matrix, Xparam_aposteriori, OBS_residuals, extorb] = orbit_object(config_struct, write_data, orbit_model_struct);
+    [orbit_config_fname, orbit_model_struct, orbit_matrices, OUT_data_foldername] = orbit_object(config_struct, write_data, orbit_model_struct, orbit_matrices);         
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 

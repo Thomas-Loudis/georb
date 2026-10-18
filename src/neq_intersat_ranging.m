@@ -35,8 +35,8 @@ function [Amatrix_rangerate_out, Wmatrix_rangerate_out, Amatrix_range_out, Wmatr
 % - sigma_obs       Sigma of observations for forming the weight matrix P 
 % 
 % Output arguments: 
-% - Amatrix:        Desing matrix per epoch 
-% - Wmatrix:        b matrix of least squares method   
+% - Amatrix:        Design matrix per epoch 
+% - Wmatrix:        b matrix reduced-observations for least squares method   
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Dr. Thomas D. Papanikolaou                                8 November 2019 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 

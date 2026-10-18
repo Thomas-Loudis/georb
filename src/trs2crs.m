@@ -62,13 +62,13 @@ function [trs2crs_mat,dtrs2crs_mat, crs2trs_mat,dcrs2trs_mat, UT1, X_PN, Y_PN, s
 %             Source Code minor upgrade  
 %-------------------------------------------------------------------------- 
  
-
+ 
 % Input epoch MJD in TT time scale
 mjd_TT = mjd; 
 
 %-------------------------------------------------------------------------- 
 % EOP computation for MJD epoch : 
-% EOP corrections cosidering tidal variations; 
+% EOP corrections considering tidal variations; 
 % IAU 2006/2000A Precesssion-Nutation model
 %-------------------------------------------------------------------------- 
 [UT1, X_PN, Y_PN, s_PN, xp, yp] = eop_comp(mjd_TT,eop,dpint, orbit_model_struct); 

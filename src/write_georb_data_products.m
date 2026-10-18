@@ -107,7 +107,7 @@ reference_frame = 'Kepler';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Partial Derivatives 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-if 1 < 0 
+% if 1 < 0 
 [n1, n2] = size(veqZarray); 
 [n3, n4] = size(veqParray); 
 if n1 > 1  
@@ -187,7 +187,7 @@ end
 end 
 % end of writting individual partials data files 
  
-end 
+% end 
 % end of partials  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  
@@ -292,9 +292,8 @@ georb_data_name = sprintf('%s%s%s',georb_dataformat_name,data_functional_filenam
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Write Orbits in GNV data format (GRACE missions orbit data format) 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-GNP_data_format = 1; 
+GNP_data_format = 0; 
 if GNP_data_format == 1 
- 
 % Orbit in ITRF to GNP file 
 data_matrix = orbt; 
 data_functional = 'Orbit'; 

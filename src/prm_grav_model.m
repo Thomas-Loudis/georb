@@ -82,6 +82,11 @@ if cfg_mode == 2
     param_keyword = 'grav_paramestim_degree_max'; 
     [param_value] = read_param_cfg(cfg_fname,param_keyword); 
     grav_paramestim_degree_max = sscanf(param_value,'%d %*'); 
+
+    param_keyword = 'gravity_arc_sol_flag' ; 
+    [param_value] = read_param_cfg(cfg_fname,param_keyword); 
+    gravity_arc_sol_flag = sscanf(param_value,'%d %*'); 
+
 end 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  
@@ -168,13 +173,13 @@ if test == 1
         [GM,ae,Cnm,Snm,sCnm,sSnm,nmax,tide_system] = gfc_tv2(gravity_model_fname, n_max_gfm, sigma_shc, MJDo);        
     else 
         % GOCO series format of time-variable models 
-        [GM,ae,Cnm,Snm,sCnm,sSnm,nmax,tide_system] = gfc_tv1(gravity_model_fname, n_max_gfm, sigma_shc, MJDo); 
+        % [GM,ae,Cnm,Snm,sCnm,sSnm,nmax,tide_system] = gfc_tv1(gravity_model_fname, n_max_gfm, sigma_shc, MJDo); 
  
-        % [sec,day,month,year] = MJD_inv(MJDo); 
-        % sec00_mean = 0; 
-        % day15 = 15; 
-        % [JD_mean,MJD_mean] = MJD_date(sec00_mean,day15,month,year); 
-        % [GM,ae,Cnm,Snm,sCnm,sSnm,nmax,tide_system] = gfc_tv1(gravity_model_fname, n_max_gfm, sigma_shc, MJD_mean);        
+        [sec,day,month,year] = MJD_inv(MJDo); 
+        sec00_mean = 0; 
+        day15 = 15; 
+        [JD_mean,MJD_mean] = MJD_date(sec00_mean,day15,month,year); 
+        [GM,ae,Cnm,Snm,sCnm,sSnm,nmax,tide_system] = gfc_tv1(gravity_model_fname, n_max_gfm, sigma_shc, MJD_mean);        
     end 
 end 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
@@ -280,7 +285,9 @@ gfm_struct.parameters_number = N_param_GRAV;
 % Degree and Order values matrix of the C,S coefficients to be estimated 
 gfm_struct.C_degree_order_estim = C_degree_order; 
 gfm_struct.S_degree_order_estim = S_degree_order; 
- 
+
+gfm_struct.gravity_arc_sol_flag = gravity_arc_sol_flag ;
+
 % Gravity signal (temporal); Optional, applied only for case studies 
 gfm_struct.gravity_signal_yn = gravity_signal_yn; 
 % Signal' delta C,S coefficients matrices 

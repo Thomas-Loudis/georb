@@ -92,6 +92,19 @@ C2 = 0;
 % Periodical sin terms 
 S1 = rangerate_emp_param(3,1); 
 S2 = 0; 
+
+% Periodical Terms only without Bias terms
+elseif Nparam_EMP == 2
+% Bias and Bias drift 
+B1 = 0; 
+B2 = 0; 
+% Periodical cosine terms 
+C1 = rangerate_emp_param(1,1); 
+C2 = 0; 
+% Periodical sin terms 
+S1 = rangerate_emp_param(2,1); 
+S2 = 0; 
+
 end 
  
     end 
@@ -205,7 +218,15 @@ PD_rangerate_emp(1,2) = cos(u_mid);
  
 % Periodical sin terms 
 PD_rangerate_emp(1,3) = sin(u_mid); 
+
+elseif Nparam_EMP == 2
+  
+% Periodical cosine terms 
+PD_rangerate_emp(1,1) = cos(u_mid); 
  
+% Periodical sin terms 
+PD_rangerate_emp(1,2) = sin(u_mid); 
+
 end 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  

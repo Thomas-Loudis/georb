@@ -1,4 +1,4 @@
-function [config_struct] = write_config2struct(georb_config_fname, orbit_model_fname, ic_data, src_version) 
+function [config_struct, georb_config_in] = write_config2struct(georb_config_fname, orbit_model_fname, ic_data, src_version) 
 
 %-------------------------------------------------------------------------- 
 % Copyright (C) 2007-present  Thomas (Loudis) Papanikolaou  
@@ -41,7 +41,8 @@ function [config_struct] = write_config2struct(georb_config_fname, orbit_model_f
 %             Source Code minor upgrade  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  
- 
+
+% New structure array for all configuration parameters :: georb_config_in
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % GEORB general configuration file 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
@@ -51,8 +52,9 @@ param_keyword = 'GEORB_version';
 i_struct = i_struct + 1; 
 config_struct(i_struct).names  = param_keyword; 
 config_struct(i_struct).values = src_version; 
-% fprintf('%s%s \n\n','GEORB ',src_version); 
- 
+% fprintf('%s%s \n\n','GEORB ',src_version);
+georb_config_in.GEORB_version = src_version;
+
 param_keyword = 'georb_mode'; 
 [param_value,param_line] = read_param_file(georb_config_fname,param_keyword); 
 i_struct = i_struct + 1; 
@@ -60,7 +62,9 @@ config_struct(i_struct).names  = param_keyword;
 config_struct(i_struct).values = param_line; 
  
 georb_mode = param_line; 
- 
+georb_config_in.georb_mode = param_line;
+
+
 param_keyword = 'orbiting_object_name'; 
 [param_value,param_line] = read_param_file(georb_config_fname,param_keyword); 
 i_struct = i_struct + 1; 
@@ -489,6 +493,10 @@ i_struct = i_struct + 1;
 config_struct(i_struct).names  = param_keyword; 
 config_struct(i_struct).values = param_value; 
  
+
+%-------------------------------------------------------------------------- 
+% Gravity field solution configuration
+%-------------------------------------------------------------------------- 
 param_keyword = 'grav_field_paramestim_yn'; 
 [param_value] = read_param_file(orbit_model_filename,param_keyword); 
 i_struct = i_struct + 1; 
@@ -506,7 +514,19 @@ param_keyword = 'grav_paramestim_degree_max';
 i_struct = i_struct + 1; 
 config_struct(i_struct).names  = param_keyword; 
 config_struct(i_struct).values = param_value; 
- 
+
+param_keyword = 'gravity_arc_sol_flag'; 
+[param_value] = read_param_file(orbit_model_filename,param_keyword); 
+i_struct = i_struct + 1; 
+config_struct(i_struct).names  = param_keyword; 
+config_struct(i_struct).values = param_value; 
+
+param_keyword = 'downweight_factor_orbit'; 
+[param_value] = read_param_file(orbit_model_filename,param_keyword); 
+i_struct = i_struct + 1; 
+config_struct(i_struct).names  = param_keyword; 
+config_struct(i_struct).values = param_value; 
+%-------------------------------------------------------------------------- 
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Planetary/Lunar ephemeris 
@@ -1125,7 +1145,19 @@ param_keyword = 'pseudo_obs_sigma';
 i_struct = i_struct + 1; 
 config_struct(i_struct).names  = param_keyword; 
 config_struct(i_struct).values = param_value; 
- 
+
+param_keyword = 'downsampling_orbit_yn'; 
+[param_value] = read_param_file(orbit_model_filename,param_keyword); 
+i_struct = i_struct + 1; 
+config_struct(i_struct).names  = param_keyword; 
+config_struct(i_struct).values = param_value; 
+
+param_keyword = 'downsampling_orbit_rate'; 
+[param_value] = read_param_file(orbit_model_filename,param_keyword); 
+i_struct = i_struct + 1; 
+config_struct(i_struct).names  = param_keyword; 
+config_struct(i_struct).values = param_value; 
+
 % Observations end 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  
@@ -1187,6 +1219,22 @@ config_struct(i_struct).values = param_value;
 end 
  
 end 
+
+%-------------------------------------------------------------------------- 
+% Intersatellite Range-Rate empirical parameters
+%-------------------------------------------------------------------------- 
+% y/n status 
+param_keyword = 'intersat_rangerate_empirical_yn'; 
+[param_value] = read_param_file(orbit_model_filename,param_keyword); 
+i_struct = i_struct + 1; 
+config_struct(i_struct).names  = param_keyword; 
+config_struct(i_struct).values = param_value; 
+
+param_keyword = 'intersat_rangerate_empirical_step'; 
+[param_value] = read_param_file(orbit_model_filename,param_keyword); 
+i_struct = i_struct + 1; 
+config_struct(i_struct).names  = param_keyword; 
+config_struct(i_struct).values = param_value; 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  
  
@@ -1248,6 +1296,18 @@ config_struct(i_struct).names  = param_keyword;
 config_struct(i_struct).values = param_value; 
  
 param_keyword = 'sigma_intersat_rangerate'; 
+[param_value] = read_param_file(orbit_model_filename,param_keyword); 
+i_struct = i_struct + 1; 
+config_struct(i_struct).names  = param_keyword; 
+config_struct(i_struct).values = param_value; 
+
+param_keyword = 'combined_weights_variances_yn'; 
+[param_value] = read_param_file(orbit_model_filename,param_keyword); 
+i_struct = i_struct + 1; 
+config_struct(i_struct).names  = param_keyword; 
+config_struct(i_struct).values = param_value; 
+
+param_keyword = 'acc_scale_global_yn'; 
 [param_value] = read_param_file(orbit_model_filename,param_keyword); 
 i_struct = i_struct + 1; 
 config_struct(i_struct).names  = param_keyword; 

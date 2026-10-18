@@ -109,7 +109,9 @@ param_keyword = 'ocean_tides';
 [ocean_tides_yn] = read_param_cfg(cfg_fname,param_keyword); 
 test = strcmp(ocean_tides_yn,'y'); 
 if test == 1 
-[ocean_tides_struct] = prm_ocean_tides(cfg_fname);  
+[ocean_tides_struct] = prm_ocean_tides(cfg_fname);
+% ocean_tides_struct.degree_veq   = [n_max_otides_veq m_max_otides_veq];
+ocean_tides_struct.degree_veq   = [n_max_veq m_max_veq];
 orbit_model_struct.ocean_tides = ocean_tides_struct; 
 end 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 

@@ -25,6 +25,7 @@ function [config_struct,orbit_model_struct] = config_struct_update(config_struct
 % - ic_apriori_01 : 
 %   0 : Apriori values of IC Parameters are provided by the variable Xmatrix 
 %   1 : Corrections to IC Parameters are provided by the variable Xmatrix 
+%   -1 : IC is not updated; Xmatrix variables are ignored  
 % 
 % Output arguments: 
 % 
@@ -36,6 +37,9 @@ function [config_struct,orbit_model_struct] = config_struct_update(config_struct
 %             Source Code minor upgrade  
 % 29/04/2025  Thomas Loudis Papanikolaou 
 %             Source Code minor upgrade  
+% 25/09/2026  Thomas Loudis Papanikolaou 
+%             Source Code minor upgrade; Function orbit_model_rev was
+%             extracted by function config_struct_update 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  
 % Orbit/Force model matrix 
@@ -46,7 +50,7 @@ IC_MJDo = orbit_model_struct.IC_MJD;
 % Modify Variables of the orbit_model and orbit_configuration structure arrays  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  
- 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % Gravity field parameters estimation :: Change mode 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
@@ -64,10 +68,23 @@ param_value = grav_field_paramestim_yn;
 end 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-% Add ACC calibration parameters to the partials  
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
-if acc_cal_update == 1 
+%-------------------------------------------------------------------------- 
+% Add/Modify ACC calibration parameters to the partials :: 
+%-------------------------------------------------------------------------- 
+% Case: 1. initially the Accelerometer Scale is set to fixed (not to
+% be estimated, set via the configuration file) for step1 of GRACE orbit
+% determination; 2. The acc scale is set to be estimated (compute partials) 
+% during the Step2 Combined estimtor for Gravity solution (combination of  
+% orbits with inter-satellite ranging observations) 
+%-------------------------------------------------------------------------- 
+% Accelerometer structure array 
+accelerometer_struct = accelerometer_data_cal_glob; 
+% Accelerometer calibration parameters estimation y/n
+acc_cal_paramestim_yn = accelerometer_struct.param_estim_yn;  
+% Test y/n mode of initial accelerometer calibration parameter estimation
+test_acc_cal_paramestim_yn = strcmp(acc_cal_paramestim_yn,'y'); 
+
+if acc_cal_update == 1 && test_acc_cal_paramestim_yn == 0
 % Accelerometer calibration parameters estimation y/n  
 acc_cal_paramestim_yn = 'y'; 
  
@@ -89,11 +106,65 @@ orbit_model_struct.accelerometer_struct = accelerometer_struct;
 ACC_CAL_PARAM_matrix = accelerometer_struct.cal_parameters; 
 [d1, d2] = size(ACC_CAL_PARAM_matrix); 
 % acc_cal_param_Xmatrix = zeros(d1,d2) 
-acc_cal_param_Xmatrix = ACC_CAL_PARAM_matrix 
+acc_cal_param_Xmatrix = ACC_CAL_PARAM_matrix; 
  
 % Update IC vector (TEMP: considering ACC CAL Parameters last force model unknown parameters) 
-orbit_parameters 
-orbit_parameters = [orbit_parameters; acc_cal_param_Xmatrix] 
+% orbit_parameters
+orbit_parameters = [orbit_parameters; acc_cal_param_Xmatrix]; 
+end 
+
+%-------------------------------------------------------------------------- 
+% Case :: 1. ACC Scale is set as diagonal for Step1 of Orbit
+% Detertmination; 2. ACC Scale is modified to full scale matrix during Step2 
+% of Combined Orbit Determination
+%--------------------------------------------------------------------------
+% Case is Cancelled
+acc_cal_scale_type = accelerometer_struct.cal_scale_type;
+% Test ACC Scale matrix mode
+test_acc_cal_scale_diagonal_yn = strcmp(acc_cal_scale_type,'diagonal'); 
+% NOT :  if acc_cal_update == 1 && test_acc_cal_paramestim_yn == 1 && test_acc_cal_scale_diagonal_yn == 1
+% if acc_cal_update == 1 && test_acc_cal_scale_diagonal_yn == 1
+% Cancel this Case
+if 1 < 0
+
+% Accelerometer calibration parameters estimation y/n  
+acc_cal_paramestim_yn = 'y'; 
+
+% Update Configuration structure array 
+% Modify :: PARAM acc_cal_paramestim :: VALUE n 
+param_keyword = 'acc_cal_paramestim'; 
+param_value = acc_cal_paramestim_yn; 
+[config_struct] = write_configstruct_cor(config_struct, param_keyword, param_value); 
+
+% Update Accelerometer structure array :: Accelerometer calibration parameters estimation y/n 
+accelerometer_struct = accelerometer_data_cal_glob; 
+accelerometer_struct.param_estim_yn = acc_cal_paramestim_yn; 
+
+% Accelerometer scale matrix set to full  
+accelerometer_struct.cal_scale_type = 'full';
+ 
+% Apriori ACC Calbration parameters 
+ACC_CAL_PARAM_matrix = accelerometer_struct.cal_parameters;
+[d1, d2] = size(ACC_CAL_PARAM_matrix) ;
+
+% Update Scale Matrix (Re-size)
+% Add Off-diagonal (zeros)
+acc_cal_param_Scale_offdiagonal = [0 0 0 0 0 0]';
+% re-set to scale 1 (diagonal) 
+ACC_CAL_PARAM_matrix(d1-2:d1,1) = [1 1 1]'; 
+% Assign to new ACC Calbration matrix
+acc_cal_param_Xmatrix = [ACC_CAL_PARAM_matrix; acc_cal_param_Scale_offdiagonal]; 
+
+accelerometer_struct.cal_parameters = acc_cal_param_Xmatrix; 
+
+% Update orbit_model_struct :: Forces effects and Number of parameters to be estimated (VEQ) 
+orbit_model_struct.accelerometer_struct = accelerometer_struct; 
+[orbit_model_struct] = orbit_model_force_parameters (orbit_model_struct); 
+
+% Update IC vector (TEMP: considering ACC CAL Parameters last force model unknown parameters) 
+[d1,d2]=size(orbit_parameters);
+orbit_parameters(d1-2:d1,1) = [1 1 1]';
+orbit_parameters = [orbit_parameters; acc_cal_param_Scale_offdiagonal]; 
 end 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
  
@@ -137,8 +208,7 @@ orbit_model_struct.accelerometer_struct = accelerometer_struct;
 % end 
  
 % Update IC vector (TEMP: considering ACC CAL Parameters last force model unknown parameters) 
-orbit_parameters 
-orbit_parameters = orbit_parameters(1:6,1) 
+orbit_parameters = orbit_parameters(1:6,1); 
 end 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % forces_param_estim_no = orbit_model_struct.forces_param_estim_no 
@@ -208,7 +278,6 @@ param_keyword = 'Initial_Epoch';
 param_value   = sprintf('%d %d %.17f %d',0,0,Sec_00,MJD_0); 
 [config_struct] = write_configstruct_cor(config_struct, param_keyword, param_value); 
      
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 % param_value :: Xaposteriori 
 param_value   = sprintf('%-27.17e ', Xaposteriori); 
  
